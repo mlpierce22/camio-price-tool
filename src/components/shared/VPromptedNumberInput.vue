@@ -3,24 +3,29 @@
     <div class="prompt">
       {{ inputData.prompt }}
     </div>
-    <v-text-field
-      v-model="fieldValue"
-      background-color="#CBE3C4"
-      color="#50B536"
-      min="1"
-      step="1"
-      type="number"
-      :rules="rules"
-    ></v-text-field>
-    <div class="units">
-      {{ inputData.units }}
+    <div class="text-container">
+      <v-text-field
+        class="text-box"
+        v-model="fieldValue"
+        background-color="#CBE3C4"
+        color="#50B536"
+        min="1"
+        step="1"
+        type="number"
+        :validate-on-blur="true"
+        :rules="[rules.empty, rules.min]"
+      ></v-text-field>
+      <div class="units">
+        {{ units }}
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { PromptedNumberInputObject } from "@/models";
+import pluralize from "pluralize";
 
 @Component
 export default class VPromptedNumberInput extends Vue {
@@ -28,27 +33,65 @@ export default class VPromptedNumberInput extends Vue {
 
   fieldValue: number;
 
-  rules: Array<Function>;
+  rules: {};
 
-  minRule = (val: number) => {
-    if (val < 1) {
-      return "You must have at least 1.";
+  units: string;
+
+  @Watch("fieldValue")
+  handlePluralAndUpdateParent() {
+    // Update Parent
+    this.$emit("new-value", this.fieldValue);
+    // https://github.com/plurals/pluralize
+    if (!this.fieldValue && this.fieldValue !== 0) {
+      return this.units;
+    } else if (this.fieldValue == 1) {
+      this.units = pluralize.singular(this.units);
+      return this.units;
     } else {
-      return false;
+      this.units = pluralize.plural(this.units);
+      return this.units;
     }
-  };
+  }
 
   constructor() {
     super();
-    this.fieldValue = this.inputData.initVal;
-    this.rules = [
-      (val: number) => (val < 1 ? "You must have at least 1." : false)
-    ];
+    this.fieldValue = this.inputData.value;
+    this.units = this.inputData.units;
+    this.rules = {
+      empty: value => !!value || "Required.",
+      min: value =>
+        value >= 1 ||
+        "Must have at least one " + pluralize.singular(this.units) + "."
+    };
   }
 }
 </script>
 
 <style scoped lang="scss">
 .v-prompted-number-input {
+  display: flex;
+  flex-direction: column;
+
+  .prompt {
+  }
+
+  .text-container {
+    display: flex;
+    align-items: center;
+
+    .text-box {
+      flex-grow: 0;
+      max-width: 70px;
+
+      .v-text-field >>> input {
+        font-weight: 900;
+        text-align: center;
+      }
+    }
+
+    .units {
+      padding-left: 10px;
+    }
+  }
 }
 </style>
