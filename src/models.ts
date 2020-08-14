@@ -5,5 +5,12 @@ export interface QuoteIntroForm {
 export interface PromptedNumberInputObject {
   prompt: string;
   units: string;
-  initVal: number;
+  value: number;
+}
+
+export interface BackNextButtonConfig {
+  nextText: string;
+  backText: string;
+  showBack: boolean;
+  showNext: boolean;
 }
