@@ -5,7 +5,7 @@
         <TheQuoteIntroPage
           v-if="formProgressionState.onStep === 0"
           :formData="quoteIntroPageFormData"
-          @new-value-keyed="updateValue($event)"
+          @new-value-keyed="updateQuotePageVals($event)"
         />
         <!-- Otherwise: stepper -->
 
@@ -59,7 +59,7 @@ export default Vue.extend({
     addLocationsPageFormData: {}
   }),
   methods: {
-    updateValue: function(newValObj) {
+    updateQuotePageVals: function(newValObj) {
       const castVal = parseInt(newValObj.newVal, 10);
       this.quoteIntroPageFormData[newValObj.key].value = castVal;
     }
