@@ -1,26 +1,31 @@
 <template>
   <v-app>
     <v-main>
-      <!-- <div class="app-container"> -->
       <v-stepper
         :alt-labels="true"
         v-model="stepperData.progressionState.onStep"
         class="app-container"
         v-resize="checkOrientation"
-        :vertical="stepperData.isVertical"
+        v-if="!isVertical"
+        key="horizontal-stepper"
       >
-        <v-stepper-header v-if="stepperData.progressionState.furthestStep != 0">
+        <v-stepper-header
+          v-show="stepperData.progressionState.furthestStep != 1"
+        >
           <template class="app-steps" v-for="(step, index) in dynamicSlides">
             <v-divider v-if="index !== 0" :key="`${index}`"></v-divider>
             <v-stepper-step
               :key="`${index}-step`"
               :step="step.stepNumber"
               :complete="
-                step.stepIndex < stepperData.progressionState.furthestStep
+                step.stepNumber < stepperData.progressionState.furthestStep
               "
               :editable="
-                step.stepIndex < stepperData.progressionState.furthestStep
+                step.stepNumber < stepperData.progressionState.furthestStep
               "
+              edit-icon="$complete"
+              class="stepper-step-horizontal"
+              :color="chooseColor(step.stepNumber)"
             >
               {{ step.stepName }}
             </v-stepper-step>
@@ -38,6 +43,47 @@
             </v-stepper-content>
           </template>
         </v-stepper-items>
+      </v-stepper>
+
+      <v-stepper
+        v-model="stepperData.progressionState.onStep"
+        class="app-container"
+        v-resize="checkOrientation"
+        vertical
+        v-else
+        key="vertical-stepper"
+      >
+        <template v-for="(step, index) in dynamicSlides">
+          <v-stepper-step
+            class="vert-step"
+            :complete="
+              step.stepNumber < stepperData.progressionState.furthestStep
+            "
+            :editable="
+              step.stepNumber < stepperData.progressionState.furthestStep
+            "
+            :key="`${index}-step-vert`"
+            :step="step.stepNumber"
+            :color="chooseColor(step.stepNumber)"
+            edit-icon="$complete"
+            v-show="hideAllExceptFirst(step.stepNumber)"
+          >
+            {{ step.stepName }}
+          </v-stepper-step>
+          <v-stepper-content
+            :key="`${index}-content-vert`"
+            :step="step.stepNumber"
+            :class="{ 'hide-border': !hideAllExceptFirst(step.stepNumber) }"
+          >
+            <v-card
+              color="grey lighten-1"
+              class="mb-12"
+              height="200px"
+            ></v-card>
+            <button @click="nextStep()">Next</button>
+            <button @click="prevStep()">Back</button>
+          </v-stepper-content>
+        </template>
       </v-stepper>
       <!-- <div class="seperator"></div> -->
       <!-- <TheQuoteIntroPage
@@ -66,12 +112,12 @@ export default Vue.extend({
   },
 
   data: () => ({
+    isVertical: false,
     stepperData: {
       orientationThreshold: 600,
-      isVertical: false,
       progressionState: {
         // NOTE: None of these are indexes
-        furthestStep: 0,
+        furthestStep: 1,
         onStep: 1,
         maxStep: 5,
         showLocations: true,
@@ -138,6 +184,21 @@ export default Vue.extend({
     createPlansPageFormData: {},
     addLocationsPageFormData: {}
   }),
+  created() {
+    this.$vuetify.theme.themes.light.primary = "#f7931e";
+    this.$vuetify.theme.themes.light.secondary = "#50B536";
+    this.$vuetify.theme.themes.light.error = "#FF0000";
+  },
+  watch: {
+    isVertical: function() {
+      const currStep = this.stepperData.progressionState.onStep;
+      this.stepperData.progressionState.onStep = 1;
+      requestAnimationFrame(
+        () => (this.stepperData.progressionState.onStep = currStep)
+      );
+    }
+  },
+
   computed: {
     dynamicSlides: function() {
       if (this.stepperData.progressionState.showLocations === false) {
@@ -163,8 +224,20 @@ export default Vue.extend({
     }
   },
   methods: {
+    chooseColor: function(stepNumber) {
+      if (stepNumber < this.stepperData.progressionState.furthestStep) {
+        return "secondary";
+      } else {
+        return "primary";
+      }
+    },
+    hideAllExceptFirst: function(currentStep) {
+      return !(
+        this.stepperData.progressionState.furthestStep == 1 && currentStep > 1
+      );
+    },
     checkOrientation: function() {
-      this.stepperData.isVertical =
+      this.isVertical =
         window.innerWidth <= this.stepperData.orientationThreshold;
     },
     updateQuotePageVals: function(newValObj) {
@@ -263,12 +336,57 @@ export default Vue.extend({
   border-radius: 20px;
   margin: 30px 10.3%;
 
+  .v-stepper__step {
+    flex-basis: 0;
+    &.v-stepper__step--complete {
+    }
+  }
+
+  .v-divider {
+    max-width: 13%;
+    margin: 45px -67px 0 !important;
+
+    @media only screen and (max-width: 790px) {
+      max-width: 6vw;
+    }
+  }
+
   .v-stepper__header {
     box-shadow: none;
+    border-bottom: 3px #f7931e solid;
+  }
+
+  .stepper-step-horizontal {
+    ::v-deep .v-stepper__label {
+      display: flex !important;
+    }
+
+    ::v-deep .v-stepper__step__step {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+    }
+  }
+
+  .vert-step {
+    ::v-deep .v-stepper__step__step {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      margin-left: -7px;
+    }
+  }
+
+  .v-stepper__label {
+    display: flex !important;
+  }
+
+  .hide-border {
+    border-left: none !important;
   }
 
   .app-content {
-    padding: 40px 40px 40px 100px;
+    padding: 0px 40px 40px 100px;
 
     @media only screen and (max-width: 650px) {
       padding: 40px;
@@ -278,7 +396,6 @@ export default Vue.extend({
   .seperator {
     border: 3px solid #f7931e;
     height: 3px;
-    //margin: -100px;
     width: 100%;
   }
 }
