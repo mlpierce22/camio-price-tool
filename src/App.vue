@@ -33,6 +33,20 @@
                 :step="step.stepNumber"
               >
                 step: {{ step }}
+                <keep-alive>
+                  <component
+                    :is="step.instance"
+                    v-bind="step.props"
+                    v-on="step.events"
+                  ></component>
+                </keep-alive>
+                <keep-alive>
+                  <component
+                    :is="step.navButtons.component"
+                    v-bind="step.props"
+                    v-on="step.events"
+                  ></component>
+                </keep-alive>
                 <button @click="nextStep()">Next</button>
                 <button @click="prevStep()">Back</button>
               </v-stepper-content>
@@ -68,11 +82,10 @@
                 'hide-border': !hideAllExceptFirst(step.stepNumber)
               }"
             >
-              <v-card
-                color="grey lighten-1"
-                class="mb-12"
-                height="200px"
-              ></v-card>
+              <keep-alive>
+                <component :is="step.instance"></component>
+              </keep-alive>
+
               <button @click="nextStep()">Next</button>
               <button @click="prevStep()">Back</button>
             </v-stepper-content>
@@ -102,22 +115,24 @@
 import Vue from "vue";
 import TheQuoteIntroPage from "@/components/TheQuoteIntroPage.vue";
 import VNextBackButton from "@/components/shared/VBackNextButton.vue";
-import { QuoteIntroForm, BackNextButtonConfig, FormSteps } from "@/models";
+import TheDonePage from "@/components/TheDonePage.vue";
+import {
+  QuoteIntroForm,
+  BackNextButtonConfig,
+  FormSteps,
+  FormPlaceHolder
+} from "@/models";
 
-export default Vue.extend({
-  components: {
-    // VNextBackButton,
-    //TheQuoteIntroPage
-  },
-
-  data: () => ({
+/** Set the initial state of the function - allows us to reset everything. */
+function initialState(componentInstance) {
+  return {
     isVertical: false,
     orientationThreshold: 600,
     progressionState: {
       // Options for steps 1 (intro), 2 (account), 3 (plans), 4 (locations), 5 (review), 6 (done!)
       // NOTE: None of these are indexes
       furthestStep: 1,
-      onStep: 5,
+      onStep: 1,
       maxStep: 6,
       showLocations: true,
       locationStep: 4
@@ -127,51 +142,188 @@ export default Vue.extend({
         stepNumber: 1,
         stepIndex: 0,
         stepName: "Introduction",
-        instance: "",
-        nextButtonText: "",
-        backButtonText: ""
+        instance: TheQuoteIntroPage,
+        navButtons: {
+          component: VNextBackButton,
+          config: {
+            next: {
+              text: "Next",
+              click: componentInstance.nextStep
+            },
+            back: {
+              text: "Back",
+              click: componentInstance.prevStep
+            }
+          }
+        },
+        events: {
+          "new-value-keyed": componentInstance.updateQuotePageVals
+        },
+        props: {
+          formData: {
+            numCameras: {
+              prompt: "How many cameras do you have?",
+              units: "Camera",
+              value: 10
+            },
+            numLANLocations: {
+              prompt: "Across how many LAN locations are your cameras located?",
+              units: "Location",
+              value: 2
+            }
+          } as QuoteIntroForm
+        }
       },
       {
         stepNumber: 2,
         stepIndex: 1,
         stepName: "Account",
-        instance: "",
-        nextButtonText: "",
-        backButtonText: ""
+        instance: TheQuoteIntroPage,
+        navButtons: {
+          component: VNextBackButton,
+          config: {
+            next: {
+              text: "Next",
+              click: componentInstance.nextStep
+            },
+            back: {
+              text: "Back",
+              click: componentInstance.prevStep
+            }
+          }
+        },
+        events: {
+          "new-value-keyed": componentInstance.updateQuotePageVals
+        },
+        props: {
+          formData: {
+            numCameras: {
+              prompt: "How many cameras do you have?",
+              units: "Camera",
+              value: 10
+            },
+            numLANLocations: {
+              prompt: "Across how many LAN locations are your cameras located?",
+              units: "Location",
+              value: 2
+            }
+          } as QuoteIntroForm
+        }
       },
       {
         stepNumber: 3,
         stepIndex: 2,
         stepName: "Plans",
-        instance: "",
-        nextButtonText: "",
-        backButtonText: ""
+        instance: TheQuoteIntroPage,
+        navButtons: {
+          component: VNextBackButton,
+          config: {
+            next: {
+              text: "Next",
+              click: componentInstance.nextStep
+            },
+            back: {
+              text: "Back",
+              click: componentInstance.prevStep
+            }
+          }
+        },
+        events: {
+          "new-value-keyed": componentInstance.updateQuotePageVals
+        },
+        props: {
+          formData: {
+            numCameras: {
+              prompt: "How many cameras do you have?",
+              units: "Camera",
+              value: 10
+            },
+            numLANLocations: {
+              prompt: "Across how many LAN locations are your cameras located?",
+              units: "Location",
+              value: 2
+            }
+          } as QuoteIntroForm
+        }
       },
       {
         stepNumber: 4,
         stepIndex: 3,
         stepName: "Locations",
-        instance: "",
-        nextButtonText: "",
-        backButtonText: ""
+        instance: TheQuoteIntroPage,
+        navButtons: {
+          component: VNextBackButton,
+          config: {
+            next: {
+              text: "Next",
+              click: componentInstance.nextStep
+            },
+            back: {
+              text: "Back",
+              click: componentInstance.prevStep
+            }
+          }
+        },
+        events: {
+          "new-value-keyed": componentInstance.updateQuotePageVals
+        },
+        props: {
+          formData: {
+            numCameras: {
+              prompt: "How many cameras do you have?",
+              units: "Camera",
+              value: 10
+            },
+            numLANLocations: {
+              prompt: "Across how many LAN locations are your cameras located?",
+              units: "Location",
+              value: 2
+            }
+          } as QuoteIntroForm
+        }
       },
       {
         stepNumber: 5,
         stepIndex: 4,
         stepName: "Review",
-        instance: "",
-        nextButtonText: "",
-        backButtonText: ""
+        instance: TheQuoteIntroPage,
+        navButtons: {
+          component: VNextBackButton,
+          config: {
+            next: {
+              text: "Next",
+              click: componentInstance.nextStep
+            },
+            back: {
+              text: "Back",
+              click: componentInstance.prevStep
+            }
+          }
+        },
+        events: {
+          "new-value-keyed": componentInstance.updateQuotePageVals
+        },
+        props: {
+          formData: {
+            numCameras: {
+              prompt: "How many cameras do you have?",
+              units: "Camera",
+              value: 10
+            },
+            numLANLocations: {
+              prompt: "Across how many LAN locations are your cameras located?",
+              units: "Location",
+              value: 2
+            }
+          } as QuoteIntroForm
+        }
       },
       {
         stepNumber: 6,
         stepIndex: 5,
-        stepName: "Done",
-        instance: "",
-        nextButtonText: "",
-        backButtonText: ""
+        stepName: "Done"
       }
-    ] as Array<FormSteps>,
+    ] as Array<FormSteps | FormPlaceHolder>,
     quoteIntroPageFormData: {
       numCameras: {
         prompt: "How many cameras do you have?",
@@ -193,6 +345,9 @@ export default Vue.extend({
     //   showBack: false,
     //   showNext: true
     // } as BackNextButtonConfig,
+  };
+}
+
 export default Vue.extend({
   components: {
     TheDonePage
@@ -202,9 +357,8 @@ export default Vue.extend({
   data: function() {
     return initialState(this);
   },
-
   computed: {
-    dynamicSlides: function() {
+    dynamicSlides: function(): (FormSteps | FormPlaceHolder)[] {
       if (this.progressionState.showLocations === false) {
         const firstSteps: {}[] = this.steps.slice(
           0,
@@ -222,6 +376,18 @@ export default Vue.extend({
         return this.steps;
       }
     }
+  },
+  watch: {
+    isVertical: function() {
+      const currStep = this.progressionState.onStep;
+      this.progressionState.onStep = 1;
+      requestAnimationFrame(() => (this.progressionState.onStep = currStep));
+    }
+  },
+  created() {
+    this.$vuetify.theme.themes.light.primary = "#f7931e";
+    this.$vuetify.theme.themes.light.secondary = "#50B536";
+    this.$vuetify.theme.themes.light.error = "#FF0000";
   },
   methods: {
     resetToDefaults: function() {
@@ -390,52 +556,6 @@ export default Vue.extend({
     @media only screen and (max-width: 650px) {
       padding: 40px;
     }
-  }
-}
-.done-card-container {
-  display: flex;
-  flex-direction: column;
-  border: 3px solid #f7931e;
-  border-radius: 20px;
-  margin: 30px 10.3%;
-  align-items: center;
-
-  // .v-icon {
-  //   font-size: 228px;
-  // }
-
-  .done-text {
-    font-weight: bold;
-    font-size: 50px;
-    @media only screen and (max-width: 930px) {
-      font-size: 30px;
-    }
-  }
-
-  .text {
-    font-size: 30px;
-    max-width: 94%;
-
-    @media only screen and (max-width: 930px) {
-      font-size: 20px;
-    }
-  }
-
-  .v-btn__content {
-    display: flex;
-    flex-direction: row;
-
-    .btn-text {
-      margin-left: 5px;
-    }
-  }
-
-  .edit {
-    margin-top: 21px;
-  }
-
-  .restart {
-    margin: 21px 0px;
   }
 }
 </style>
