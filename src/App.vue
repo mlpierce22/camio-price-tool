@@ -1,90 +1,89 @@
 <template>
   <v-app>
     <v-main>
-      <v-stepper
-        :alt-labels="true"
-        v-model="stepperData.progressionState.onStep"
-        class="app-container"
-        v-resize="checkOrientation"
-        v-if="!isVertical"
-        key="horizontal-stepper"
-      >
-        <v-stepper-header
-          v-show="stepperData.progressionState.furthestStep != 1"
+      <template v-if="progressionState.onStep != progressionState.maxStep">
+        <v-stepper
+          :alt-labels="true"
+          v-model="progressionState.onStep"
+          class="app-container"
+          v-resize="checkOrientation"
+          v-if="!isVertical"
+          key="horizontal-stepper"
         >
-          <template class="app-steps" v-for="(step, index) in dynamicSlides">
-            <v-divider v-if="index !== 0" :key="`${index}`"></v-divider>
+          <v-stepper-header v-show="progressionState.furthestStep != 1">
+            <template class="app-steps" v-for="(step, index) in dynamicSlides">
+              <v-divider v-if="index !== 0" :key="`${index}`"></v-divider>
+              <v-stepper-step
+                :key="`${index}-step`"
+                :step="step.stepNumber"
+                :complete="step.stepNumber < progressionState.furthestStep"
+                :editable="step.stepNumber < progressionState.furthestStep"
+                edit-icon="$complete"
+                class="stepper-step-horizontal"
+                :color="chooseColor(step.stepNumber)"
+              >
+                {{ step.stepName }}
+              </v-stepper-step>
+            </template>
+          </v-stepper-header>
+          <v-stepper-items class="app-content">
+            <template v-for="(step, index) in dynamicSlides">
+              <v-stepper-content
+                :key="`${index}-content`"
+                :step="step.stepNumber"
+              >
+                step: {{ step }}
+                <button @click="nextStep()">Next</button>
+                <button @click="prevStep()">Back</button>
+              </v-stepper-content>
+            </template>
+          </v-stepper-items>
+        </v-stepper>
+
+        <v-stepper
+          v-model="progressionState.onStep"
+          class="app-container"
+          v-resize="checkOrientation"
+          vertical
+          v-else
+          key="vertical-stepper"
+        >
+          <template v-for="(step, index) in dynamicSlides">
             <v-stepper-step
-              :key="`${index}-step`"
+              class="vert-step"
+              :complete="step.stepNumber < progressionState.furthestStep"
+              :editable="step.stepNumber < progressionState.furthestStep"
+              :key="`${index}-step-vert`"
               :step="step.stepNumber"
-              :complete="
-                step.stepNumber < stepperData.progressionState.furthestStep
-              "
-              :editable="
-                step.stepNumber < stepperData.progressionState.furthestStep
-              "
-              edit-icon="$complete"
-              class="stepper-step-horizontal"
               :color="chooseColor(step.stepNumber)"
+              edit-icon="$complete"
+              v-show="hideAllExceptFirst(step.stepNumber)"
             >
               {{ step.stepName }}
             </v-stepper-step>
-          </template>
-        </v-stepper-header>
-        <v-stepper-items class="app-content">
-          <template v-for="(step, index) in dynamicSlides">
             <v-stepper-content
-              :key="`${index}-content`"
+              :key="`${index}-content-vert`"
               :step="step.stepNumber"
+              :class="{
+                'hide-border': !hideAllExceptFirst(step.stepNumber)
+              }"
             >
-              step: {{ step }}
+              <v-card
+                color="grey lighten-1"
+                class="mb-12"
+                height="200px"
+              ></v-card>
               <button @click="nextStep()">Next</button>
               <button @click="prevStep()">Back</button>
             </v-stepper-content>
           </template>
-        </v-stepper-items>
-      </v-stepper>
+        </v-stepper>
+      </template>
+      <template v-else>
+        <!-- Show Done screen! -->
+        <div>Done!</div>
+      </template>
 
-      <v-stepper
-        v-model="stepperData.progressionState.onStep"
-        class="app-container"
-        v-resize="checkOrientation"
-        vertical
-        v-else
-        key="vertical-stepper"
-      >
-        <template v-for="(step, index) in dynamicSlides">
-          <v-stepper-step
-            class="vert-step"
-            :complete="
-              step.stepNumber < stepperData.progressionState.furthestStep
-            "
-            :editable="
-              step.stepNumber < stepperData.progressionState.furthestStep
-            "
-            :key="`${index}-step-vert`"
-            :step="step.stepNumber"
-            :color="chooseColor(step.stepNumber)"
-            edit-icon="$complete"
-            v-show="hideAllExceptFirst(step.stepNumber)"
-          >
-            {{ step.stepName }}
-          </v-stepper-step>
-          <v-stepper-content
-            :key="`${index}-content-vert`"
-            :step="step.stepNumber"
-            :class="{ 'hide-border': !hideAllExceptFirst(step.stepNumber) }"
-          >
-            <v-card
-              color="grey lighten-1"
-              class="mb-12"
-              height="200px"
-            ></v-card>
-            <button @click="nextStep()">Next</button>
-            <button @click="prevStep()">Back</button>
-          </v-stepper-content>
-        </template>
-      </v-stepper>
       <!-- <div class="seperator"></div> -->
       <!-- <TheQuoteIntroPage
           v-if="formProgressionState.onStep === 0"
