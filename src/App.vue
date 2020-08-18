@@ -36,15 +36,15 @@
                 <keep-alive>
                   <component
                     :is="step.instance"
-                    v-bind="step.props"
+                    v-bind="pagesData[step.propName]"
                     v-on="step.events"
                   ></component>
                 </keep-alive>
-                <keep-alive>
+                <keep-alive v-if="step['navButtons']">
                   <component
                     :is="step.navButtons.component"
-                    v-bind="step.props"
-                    v-on="step.events"
+                    v-bind="step.navButtons.config"
+                    v-on="step.navButtons.events"
                   ></component>
                 </keep-alive>
                 <button @click="nextStep()">Next</button>
@@ -105,7 +105,7 @@
         /> -->
       <!-- Otherwise: stepper -->
 
-      <!-- <VNextBackButton :buttonsConfig="" @nextStep="" /> -->
+      <!-- <VBackNextButton :buttonsConfig="" @nextStep="" /> -->
       <!-- </div> -->
     </v-main>
   </v-app>
@@ -114,14 +114,9 @@
 <script lang="ts">
 import Vue from "vue";
 import TheQuoteIntroPage from "@/components/TheQuoteIntroPage.vue";
-import VNextBackButton from "@/components/shared/VBackNextButton.vue";
+import VBackNextButton from "@/components/shared/VBackNextButton.vue";
 import TheDonePage from "@/components/TheDonePage.vue";
-import {
-  QuoteIntroForm,
-  BackNextButtonConfig,
-  FormSteps,
-  FormPlaceHolder
-} from "@/models";
+import { QuoteIntroForm, FormSteps, FormPlaceHolder } from "@/models";
 
 /** Set the initial state of the function - allows us to reset everything. */
 function initialState(componentInstance) {
@@ -144,35 +139,20 @@ function initialState(componentInstance) {
         stepName: "Introduction",
         instance: TheQuoteIntroPage,
         navButtons: {
-          component: VNextBackButton,
+          component: VBackNextButton,
           config: {
-            next: {
-              text: "Next",
-              click: componentInstance.nextStep
-            },
-            back: {
-              text: "Back",
-              click: componentInstance.prevStep
+            nextText: "Next",
+            backText: "Back",
+            events: {
+              nextClick: componentInstance.nextStep,
+              backClick: componentInstance.prevStep
             }
           }
         },
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
         },
-        props: {
-          formData: {
-            numCameras: {
-              prompt: "How many cameras do you have?",
-              units: "Camera",
-              value: 10
-            },
-            numLANLocations: {
-              prompt: "Across how many LAN locations are your cameras located?",
-              units: "Location",
-              value: 2
-            }
-          } as QuoteIntroForm
-        }
+        propName: "quoteIntroPageFormData"
       },
       {
         stepNumber: 2,
@@ -180,7 +160,7 @@ function initialState(componentInstance) {
         stepName: "Account",
         instance: TheQuoteIntroPage,
         navButtons: {
-          component: VNextBackButton,
+          component: VBackNextButton,
           config: {
             next: {
               text: "Next",
@@ -195,20 +175,7 @@ function initialState(componentInstance) {
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
         },
-        props: {
-          formData: {
-            numCameras: {
-              prompt: "How many cameras do you have?",
-              units: "Camera",
-              value: 10
-            },
-            numLANLocations: {
-              prompt: "Across how many LAN locations are your cameras located?",
-              units: "Location",
-              value: 2
-            }
-          } as QuoteIntroForm
-        }
+        propName: "quoteIntroPageFormData"
       },
       {
         stepNumber: 3,
@@ -216,7 +183,7 @@ function initialState(componentInstance) {
         stepName: "Plans",
         instance: TheQuoteIntroPage,
         navButtons: {
-          component: VNextBackButton,
+          component: VBackNextButton,
           config: {
             next: {
               text: "Next",
@@ -231,20 +198,7 @@ function initialState(componentInstance) {
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
         },
-        props: {
-          formData: {
-            numCameras: {
-              prompt: "How many cameras do you have?",
-              units: "Camera",
-              value: 10
-            },
-            numLANLocations: {
-              prompt: "Across how many LAN locations are your cameras located?",
-              units: "Location",
-              value: 2
-            }
-          } as QuoteIntroForm
-        }
+        propName: "quoteIntroPageFormData"
       },
       {
         stepNumber: 4,
@@ -252,7 +206,7 @@ function initialState(componentInstance) {
         stepName: "Locations",
         instance: TheQuoteIntroPage,
         navButtons: {
-          component: VNextBackButton,
+          component: VBackNextButton,
           config: {
             next: {
               text: "Next",
@@ -267,20 +221,7 @@ function initialState(componentInstance) {
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
         },
-        props: {
-          formData: {
-            numCameras: {
-              prompt: "How many cameras do you have?",
-              units: "Camera",
-              value: 10
-            },
-            numLANLocations: {
-              prompt: "Across how many LAN locations are your cameras located?",
-              units: "Location",
-              value: 2
-            }
-          } as QuoteIntroForm
-        }
+        propName: "quoteIntroPageFormData"
       },
       {
         stepNumber: 5,
@@ -288,7 +229,7 @@ function initialState(componentInstance) {
         stepName: "Review",
         instance: TheQuoteIntroPage,
         navButtons: {
-          component: VNextBackButton,
+          component: VBackNextButton,
           config: {
             next: {
               text: "Next",
@@ -303,20 +244,7 @@ function initialState(componentInstance) {
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
         },
-        props: {
-          formData: {
-            numCameras: {
-              prompt: "How many cameras do you have?",
-              units: "Camera",
-              value: 10
-            },
-            numLANLocations: {
-              prompt: "Across how many LAN locations are your cameras located?",
-              units: "Location",
-              value: 2
-            }
-          } as QuoteIntroForm
-        }
+        propName: "quoteIntroPageFormData"
       },
       {
         stepNumber: 6,
@@ -324,35 +252,33 @@ function initialState(componentInstance) {
         stepName: "Done"
       }
     ] as Array<FormSteps | FormPlaceHolder>,
-    quoteIntroPageFormData: {
-      numCameras: {
-        prompt: "How many cameras do you have?",
-        units: "Camera",
-        value: 10
+    pagesData: {
+      quoteIntroPageFormData: {
+        formData: {
+          numCameras: {
+            prompt: "How many cameras do you have?",
+            units: "Camera",
+            value: 10
+          },
+          numLANLocations: {
+            prompt: "Across how many LAN locations are your cameras located?",
+            units: "Location",
+            value: 2
+          }
+        } as QuoteIntroForm
       },
-      numLANLocations: {
-        prompt: "Across how many LAN locations are your cameras located?",
-        units: "Location",
-        value: 2
-      }
-    } as QuoteIntroForm,
-    accountPageFormData: {},
-    createPlansPageFormData: {},
-    addLocationsPageFormData: {}
-    // initButtonConfig: {
-    //   nextText: "Account-wide",
-    //   backText: "Back",
-    //   showBack: false,
-    //   showNext: true
-    // } as BackNextButtonConfig,
+      accountPageFormData: {},
+      createPlansPageFormData: {},
+      addLocationsPageFormData: {}
+    }
   };
 }
 
 export default Vue.extend({
   components: {
-    TheDonePage
-    // VNextBackButton,
-    //TheQuoteIntroPage
+    TheDonePage,
+    VBackNextButton,
+    TheQuoteIntroPage
   },
   data: function() {
     return initialState(this);
@@ -409,11 +335,17 @@ export default Vue.extend({
     },
     updateQuotePageVals: function(newValObj) {
       const castVal = parseInt(newValObj.newVal, 10);
-      this.quoteIntroPageFormData[newValObj.key].value = castVal;
+      this.pagesData.quoteIntroPageFormData.formData[
+        newValObj.key
+      ].value = castVal;
     },
     nextStep: function() {
       // If we are on the first step, we need to decide whether or not to show locations
-      if (this.quoteIntroPageFormData["numLANLocations"].value === 1) {
+      console.log(this.pagesData);
+      if (
+        this.pagesData.quoteIntroPageFormData.formData["numLANLocations"]
+          .value === 1
+      ) {
         this.progressionState.showLocations = false;
       } else {
         this.progressionState.showLocations = true;
