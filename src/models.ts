@@ -14,3 +14,12 @@ export interface BackNextButtonConfig {
   showBack: boolean;
   showNext: boolean;
 }
+
+export interface FormSteps {
+  stepNumber: number;
+  stepIndex: number;
+  stepName: string;
+  instance: string; //TODO : component
+  nextButtonText?: string; // excluded means don't show
+  backButtonText?: string; // excluded means don't show
+}
