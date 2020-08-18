@@ -32,7 +32,6 @@
                 :key="`${index}-content`"
                 :step="step.stepNumber"
               >
-                step: {{ step }}
                 <keep-alive>
                   <component
                     :is="step.instance"
@@ -40,15 +39,13 @@
                     v-on="step.events"
                   ></component>
                 </keep-alive>
-                <keep-alive v-if="step['navButtons']">
-                  <component
-                    :is="step.navButtons.component"
-                    v-bind="step.navButtons.config"
-                    v-on="step.navButtons.events"
-                  ></component>
-                </keep-alive>
-                <button @click="nextStep()">Next</button>
-                <button @click="prevStep()">Back</button>
+                <VBackNextButton
+                  v-if="step['navButtons']"
+                  @next-click="nextStep()"
+                  @back-click="prevStep()"
+                  :next="step['navButtons']['nextText']"
+                  :back="step['navButtons']['backText']"
+                />
               </v-stepper-content>
             </template>
           </v-stepper-items>
@@ -83,11 +80,19 @@
               }"
             >
               <keep-alive>
-                <component :is="step.instance"></component>
+                <component
+                  :is="step.instance"
+                  v-bind="pagesData[step.propName]"
+                  v-on="step.events"
+                ></component>
               </keep-alive>
-
-              <button @click="nextStep()">Next</button>
-              <button @click="prevStep()">Back</button>
+              <VBackNextButton
+                v-if="step['navButtons']"
+                @next-click="nextStep()"
+                @back-click="prevStep()"
+                :next="step['navButtons']['nextText']"
+                :back="step['navButtons']['backText']"
+              />
             </v-stepper-content>
           </template>
         </v-stepper>
@@ -96,17 +101,6 @@
         <!-- Show Done screen! -->
         <TheDonePage @edit="prevStep" @start-over="resetToDefaults" />
       </template>
-
-      <!-- <div class="seperator"></div> -->
-      <!-- <TheQuoteIntroPage
-          v-if="formProgressionState.onStep === 0"
-          :formData="quoteIntroPageFormData"
-          @new-value-keyed="updateQuotePageVals($event)"
-        /> -->
-      <!-- Otherwise: stepper -->
-
-      <!-- <VBackNextButton :buttonsConfig="" @nextStep="" /> -->
-      <!-- </div> -->
     </v-main>
   </v-app>
 </template>
@@ -139,15 +133,8 @@ function initialState(componentInstance) {
         stepName: "Introduction",
         instance: TheQuoteIntroPage,
         navButtons: {
-          component: VBackNextButton,
-          config: {
-            nextText: "Next",
-            backText: "Back",
-            events: {
-              nextClick: componentInstance.nextStep,
-              backClick: componentInstance.prevStep
-            }
-          }
+          nextText: "Next",
+          backText: "Back"
         },
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
@@ -160,17 +147,8 @@ function initialState(componentInstance) {
         stepName: "Account",
         instance: TheQuoteIntroPage,
         navButtons: {
-          component: VBackNextButton,
-          config: {
-            next: {
-              text: "Next",
-              click: componentInstance.nextStep
-            },
-            back: {
-              text: "Back",
-              click: componentInstance.prevStep
-            }
-          }
+          nextText: "Next",
+          backText: "Back"
         },
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
@@ -183,17 +161,8 @@ function initialState(componentInstance) {
         stepName: "Plans",
         instance: TheQuoteIntroPage,
         navButtons: {
-          component: VBackNextButton,
-          config: {
-            next: {
-              text: "Next",
-              click: componentInstance.nextStep
-            },
-            back: {
-              text: "Back",
-              click: componentInstance.prevStep
-            }
-          }
+          nextText: "Next",
+          backText: "Back"
         },
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
@@ -206,17 +175,8 @@ function initialState(componentInstance) {
         stepName: "Locations",
         instance: TheQuoteIntroPage,
         navButtons: {
-          component: VBackNextButton,
-          config: {
-            next: {
-              text: "Next",
-              click: componentInstance.nextStep
-            },
-            back: {
-              text: "Back",
-              click: componentInstance.prevStep
-            }
-          }
+          nextText: "Next",
+          backText: "Back"
         },
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
@@ -229,17 +189,8 @@ function initialState(componentInstance) {
         stepName: "Review",
         instance: TheQuoteIntroPage,
         navButtons: {
-          component: VBackNextButton,
-          config: {
-            next: {
-              text: "Next",
-              click: componentInstance.nextStep
-            },
-            back: {
-              text: "Back",
-              click: componentInstance.prevStep
-            }
-          }
+          nextText: "Next",
+          backText: "Back"
         },
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
@@ -341,7 +292,6 @@ export default Vue.extend({
     },
     nextStep: function() {
       // If we are on the first step, we need to decide whether or not to show locations
-      console.log(this.pagesData);
       if (
         this.pagesData.quoteIntroPageFormData.formData["numLANLocations"]
           .value === 1
