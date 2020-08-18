@@ -113,61 +113,66 @@ export default Vue.extend({
 
   data: () => ({
     isVertical: false,
-    stepperData: {
-      orientationThreshold: 600,
-      progressionState: {
-        // NOTE: None of these are indexes
-        furthestStep: 1,
-        onStep: 1,
-        maxStep: 5,
-        showLocations: true,
-        locationStep: 4
+    orientationThreshold: 600,
+    progressionState: {
+      // Options for steps 1 (intro), 2 (account), 3 (plans), 4 (locations), 5 (review), 6 (done!)
+      // NOTE: None of these are indexes
+      furthestStep: 1,
+      onStep: 1,
+      maxStep: 6,
+      showLocations: true,
+      locationStep: 4
+    },
+    steps: [
+      {
+        stepNumber: 1,
+        stepIndex: 0,
+        stepName: "Introduction",
+        instance: "",
+        nextButtonText: "",
+        backButtonText: ""
       },
-      steps: [
-        {
-          stepNumber: 1,
-          stepIndex: 0,
-          stepName: "Introduction",
-          instance: ""
-        },
-        {
-          stepNumber: 2,
-          stepIndex: 1,
-          stepName: "Account",
-          instance: ""
-        },
-        {
-          stepNumber: 3,
-          stepIndex: 2,
-          stepName: "Plans",
-          instance: ""
-        },
-        {
-          stepNumber: 4,
-          stepIndex: 3,
-          stepName: "Locations",
-          instance: ""
-        },
-        {
-          stepNumber: 5,
-          stepIndex: 4,
-          stepName: "Review",
-          instance: ""
-        }
-      ]
-    },
-    formProgressionState: {
-      furthestStep: 0, // Options for steps 0 (intro), 1 (account), 2 (plans), 3 (locations), 4 (done)
-      onStep: 0,
-      maxStep: 4,
-      showLocations: true
-    },
-    // initButtonConfig: {
-    //   nextText: "Account-wide",
-    //   backText: "Back",
-    //   showBack: false,
-    //   showNext: true
-    // } as BackNextButtonConfig,
+      {
+        stepNumber: 2,
+        stepIndex: 1,
+        stepName: "Account",
+        instance: "",
+        nextButtonText: "",
+        backButtonText: ""
+      },
+      {
+        stepNumber: 3,
+        stepIndex: 2,
+        stepName: "Plans",
+        instance: "",
+        nextButtonText: "",
+        backButtonText: ""
+      },
+      {
+        stepNumber: 4,
+        stepIndex: 3,
+        stepName: "Locations",
+        instance: "",
+        nextButtonText: "",
+        backButtonText: ""
+      },
+      {
+        stepNumber: 5,
+        stepIndex: 4,
+        stepName: "Review",
+        instance: "",
+        nextButtonText: "",
+        backButtonText: ""
+      },
+      {
+        stepNumber: 6,
+        stepIndex: 5,
+        stepName: "Done",
+        instance: "",
+        nextButtonText: "",
+        backButtonText: ""
+      }
+    ] as Array<FormSteps>,
     quoteIntroPageFormData: {
       numCameras: {
         prompt: "How many cameras do you have?",
