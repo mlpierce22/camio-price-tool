@@ -15,8 +15,9 @@ export interface SimpleButtonOptions {
 }
 
 export interface BackNextButtonConfig {
-  next?: SimpleButtonOptions;
-  back?: SimpleButtonOptions;
+  nextText?: SimpleButtonOptions;
+  backText?: SimpleButtonOptions;
+  events?: { [eventName: string]: Function };
 }
 
 export interface BackNextButton {
