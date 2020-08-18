@@ -214,7 +214,9 @@ function initialState(componentInstance) {
           }
         } as QuoteIntroForm
       },
-      accountPageFormData: {},
+      accountPageFormData: {
+        formData: {}
+      },
       createPlansPageFormData: {},
       addLocationsPageFormData: {},
       estimatePageData: {}
