@@ -29,6 +29,7 @@ import pluralize from "pluralize";
 
 @Component
 export default class VPromptedNumberInput extends Vue {
+  // TODO: add correct formatting here.
   @Prop({ required: true }) inputData!: PromptedNumberInputObject;
 
   fieldValue: number;

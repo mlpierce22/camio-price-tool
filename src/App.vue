@@ -111,7 +111,7 @@ import TheQuoteIntroPage from "@/components/TheQuoteIntroPage.vue";
 import VBackNextButton from "@/components/shared/VBackNextButton.vue";
 import TheDonePage from "@/components/TheDonePage.vue";
 import { QuoteIntroForm, FormSteps, FormPlaceHolder } from "@/models";
-
+// TODO: add correct formatting here.
 /** Set the initial state of the function - allows us to reset everything. */
 function initialState(componentInstance) {
   return {

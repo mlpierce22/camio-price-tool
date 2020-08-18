@@ -5,11 +5,10 @@ import { Component, Vue, Prop } from "vue-property-decorator";
   components: {}
 })
 export default class VBackNextButton extends Vue {
-  @Prop()
-  next!: string;
+  // TODO: add correct formatting here.
+  @Prop() next!: string;
 
-  @Prop()
-  back!: string;
+  @Prop() back!: string;
 
   constructor() {
     super();

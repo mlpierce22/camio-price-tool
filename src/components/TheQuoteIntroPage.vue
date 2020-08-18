@@ -20,6 +20,7 @@ import VPromptedNumberInput from "@/components/shared/VPromptedNumberInput.vue";
   }
 })
 export default class TheQuoteIntroPage extends Vue {
+  // TODO: add correct formatting here.
   @Prop()
   private formData!: QuoteIntroForm;
 
