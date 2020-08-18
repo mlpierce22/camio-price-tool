@@ -108,6 +108,10 @@
 <script lang="ts">
 import Vue from "vue";
 import TheQuoteIntroPage from "@/components/TheQuoteIntroPage.vue";
+import TheAccountPage from "@/components/TheAccountPage.vue";
+import TheCreatePlansPage from "@/components/TheCreatePlansPage.vue";
+import TheAddLocationsPage from "@/components/TheAddLocationsPage.vue";
+import TheEstimatePage from "@/components/TheEstimatePage.vue";
 import VBackNextButton from "@/components/shared/VBackNextButton.vue";
 import TheDonePage from "@/components/TheDonePage.vue";
 import { QuoteIntroForm, FormSteps, FormPlaceHolder } from "@/models";
@@ -145,57 +149,49 @@ function initialState(componentInstance) {
         stepNumber: 2,
         stepIndex: 1,
         stepName: "Account",
-        instance: TheQuoteIntroPage,
+        instance: TheAccountPage,
         navButtons: {
           nextText: "Next",
           backText: "Back"
         },
-        events: {
-          "new-value-keyed": componentInstance.updateQuotePageVals
-        },
-        propName: "quoteIntroPageFormData"
+        events: {},
+        propName: "accountPageFormData"
       },
       {
         stepNumber: 3,
         stepIndex: 2,
         stepName: "Plans",
-        instance: TheQuoteIntroPage,
+        instance: TheCreatePlansPage,
         navButtons: {
           nextText: "Next",
           backText: "Back"
         },
-        events: {
-          "new-value-keyed": componentInstance.updateQuotePageVals
-        },
-        propName: "quoteIntroPageFormData"
+        events: {},
+        propName: "createPlansPageFormData"
       },
       {
         stepNumber: 4,
         stepIndex: 3,
         stepName: "Locations",
-        instance: TheQuoteIntroPage,
+        instance: TheAddLocationsPage,
         navButtons: {
           nextText: "Next",
           backText: "Back"
         },
-        events: {
-          "new-value-keyed": componentInstance.updateQuotePageVals
-        },
-        propName: "quoteIntroPageFormData"
+        events: {},
+        propName: "addLocationsPageFormData"
       },
       {
         stepNumber: 5,
         stepIndex: 4,
         stepName: "Review",
-        instance: TheQuoteIntroPage,
+        instance: TheEstimatePage,
         navButtons: {
           nextText: "Next",
           backText: "Back"
         },
-        events: {
-          "new-value-keyed": componentInstance.updateQuotePageVals
-        },
-        propName: "quoteIntroPageFormData"
+        events: {},
+        propName: "estimatePageData"
       },
       {
         stepNumber: 6,
@@ -220,16 +216,21 @@ function initialState(componentInstance) {
       },
       accountPageFormData: {},
       createPlansPageFormData: {},
-      addLocationsPageFormData: {}
+      addLocationsPageFormData: {},
+      estimatePageData: {}
     }
   };
 }
 
 export default Vue.extend({
   components: {
+    TheQuoteIntroPage,
+    TheAccountPage,
+    TheCreatePlansPage,
+    TheAddLocationsPage,
+    TheEstimatePage,
     TheDonePage,
-    VBackNextButton,
-    TheQuoteIntroPage
+    VBackNextButton
   },
   data: function() {
     return initialState(this);
@@ -318,61 +319,6 @@ export default Vue.extend({
         this.progressionState.onStep--;
       }
     }
-    // updateButtonConfig: function(step) {
-    //   switch (step) {
-    //     case 0:
-    //       return {
-    //         nextText: "Account-wide",
-    //         backText: "Back to Intro",
-    //         showBack: false,
-    //         showNext: true
-    //       };
-    //     case 1:
-    //       return {
-    //         nextText: "Create Plans",
-    //         backText: "Back to Account",
-    //         showBack: true,
-    //         showNext: true
-    //       };
-    //     case 2:
-    //       return {
-    //         nextText: this.formProgressionState.maxStep == 4 ? "Add Locations",
-    //         backText: "Back to Plans",
-    //         showBack: true,
-    //         showNext: true
-    //       };
-    //     case 3 && this.formProgressionState.maxStep == 4:
-    //       // then location
-    //       return {
-    //         nextText: "Next",
-    //         backText: "Back",
-    //         showBack: true,
-    //         showNext: true
-    //       };
-    //     case 3 && this.formProgressionState.maxStep == 3:
-    //       // then done
-    //       return {
-    //         nextText: "Next",
-    //         backText: "Back",
-    //         showBack: false,
-    //         showNext: false
-    //       };
-    //     case 4:
-    //       // then done
-    //       return {
-    //         nextText: "Next",
-    //         backText: "Back",
-    //         showBack: false,
-    //         showNext: false
-    //       };
-    //   }
-    //   if (step === 0) {
-    //     this.initButtonConfig;
-    //   }
-    //   e;
-    //   if (step === this.formProgressionState.maxStep) {
-    //   }
-    // },
   }
 });
 </script>
