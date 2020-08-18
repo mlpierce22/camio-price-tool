@@ -81,7 +81,23 @@
       </template>
       <template v-else>
         <!-- Show Done screen! -->
-        <div>Done!</div>
+        <div class="done-card-container elevation-1">
+          <v-icon size="228" color="secondary">mdi-check-circle-outline</v-icon>
+          <div class="secondary--text done-text">You're All Done!</div>
+          <div class="text">Thank you for your interest in Camio!</div>
+          <div class="text">
+            Your official quote was sent to
+            <span class="primary--text">mason@camio.com.</span>
+          </div>
+          <v-btn class="edit" depressed color="success">
+            <v-icon>mdi-pencil</v-icon>
+            <div class="btn-text">Edit this quote</div>
+          </v-btn>
+          <v-btn class="restart" depressed color="success">
+            <v-icon>mdi-refresh</v-icon>
+            <div class="btn-text">Start new quote</div>
+          </v-btn>
+        </div>
       </template>
 
       <!-- <div class="seperator"></div> -->
@@ -117,7 +133,7 @@ export default Vue.extend({
       // Options for steps 1 (intro), 2 (account), 3 (plans), 4 (locations), 5 (review), 6 (done!)
       // NOTE: None of these are indexes
       furthestStep: 1,
-      onStep: 1,
+      onStep: 5,
       maxStep: 6,
       showLocations: true,
       locationStep: 4
@@ -390,6 +406,52 @@ export default Vue.extend({
     @media only screen and (max-width: 650px) {
       padding: 40px;
     }
+  }
+}
+.done-card-container {
+  display: flex;
+  flex-direction: column;
+  border: 3px solid #f7931e;
+  border-radius: 20px;
+  margin: 30px 10.3%;
+  align-items: center;
+
+  // .v-icon {
+  //   font-size: 228px;
+  // }
+
+  .done-text {
+    font-weight: bold;
+    font-size: 50px;
+    @media only screen and (max-width: 930px) {
+      font-size: 30px;
+    }
+  }
+
+  .text {
+    font-size: 30px;
+    max-width: 94%;
+
+    @media only screen and (max-width: 930px) {
+      font-size: 20px;
+    }
+  }
+
+  .v-btn__content {
+    display: flex;
+    flex-direction: row;
+
+    .btn-text {
+      margin-left: 5px;
+    }
+  }
+
+  .edit {
+    margin-top: 21px;
+  }
+
+  .restart {
+    margin: 21px 0px;
   }
 }
 </style>
