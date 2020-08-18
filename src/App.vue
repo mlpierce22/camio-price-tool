@@ -103,7 +103,7 @@
 import Vue from "vue";
 import TheQuoteIntroPage from "@/components/TheQuoteIntroPage.vue";
 import VNextBackButton from "@/components/shared/VBackNextButton.vue";
-import { QuoteIntroForm, BackNextButtonConfig } from "@/models";
+import { QuoteIntroForm, BackNextButtonConfig, FormSteps } from "@/models";
 
 export default Vue.extend({
   components: {
@@ -188,6 +188,12 @@ export default Vue.extend({
     accountPageFormData: {},
     createPlansPageFormData: {},
     addLocationsPageFormData: {}
+    // initButtonConfig: {
+    //   nextText: "Account-wide",
+    //   backText: "Back",
+    //   showBack: false,
+    //   showNext: true
+    // } as BackNextButtonConfig,
   }),
   created() {
     this.$vuetify.theme.themes.light.primary = "#f7931e";
@@ -196,54 +202,45 @@ export default Vue.extend({
   },
   watch: {
     isVertical: function() {
-      const currStep = this.stepperData.progressionState.onStep;
-      this.stepperData.progressionState.onStep = 1;
-      requestAnimationFrame(
-        () => (this.stepperData.progressionState.onStep = currStep)
-      );
+      const currStep = this.progressionState.onStep;
+      this.progressionState.onStep = 1;
+      requestAnimationFrame(() => (this.progressionState.onStep = currStep));
     }
   },
 
   computed: {
     dynamicSlides: function() {
-      if (this.stepperData.progressionState.showLocations === false) {
-        const firstSteps: {}[] = this.stepperData.steps.slice(
+      if (this.progressionState.showLocations === false) {
+        const firstSteps: {}[] = this.steps.slice(
           0,
-          this.stepperData.progressionState.locationStep - 1
+          this.progressionState.locationStep - 1
         );
-        const lastSteps = this.stepperData.steps
-          .slice(
-            this.stepperData.progressionState.locationStep,
-            this.stepperData.steps.length
-          )
+        const lastSteps = this.steps
+          .slice(this.progressionState.locationStep, this.steps.length)
           .map((arrItem, indx) => {
-            arrItem.stepNumber =
-              this.stepperData.progressionState.locationStep + indx;
+            arrItem.stepNumber = this.progressionState.locationStep + indx;
 
             return arrItem;
           });
         return [].concat(firstSteps as [], lastSteps as []);
       } else {
-        return this.stepperData.steps;
+        return this.steps;
       }
     }
   },
   methods: {
     chooseColor: function(stepNumber) {
-      if (stepNumber < this.stepperData.progressionState.furthestStep) {
+      if (stepNumber < this.progressionState.furthestStep) {
         return "secondary";
       } else {
         return "primary";
       }
     },
     hideAllExceptFirst: function(currentStep) {
-      return !(
-        this.stepperData.progressionState.furthestStep == 1 && currentStep > 1
-      );
+      return this.progressionState.furthestStep != 1 || currentStep == 1;
     },
     checkOrientation: function() {
-      this.isVertical =
-        window.innerWidth <= this.stepperData.orientationThreshold;
+      this.isVertical = window.innerWidth <= this.orientationThreshold;
     },
     updateQuotePageVals: function(newValObj) {
       const castVal = parseInt(newValObj.newVal, 10);
@@ -252,26 +249,26 @@ export default Vue.extend({
     nextStep: function() {
       // If we are on the first step, we need to decide whether or not to show locations
       if (this.quoteIntroPageFormData["numLANLocations"].value === 1) {
-        this.stepperData.progressionState.showLocations = false;
+        this.progressionState.showLocations = false;
       } else {
-        this.stepperData.progressionState.showLocations = true;
+        this.progressionState.showLocations = true;
       }
 
+      // Change the max steps to match
+      this.progressionState.maxStep = this.dynamicSlides.length;
+
       // Update the current step as long as it is less than or equal to the maxStep
-      if (
-        this.stepperData.progressionState.onStep + 1 <=
-        this.stepperData.progressionState.maxStep
-      ) {
-        this.stepperData.progressionState.onStep++;
+      if (this.progressionState.onStep + 1 <= this.progressionState.maxStep) {
+        this.progressionState.onStep++;
       }
-      this.stepperData.progressionState.furthestStep = Math.max(
-        this.stepperData.progressionState.onStep,
-        this.stepperData.progressionState.furthestStep
+      this.progressionState.furthestStep = Math.max(
+        this.progressionState.onStep,
+        this.progressionState.furthestStep
       );
     },
     prevStep: function() {
-      if (this.stepperData.progressionState.onStep - 1 >= 1) {
-        this.stepperData.progressionState.onStep--;
+      if (this.progressionState.onStep - 1 >= 1) {
+        this.progressionState.onStep--;
       }
     }
     // updateButtonConfig: function(step) {
@@ -343,8 +340,6 @@ export default Vue.extend({
 
   .v-stepper__step {
     flex-basis: 0;
-    &.v-stepper__step--complete {
-    }
   }
 
   .v-divider {
@@ -396,12 +391,6 @@ export default Vue.extend({
     @media only screen and (max-width: 650px) {
       padding: 40px;
     }
-  }
-
-  .seperator {
-    border: 3px solid #f7931e;
-    height: 3px;
-    width: 100%;
   }
 }
 </style>
