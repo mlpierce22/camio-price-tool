@@ -9,20 +9,10 @@ export interface PromptedNumberInputObject {
   units: string;
   value: number;
 }
-export interface SimpleButtonOptions {
-  text: string;
-  click: Function;
-}
 
 export interface BackNextButtonConfig {
-  nextText?: SimpleButtonOptions;
-  backText?: SimpleButtonOptions;
-  events?: { [eventName: string]: Function };
-}
-
-export interface BackNextButton {
-  component: Component;
-  config: BackNextButtonConfig;
+  nextText?: string;
+  backText?: string;
 }
 
 export interface ComponentEvents {
@@ -38,7 +28,7 @@ export interface FormSteps {
   stepIndex: number;
   stepName: string;
   instance: Component;
-  navButtons: BackNextButton;
+  navButtons: BackNextButtonConfig;
   events?: ComponentEvents;
   props?: PropList;
 }
