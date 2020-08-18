@@ -1,5 +1,5 @@
 <template lang="html">
-  <div class="the-quote-intro-page">
+  <div class="the-quote-intro-page" v-if="formData">
     <div class="number-inputs" v-for="(value, key) in formData" :key="key">
       <VPromptedNumberInput
         :inputData="value"
@@ -20,7 +20,7 @@ import VPromptedNumberInput from "@/components/shared/VPromptedNumberInput.vue";
   }
 })
 export default class TheQuoteIntroPage extends Vue {
-  @Prop({ required: true })
+  @Prop()
   private formData!: QuoteIntroForm;
 
   newValue(newVal, key) {
