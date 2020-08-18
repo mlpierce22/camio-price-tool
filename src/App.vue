@@ -81,23 +81,7 @@
       </template>
       <template v-else>
         <!-- Show Done screen! -->
-        <div class="done-card-container elevation-1">
-          <v-icon size="228" color="secondary">mdi-check-circle-outline</v-icon>
-          <div class="secondary--text done-text">You're All Done!</div>
-          <div class="text">Thank you for your interest in Camio!</div>
-          <div class="text">
-            Your official quote was sent to
-            <span class="primary--text">mason@camio.com.</span>
-          </div>
-          <v-btn class="edit" depressed color="success">
-            <v-icon>mdi-pencil</v-icon>
-            <div class="btn-text">Edit this quote</div>
-          </v-btn>
-          <v-btn class="restart" depressed color="success">
-            <v-icon>mdi-refresh</v-icon>
-            <div class="btn-text">Start new quote</div>
-          </v-btn>
-        </div>
+        <TheDonePage @edit="prevStep" @start-over="resetToDefaults" />
       </template>
 
       <!-- <div class="seperator"></div> -->
@@ -209,18 +193,14 @@ export default Vue.extend({
     //   showBack: false,
     //   showNext: true
     // } as BackNextButtonConfig,
-  }),
-  created() {
-    this.$vuetify.theme.themes.light.primary = "#f7931e";
-    this.$vuetify.theme.themes.light.secondary = "#50B536";
-    this.$vuetify.theme.themes.light.error = "#FF0000";
+export default Vue.extend({
+  components: {
+    TheDonePage
+    // VNextBackButton,
+    //TheQuoteIntroPage
   },
-  watch: {
-    isVertical: function() {
-      const currStep = this.progressionState.onStep;
-      this.progressionState.onStep = 1;
-      requestAnimationFrame(() => (this.progressionState.onStep = currStep));
-    }
+  data: function() {
+    return initialState(this);
   },
 
   computed: {
@@ -244,6 +224,10 @@ export default Vue.extend({
     }
   },
   methods: {
+    resetToDefaults: function() {
+      const data = initialState(this);
+      Object.keys(data).forEach(key => (this[key] = data[key]));
+    },
     chooseColor: function(stepNumber) {
       if (stepNumber < this.progressionState.furthestStep) {
         return "secondary";
