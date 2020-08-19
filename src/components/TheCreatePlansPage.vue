@@ -9,8 +9,6 @@ export default class TheCreatePlansPage extends Vue {
   // ---------- Props ----------
   @Prop() planTemplates!: PlanTemplates;
 
-  @Prop() formOptions!: any; // TODO: is this worth typing??
-
   @Prop() accountData!: Array<AccountForm | AccountSubForm>;
   // ------- Local Vars --------
 
