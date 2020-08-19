@@ -38,3 +38,20 @@ export interface FormPlaceHolder {
   stepIndex: number;
   stepName: string;
 }
+
+export interface AccountForm {
+  fieldName: string;
+  isDefault: boolean;
+  selected: string | Indexing | string[] | Array<AccountSubForm>;
+}
+
+export interface AccountSubForm {
+  fieldName: string;
+  advanced: boolean;
+  subForm: Array<AccountForm>;
+}
+
+export interface Indexing {
+  type: string;
+  option: string; // could be a number, depends
+}
