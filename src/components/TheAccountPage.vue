@@ -1,11 +1,13 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
+import { AccountForm } from "@/models";
 @Component({
   components: {}
 })
 export default class TheAccountPage extends Vue {
   // ---------- Props ----------
+  @Prop() formData!: Array<AccountForm>;
 
   // ------- Local Vars --------
 
