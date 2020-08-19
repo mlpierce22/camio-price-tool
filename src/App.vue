@@ -228,12 +228,10 @@ function initialState(componentInstance) {
         } as QuoteIntroForm
       },
       accountPageFormData: {
-        formData: accountFormData(),
-        formOptions: possibleOptions()
+        formData: accountFormData()
       },
       createPlansPageFormData: {
         planTemplates: planTemplates(),
-        formOptions: possibleOptions(),
         include: [
           {
             data: "accountPageFormData",

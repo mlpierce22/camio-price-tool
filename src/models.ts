@@ -39,10 +39,15 @@ export interface FormPlaceHolder {
   stepName: string;
 }
 
+export interface FormItem extends AccountForm {
+  selectionOptions: any;
+}
 export interface AccountForm {
   fieldName: string;
   isDefault: boolean;
+  formType: string;
   selected: string | Indexing | string[] | Array<AccountSubForm>;
+  selectionOpts: string[] | AddOnOpts[] | IndexingOpts[];
 }
 
 export interface AccountSubForm {
@@ -56,6 +61,11 @@ export interface Indexing {
   option: string; // could be a number, depends
 }
 
+export interface IndexingOpts {
+  type: string;
+  options: string[]; // could be a number, depends
+}
+
 export interface PlanTemplates {
   [key: string]: Array<BasePlanOpts>;
 }
@@ -67,6 +77,11 @@ export interface BasePlanOpts {
 export interface AddOn {
   type: string;
   rate: number;
+}
+
+export interface AddOnOpts {
+  name: string;
+  rate: number[];
 }
 
 export interface PagesData {

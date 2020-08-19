@@ -1,4 +1,11 @@
-import { AccountForm, AccountSubForm, PlanTemplates } from "./models";
+import {
+  AccountForm,
+  AccountSubForm,
+  PlanTemplates,
+  AddOn,
+  IndexingOpts,
+  AddOnOpts
+} from "./models";
 
 // All possible options for each selection
 export function possibleOptions() {
@@ -20,12 +27,12 @@ export function possibleOptions() {
       { type: "Lazy", options: ["3 days", "7 days", "14 days", "30 days"] },
       { type: "Query Match", options: ["10%", "25%", "50%", "90%"] },
       { type: "Full", options: ["3 hrs", "6 hrs", "12 hrs", "24 hrs"] } // Note that these match camera motion
-    ],
+    ] as Array<IndexingOpts>,
     addOns: [
       { name: "Social Distancing", rate: [0, 100] },
       { name: "Tailgating", rate: [0, 100] },
       { name: "Counting", rate: [0, 100] }
-    ],
+    ] as Array<AddOnOpts>,
     socTools: [
       "None",
 
@@ -166,26 +173,36 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
     {
       fieldName: "camResolution",
       isDefault: false,
+      formType: "yes-no-select-dropdown",
+      selectionOpts: possibleOptions().resolutions,
       selected: possibleOptions().resolutions[1] // 2MP cameras
     },
     {
       fieldName: "cloudRetention",
       isDefault: false,
+      formType: "yes-no-select-button-toggle",
+      selectionOpts: possibleOptions().cloudStorage,
       selected: possibleOptions().cloudStorage[1] // 30 day
     },
     {
       fieldName: "camMotion",
       isDefault: false,
+      formType: "yes-no-select-button-toggle",
+      selectionOpts: possibleOptions().cameraMotion,
       selected: possibleOptions().cameraMotion[1] // 6 hrs
     },
     {
       fieldName: "overageHandling",
       isDefault: false,
+      formType: "yes-no-select-button-toggle",
+      selectionOpts: possibleOptions().resolutions,
       selected: possibleOptions().overageHandling[0] // Lazy
     },
     {
       fieldName: "indexing",
       isDefault: false,
+      formType: "yes-no-select-multi-button-toggle",
+      selectionOpts: possibleOptions().indexing,
       selected: {
         type: possibleOptions().indexing[0].type, // Lazy
         option: possibleOptions().indexing[0].options[1] // 7 days
@@ -194,25 +211,34 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
     {
       fieldName: "addOns",
       isDefault: false,
+      formType: "yes-no-select-checkbox",
+      selectionOpts: possibleOptions().addOns,
       selected: [] // None selected by default
     },
     {
       fieldName: "advancedOptions",
       advanced: true,
+      formType: "advanced-options",
       subForm: [
         {
           fieldName: "directoryIntegration",
           isDefault: false,
+          formType: "dropdown",
+          selectionOpts: possibleOptions().directoryIntegration,
           selected: possibleOptions().directoryIntegration[0] // None
         },
         {
           fieldName: "socTools",
           isDefault: false,
+          formType: "dropdown",
+          selectionOpts: possibleOptions().socTools,
           selected: possibleOptions().socTools[0] // None
         },
         {
           fieldName: "reporting",
           isDefault: false,
+          formType: "dropdown",
+          selectionOpts: possibleOptions().reporting,
           selected: possibleOptions().reporting[1] // Basic
         }
       ]
