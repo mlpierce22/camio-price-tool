@@ -19,9 +19,9 @@ export interface ComponentEvents {
   [eventName: string]: Function;
 }
 
-export interface PropList {
-  [propName: string]: QuoteIntroForm; // TODO: Add all types here
-}
+// export interface PropList {
+//   [propName: string]: QuoteIntroForm | any; // TODO: Add all types here
+// }
 
 export interface FormSteps {
   stepNumber: number;
@@ -30,7 +30,7 @@ export interface FormSteps {
   instance: Component;
   navButtons: BackNextButtonConfig;
   events?: ComponentEvents;
-  props?: PropList;
+  props?: PropsList;
 }
 
 export interface FormPlaceHolder {
@@ -54,4 +54,25 @@ export interface AccountSubForm {
 export interface Indexing {
   type: string;
   option: string; // could be a number, depends
+}
+
+export interface PlanTemplates {
+  [key: string]: Array<BasePlanOpts>;
+}
+export interface BasePlanOpts {
+  fieldName: string;
+  selected: string | Indexing | string[] | Array<AddOn>;
+}
+
+export interface AddOn {
+  type: string;
+  rate: number;
+}
+
+export interface PagesData {
+  [pageName: string]: PropsList;
+}
+
+export interface PropsList {
+  [prop: string]: any; // TODO: Type for each option of prop
 }
