@@ -2,14 +2,14 @@
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { AccountForm, PlanTemplates } from "@/models";
+import VFormItemPicker from "@/components/shared/VFormItemPicker.vue";
 @Component({
-  components: {}
+  components: { VFormItemPicker }
 })
 export default class TheAccountPage extends Vue {
   // ---------- Props ----------
   @Prop() formData!: Array<AccountForm>;
 
-  @Prop() formOptions!: any; // TODO: is this worth typing?
   // ------- Local Vars --------
 
   formComponents: any = [];
@@ -33,8 +33,7 @@ export default class TheAccountPage extends Vue {
       :key="`${index}-form-item`"
       class="form-item"
     >
-      {{ formItem.fieldName }}
-      {{ formItem.selected }}
+      <VFormItemPicker :data="formItem" />
     </div>
   </div>
 </template>
