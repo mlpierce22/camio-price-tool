@@ -115,7 +115,44 @@ import TheEstimatePage from "@/components/TheEstimatePage.vue";
 import VBackNextButton from "@/components/shared/VBackNextButton.vue";
 import TheDonePage from "@/components/TheDonePage.vue";
 import { QuoteIntroForm, FormSteps, FormPlaceHolder } from "@/models";
+// TODO: Move these functions to seperate file.
 // TODO: add correct formatting here.
+function possibleOptions() {
+  return {
+    resolutions: [
+      "1.3 MP",
+      "2 MP",
+      "3 MP",
+      "4 MP",
+      "5 MP",
+      "6 MP",
+      "8 MP",
+      "12 MP"
+    ],
+    cloudStorage: ["15 day", "30 day", "45 day", "90 day"],
+    cameraMotion: ["3 hrs", "6 hrs", "12 hrs", "24 hrs"],
+    overageHandling: ["Lazy", "Charge", "Unlimited"],
+    indexing: [
+      { type: "Lazy", options: ["3 days", "7 days", "14 days", "30 days"] },
+      { type: "Query Match", options: ["10%", "25%", "50%", "90%"] },
+      { type: "Full", options: ["3 hrs", "6 hrs", "12 hrs", "24 hrs"] } // Note that these match camera motion
+    ],
+    addOns: [
+      { name: "Social Distancing", rate: ["0%", "100%"] },
+      { name: "Tailgating", rate: ["0%", "100%"] },
+      { name: "Counting", rate: ["0%", "100%"] }
+    ],
+    socTools: [
+      "None",
+
+      "Basic (Event Streaming, Concurrent Review",
+      "Plus (Basic + Camera Groups)",
+      "Pro (Plus + Domain Hooks, Webhook Retries)"
+    ],
+    directoryIntegration: ["None", "G Suite Directory"],
+    reporting: ["Basic (Health Monitoring)", "Plus (+ User Access Logs)"]
+  };
+}
 /** Set the initial state of the function - allows us to reset everything. */
 function initialState(componentInstance) {
   return {
@@ -214,8 +251,49 @@ function initialState(componentInstance) {
           }
         } as QuoteIntroForm
       },
+      // TODO: How do we handle the different pages, how should we structure these?? should cam resolutin be its own thing?? how is this different than a plan? Can it be defined the same way??
       accountPageFormData: {
-        formData: {}
+        formData: {
+          camResolution: {
+            isDefault: false,
+            selectedResolution: possibleOptions().resolutions[1] // 2MP cameras
+          },
+          cloudRetention: {
+            isDefault: false,
+            selectedRetention: possibleOptions().cloudStorage[1] // 30 day
+          },
+          camMotion: {
+            isDefault: false,
+            selectedMotion: possibleOptions().cameraMotion[1] // 6 hrs
+          },
+          overageHandling: {
+            isDefault: false,
+            selectedOverages: possibleOptions().overageHandling[0] // Lazy
+          },
+          indexing: {
+            isDefault: false,
+            selectedIndexing: {
+              type: possibleOptions().indexing[0].type, // Lazy
+              option: possibleOptions().indexing[0].options[1] // 7 days
+            }
+          },
+          addOns: {
+            isDefault: false,
+            selectedAddOn: [] // None selected by default
+          },
+          directoryIntegration: {
+            isDefault: false,
+            selectedIntegration: possibleOptions().directoryIntegration[0] // None
+          },
+          socTools: {
+            isDefault: false,
+            selectedTools: possibleOptions().socTools[0] // None
+          },
+          reporting: {
+            isDefault: false,
+            selectedReporting: possibleOptions().reporting[1] // Basic
+          }
+        }
       },
       createPlansPageFormData: {},
       addLocationsPageFormData: {},
