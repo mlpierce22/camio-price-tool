@@ -1,4 +1,4 @@
-import { AccountForm, AccountSubForm } from "./models";
+import { AccountForm, AccountSubForm, PlanTemplates } from "./models";
 
 // All possible options for each selection
 export function possibleOptions() {
@@ -22,9 +22,9 @@ export function possibleOptions() {
       { type: "Full", options: ["3 hrs", "6 hrs", "12 hrs", "24 hrs"] } // Note that these match camera motion
     ],
     addOns: [
-      { name: "Social Distancing", rate: ["0%", "100%"] },
-      { name: "Tailgating", rate: ["0%", "100%"] },
-      { name: "Counting", rate: ["0%", "100%"] }
+      { name: "Social Distancing", rate: [0, 100] },
+      { name: "Tailgating", rate: [0, 100] },
+      { name: "Counting", rate: [0, 100] }
     ],
     socTools: [
       "None",
@@ -39,218 +39,122 @@ export function possibleOptions() {
 }
 
 // The templates that are available for the user to choose from and modify
-export function planTemplates() {
+export function planTemplates(): PlanTemplates {
   return {
     basic: [
       {
-        cloudRetention: {
-          selectedRetention: possibleOptions().cloudStorage[1] // 30 day
+        fieldName: "cloudRetention",
+        selected: possibleOptions().cloudStorage[1] // 30 day
+      },
+      {
+        fieldName: "camMotion",
+        selected: possibleOptions().cameraMotion[1] // 6 hrs
+      },
+      {
+        fieldName: "overageHandling",
+        selected: possibleOptions().overageHandling[0] // Lazy
+      },
+      {
+        fieldName: "indexing",
+        selected: {
+          type: possibleOptions().indexing[0].type, // Lazy
+          option: possibleOptions().indexing[0].options[1] // 7 days
         }
       },
       {
-        camMotion: {
-          selectedMotion: possibleOptions().cameraMotion[1] // 6 hrs
-        }
+        fieldName: "addOns",
+        selected: [] // None selected by default
       },
       {
-        overageHandling: {
-          selectedOverages: possibleOptions().overageHandling[0] // Lazy
-        }
-      },
-      {
-        indexing: {
-          selectedIndexing: {
-            type: possibleOptions().indexing[0].type, // Lazy
-            option: possibleOptions().indexing[0].options[1] // 7 days
-          }
-        }
-      },
-      {
-        addOns: {
-          selectedAddOn: [] // None selected by default
-        }
-      },
-      {
-        directoryIntegration: {
-          advanced: true,
-          selectedIntegration: possibleOptions().directoryIntegration[0] // None
-        }
-      },
-      {
-        socTools: {
-          advanced: true,
-          selectedTools: possibleOptions().socTools[0] // None
-        }
-      },
-      {
-        reporting: {
-          advanced: true,
-          selectedReporting: possibleOptions().reporting[1] // Basic
-        }
-      },
-      {
-        camResolution: {
-          resolutionsOnThisPlan: [possibleOptions().resolutions[1]] // 2MP cameras
-        }
+        fieldName: "camResolution",
+        selected: [possibleOptions().resolutions[1]] // 2MP cameras
       }
     ],
     socialDistancing: [
       {
-        cloudRetention: {
-          selectedRetention: possibleOptions().cloudStorage[1] // 30 day
+        fieldName: "cloudRetention",
+        selected: possibleOptions().cloudStorage[1] // 30 day
+      },
+      {
+        fieldName: "camMotion",
+        selected: possibleOptions().cameraMotion[1] // 6 hrs
+      },
+      {
+        fieldName: "overageHandling",
+        selected: possibleOptions().overageHandling[0] // Lazy
+      },
+      {
+        fieldName: "indexing",
+        selected: {
+          type: possibleOptions().indexing[0].type, // Lazy
+          option: possibleOptions().indexing[0].options[1] // 7 days
         }
       },
       {
-        camMotion: {
-          selectedMotion: possibleOptions().cameraMotion[1] // 6 hrs
-        }
+        fieldName: "addOns",
+        selected: [{ type: "Social Distancing", rate: 100 }] // Social Distancing selected by default
       },
       {
-        overageHandling: {
-          selectedOverages: possibleOptions().overageHandling[0] // Lazy
-        }
-      },
-      {
-        indexing: {
-          selectedIndexing: {
-            type: possibleOptions().indexing[0].type, // Lazy
-            option: possibleOptions().indexing[0].options[1] // 7 days
-          }
-        }
-      },
-      {
-        addOns: {
-          selectedAddOn: [{ type: "Social Distancing", rate: 100 }] // None selected by default
-        }
-      },
-      {
-        directoryIntegration: {
-          advanced: true,
-          selectedIntegration: possibleOptions().directoryIntegration[0] // None
-        }
-      },
-      {
-        socTools: {
-          advanced: true,
-          selectedTools: possibleOptions().socTools[0] // None
-        }
-      },
-      {
-        reporting: {
-          advanced: true,
-          selectedReporting: possibleOptions().reporting[1] // Basic
-        }
-      },
-      {
-        camResolution: {
-          resolutionsOnThisPlan: [possibleOptions().resolutions[1]] // 2MP cameras
-        }
+        fieldName: "camResolution",
+        selected: [possibleOptions().resolutions[1]] // 2MP cameras
       }
     ],
     tailgating: [
       {
-        cloudRetention: {
-          selectedRetention: possibleOptions().cloudStorage[1] // 30 day
+        fieldName: "cloudRetention",
+        selected: possibleOptions().cloudStorage[1] // 30 day
+      },
+      {
+        fieldName: "camMotion",
+        selected: possibleOptions().cameraMotion[1] // 6 hrs
+      },
+      {
+        fieldName: "overageHandling",
+        selected: possibleOptions().overageHandling[0] // Lazy
+      },
+      {
+        fieldName: "indexing",
+        selected: {
+          type: possibleOptions().indexing[0].type, // Lazy
+          option: possibleOptions().indexing[0].options[1] // 7 days
         }
       },
       {
-        camMotion: {
-          selectedMotion: possibleOptions().cameraMotion[1] // 6 hrs
-        }
+        fieldName: "addOns",
+        selected: [{ type: "Tailgating", rate: 100 }] // Tailgating selected by default
       },
       {
-        overageHandling: {
-          selectedOverages: possibleOptions().overageHandling[0] // Lazy
-        }
-      },
-      {
-        indexing: {
-          selectedIndexing: {
-            type: possibleOptions().indexing[0].type, // Lazy
-            option: possibleOptions().indexing[0].options[1] // 7 days
-          }
-        }
-      },
-      {
-        addOns: {
-          selectedAddOn: [{ type: "Tailgating", rate: 100 }] // None selected by default
-        }
-      },
-      {
-        directoryIntegration: {
-          advanced: true,
-          selectedIntegration: possibleOptions().directoryIntegration[0] // None
-        }
-      },
-      {
-        socTools: {
-          advanced: true,
-          selectedTools: possibleOptions().socTools[0] // None
-        }
-      },
-      {
-        reporting: {
-          advanced: true,
-          selectedReporting: possibleOptions().reporting[1] // Basic
-        }
-      },
-      {
-        camResolution: {
-          resolutionsOnThisPlan: [possibleOptions().resolutions[1]] // 2MP cameras
-        }
+        fieldName: "camResolution",
+        selected: [possibleOptions().resolutions[1]] // 2MP cameras
       }
     ],
     counting: [
       {
-        cloudRetention: {
-          selectedRetention: possibleOptions().cloudStorage[1] // 30 day
+        fieldName: "cloudRetention",
+        selected: possibleOptions().cloudStorage[1] // 30 day
+      },
+      {
+        fieldName: "camMotion",
+        selected: possibleOptions().cameraMotion[1] // 6 hrs
+      },
+      {
+        fieldName: "overageHandling",
+        selected: possibleOptions().overageHandling[0] // Lazy
+      },
+      {
+        fieldName: "indexing",
+        selected: {
+          type: possibleOptions().indexing[0].type, // Lazy
+          option: possibleOptions().indexing[0].options[1] // 7 days
         }
       },
       {
-        camMotion: {
-          selectedMotion: possibleOptions().cameraMotion[1] // 6 hrs
-        }
+        fieldName: "addOns",
+        selected: [{ type: "Counting", rate: 100 }] // Counting selected by default
       },
       {
-        overageHandling: {
-          selectedOverages: possibleOptions().overageHandling[0] // Lazy
-        }
-      },
-      {
-        indexing: {
-          selectedIndexing: {
-            type: possibleOptions().indexing[0].type, // Lazy
-            option: possibleOptions().indexing[0].options[1] // 7 days
-          }
-        }
-      },
-      {
-        addOns: {
-          selectedAddOn: [{ type: "Counting", rate: 100 }] // None selected by default
-        }
-      },
-      {
-        directoryIntegration: {
-          advanced: true,
-          selectedIntegration: possibleOptions().directoryIntegration[0] // None
-        }
-      },
-      {
-        socTools: {
-          advanced: true,
-          selectedTools: possibleOptions().socTools[0] // None
-        }
-      },
-      {
-        reporting: {
-          advanced: true,
-          selectedReporting: possibleOptions().reporting[1] // Basic
-        }
-      },
-      {
-        camResolution: {
-          resolutionsOnThisPlan: [possibleOptions().resolutions[1]] // 2MP cameras
-        }
+        fieldName: "camResolution",
+        selected: [possibleOptions().resolutions[1]] // 2MP cameras
       }
     ]
   };
