@@ -1,12 +1,17 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
+import { PlanTemplates, AccountForm, AccountSubForm } from "@/models";
 @Component({
   components: {}
 })
 export default class TheCreatePlansPage extends Vue {
   // ---------- Props ----------
+  @Prop() planTemplates!: PlanTemplates;
 
+  @Prop() formOptions!: any; // TODO: is this worth typing??
+
+  @Prop() accountData!: Array<AccountForm | AccountSubForm>;
   // ------- Local Vars --------
 
   // --------- Watchers --------

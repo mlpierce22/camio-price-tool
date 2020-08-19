@@ -1,7 +1,7 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { AccountForm } from "@/models";
+import { AccountForm, PlanTemplates } from "@/models";
 @Component({
   components: {}
 })
@@ -9,13 +9,16 @@ export default class TheAccountPage extends Vue {
   // ---------- Props ----------
   @Prop() formData!: Array<AccountForm>;
 
+  @Prop() formOptions!: any; // TODO: is this worth typing?
   // ------- Local Vars --------
 
+  formComponents: any = [];
   // --------- Watchers --------
 
   // ------- Lifecycle ---------
   constructor() {
     super();
+    console.log(this.formData);
   }
   // --------- Methods ---------
 }
@@ -25,7 +28,14 @@ export default class TheAccountPage extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="the-account-page">
-    <h1>the-account-page component works!</h1>
+    <div
+      v-for="(formItem, index) in formData"
+      :key="`${index}-form-item`"
+      class="form-item"
+    >
+      {{ formItem.fieldName }}
+      {{ formItem.selected }}
+    </div>
   </div>
 </template>
 <!----------------- END HTML ---------------------->
