@@ -205,7 +205,7 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       formType: "yes-no-select-button-toggle",
       prompt: "Can we apply the same overage handling to all of your cameras?",
       subPrompt: "How should we handle overages?",
-      selectionOpts: possibleOptions().resolutions,
+      selectionOpts: possibleOptions().overageHandling,
       selected: possibleOptions().overageHandling[0] // Lazy
     },
     {
