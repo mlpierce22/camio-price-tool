@@ -48,7 +48,7 @@ export interface AccountForm {
   formType: string;
   prompt: string;
   subPrompt: string;
-  selected: string | Indexing | string[] | Array<AccountSubForm>;
+  selected: string | AddOn | Indexing | string[] | Array<AccountSubForm>;
   selectionOpts: string[] | AddOnOpts[] | IndexingOpts[];
 }
 

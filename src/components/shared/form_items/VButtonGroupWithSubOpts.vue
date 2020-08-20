@@ -23,7 +23,7 @@ export default class VButtonGroupWithSubOpts extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="v-button-group-with-sub-opts">
-    <h1>v-button-group-with-sub-opts component works!</h1>
+    <VButtonGroup />
   </div>
 </template>
 <!----------------- END HTML ---------------------->

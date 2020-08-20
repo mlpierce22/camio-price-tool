@@ -38,7 +38,6 @@ export default class VYesNoSelect extends Vue {
       <v-radio label="No" :value="false"></v-radio>
     </v-radio-group>
     <div class="sub-container" v-if="isDefault">
-      <slot name="subPrompt"></slot>
       <slot name="item"></slot>
     </div>
   </div>
@@ -64,6 +63,7 @@ export default class VYesNoSelect extends Vue {
     display: flex;
     flex-direction: column;
     margin: 10px 0px 0px 10px;
+    max-width: 600px;
   }
 }
 </style>
