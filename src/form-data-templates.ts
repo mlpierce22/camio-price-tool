@@ -174,6 +174,8 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       fieldName: "camResolution",
       isDefault: false,
       formType: "yes-no-select-dropdown",
+      prompt: "Are your cameras all the same resolution?",
+      subPrompt: "Resolution",
       selectionOpts: possibleOptions().resolutions,
       selected: possibleOptions().resolutions[1] // 2MP cameras
     },
@@ -181,6 +183,9 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       fieldName: "cloudRetention",
       isDefault: false,
       formType: "yes-no-select-button-toggle",
+      prompt:
+        "Can we apply the same cloud storage retention time to all your cameras?",
+      subPrompt: "How Long?",
       selectionOpts: possibleOptions().cloudStorage,
       selected: possibleOptions().cloudStorage[1] // 30 day
     },
@@ -188,6 +193,9 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       fieldName: "camMotion",
       isDefault: false,
       formType: "yes-no-select-button-toggle",
+      prompt:
+        "Do all your cameras experience around the same amount of motion per day?",
+      subPrompt: "How much motion?",
       selectionOpts: possibleOptions().cameraMotion,
       selected: possibleOptions().cameraMotion[1] // 6 hrs
     },
@@ -195,6 +203,8 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       fieldName: "overageHandling",
       isDefault: false,
       formType: "yes-no-select-button-toggle",
+      prompt: "Can we apply the same overage handling to all of your cameras?",
+      subPrompt: "How should we handle overages?",
       selectionOpts: possibleOptions().resolutions,
       selected: possibleOptions().overageHandling[0] // Lazy
     },
@@ -202,6 +212,8 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       fieldName: "indexing",
       isDefault: false,
       formType: "yes-no-select-multi-button-toggle",
+      prompt: "Can we apply the same indexing to all your footage?",
+      subPrompt: "How much indexing do you want?",
       selectionOpts: possibleOptions().indexing,
       selected: {
         type: possibleOptions().indexing[0].type, // Lazy
@@ -212,6 +224,8 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       fieldName: "addOns",
       isDefault: false,
       formType: "yes-no-select-checkbox",
+      prompt: "Are any add-ons going to be applied to all of your cameras?",
+      subPrompt: "Add Ons",
       selectionOpts: possibleOptions().addOns,
       selected: [] // None selected by default
     },
@@ -224,6 +238,7 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
           fieldName: "directoryIntegration",
           isDefault: false,
           formType: "dropdown",
+          prompt: "Directory Integration",
           selectionOpts: possibleOptions().directoryIntegration,
           selected: possibleOptions().directoryIntegration[0] // None
         },
@@ -231,6 +246,7 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
           fieldName: "socTools",
           isDefault: false,
           formType: "dropdown",
+          prompt: "SOC Tools",
           selectionOpts: possibleOptions().socTools,
           selected: possibleOptions().socTools[0] // None
         },
@@ -238,6 +254,7 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
           fieldName: "reporting",
           isDefault: false,
           formType: "dropdown",
+          prompt: "Reporting",
           selectionOpts: possibleOptions().reporting,
           selected: possibleOptions().reporting[1] // Basic
         }

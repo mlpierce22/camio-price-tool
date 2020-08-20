@@ -1,19 +1,26 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { AccountForm, AccountSubForm } from "@/models";
 @Component({
   components: {}
 })
 export default class VYesNoSelect extends Vue {
   // ---------- Props ----------
-
+  @Prop() data!: AccountForm;
   // ------- Local Vars --------
 
+  isDefault: boolean;
   // --------- Watchers --------
 
+  @Watch("isDefault")
+  changeDefault() {
+    this.$emit("changed-default", this.isDefault);
+  }
   // ------- Lifecycle ---------
   constructor() {
     super();
+    this.isDefault = this.data.isDefault;
   }
   // --------- Methods ---------
 }
@@ -23,7 +30,17 @@ export default class VYesNoSelect extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="v-yes-no-select">
-    <h1>v-yes-no-select component works!</h1>
+    <div class="prompt">
+      {{ data.prompt }}
+    </div>
+    <v-radio-group v-model="isDefault" :hide-details="true">
+      <v-radio label="Yes" :value="true"></v-radio>
+      <v-radio label="No" :value="false"></v-radio>
+    </v-radio-group>
+    <div class="sub-container" v-if="isDefault">
+      <slot name="subPrompt"></slot>
+      <slot name="item"></slot>
+    </div>
   </div>
 </template>
 <!----------------- END HTML ---------------------->
@@ -31,6 +48,23 @@ export default class VYesNoSelect extends Vue {
 <!----------------- BEGIN CSS/SCSS ---------------->
 <style scoped lang="scss">
 .v-yes-no-select {
+  display: flex;
+  flex-direction: column;
+  padding-left: 10px;
+  margin-bottom: 30px;
+
+  .v-input--selection-controls {
+    margin-top: 0px;
+  }
+
+  .sub-container {
+    border: 3px solid #50b536;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0px 0px 10px;
+  }
 }
 </style>
 <!----------------- END CSS/SCSS ------------------>

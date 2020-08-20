@@ -167,7 +167,9 @@ function initialState(componentInstance) {
           nextText: "Next",
           backText: "Back"
         },
-        events: {},
+        events: {
+          "changed-form-item": componentInstance.updateAccountPageVals
+        },
         propName: "accountPageFormData"
       },
       {
@@ -345,6 +347,11 @@ export default Vue.extend({
     checkOrientation: function() {
       this.isVertical = window.innerWidth <= this.orientationThreshold;
     },
+    updateAccountPageVals: function(newValObj) {
+      this.pagesData.accountPageFormData.formData[newValObj.index][
+        newValObj.fieldChanged
+      ] = newValObj.payload;
+    },
     updateQuotePageVals: function(newValObj) {
       const castVal = parseInt(newValObj.newVal, 10);
       this.pagesData.quoteIntroPageFormData.props[
@@ -439,7 +446,7 @@ export default Vue.extend({
   }
 
   .app-content {
-    padding: 0px 40px 40px 100px;
+    padding: 0px 40px 40px 40px;
 
     @media only screen and (max-width: 650px) {
       padding: 40px;

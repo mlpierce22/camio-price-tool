@@ -46,6 +46,8 @@ export interface AccountForm {
   fieldName: string;
   isDefault: boolean;
   formType: string;
+  prompt: string;
+  subPrompt: string;
   selected: string | Indexing | string[] | Array<AccountSubForm>;
   selectionOpts: string[] | AddOnOpts[] | IndexingOpts[];
 }
@@ -53,7 +55,7 @@ export interface AccountForm {
 export interface AccountSubForm {
   fieldName: string;
   advanced: boolean;
-  subForm: Array<AccountForm>;
+  subForm: Array<Omit<AccountForm, "subPrompt">>;
 }
 
 export interface Indexing {

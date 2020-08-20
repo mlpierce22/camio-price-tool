@@ -21,6 +21,15 @@ export default class TheAccountPage extends Vue {
     console.log(this.formData);
   }
   // --------- Methods ---------
+  changedForm(index, fieldChanged, event) {
+    this.$emit("changed-form-item", { index, fieldChanged, payload: event });
+    console.log(
+      "Changed form on the event page. The event is:",
+      event,
+      `At index ${index} with item,`,
+      fieldChanged
+    );
+  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -33,7 +42,11 @@ export default class TheAccountPage extends Vue {
       :key="`${index}-form-item`"
       class="form-item"
     >
-      <VFormItemPicker :data="formItem" />
+      <VFormItemPicker
+        :data="formItem"
+        @changed-default="changedForm(index, 'isDefault', $event)"
+        @selected-changed="changedForm(index, 'selected', $event)"
+      />
     </div>
   </div>
 </template>
