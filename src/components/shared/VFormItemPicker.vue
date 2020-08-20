@@ -2,12 +2,13 @@
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { FormItem, AccountForm, Indexing, AccountSubForm } from "@/models";
-import VBackNextButton from "./VBackNextButton.vue";
-import VYesNoSelect from "./form_items/VYesNoSelect.vue";
+import VYesNoSelect from "@/components/shared/form_items/VYesNoSelect.vue";
+import VButtonGroup from "@/components/shared/form_items/VButtonGroup.vue";
 
 @Component({
   components: {
-    VYesNoSelect
+    VYesNoSelect,
+    VButtonGroup
   }
 })
 export default class VFormItemPicker extends Vue {
@@ -16,7 +17,7 @@ export default class VFormItemPicker extends Vue {
 
   // ------- Local Vars --------
 
-  selected: string | string[] | Indexing | AccountSubForm[];
+  selected: any; // TODO: typing
   // --------- Watchers --------
 
   @Watch("selected")
@@ -31,6 +32,23 @@ export default class VFormItemPicker extends Vue {
     this.selected = this.data.selected;
   }
   // --------- Methods ---------
+  checkFormType(check) {
+    return this.data.formType.includes(check);
+  }
+
+  toIndex() {
+    let index;
+    this.data.selectionOpts.forEach((option, i) => {
+      if (option == this.selected) {
+        index = i;
+      }
+    });
+    return index;
+  }
+
+  fromIndex(payload) {
+    this.selected = this.data.selectionOpts[payload];
+  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -38,10 +56,7 @@ export default class VFormItemPicker extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="v-form-item-picker">
-    <div
-      class="form-item-option"
-      v-if="data.formType == 'yes-no-select-dropdown'"
-    >
+    <div class="form-item-option" v-if="checkFormType('yes-no-select')">
       <VYesNoSelect
         :data="data"
         @changed-default="$emit('changed-default', $event)"
@@ -49,20 +64,30 @@ export default class VFormItemPicker extends Vue {
         <!-- <template v-slot:subPrompt>{{ data.subPrompt }}</template> -->
         <template v-slot:item>
           <v-select
+            v-if="data.formType == 'yes-no-select-dropdown'"
             :items="data.selectionOpts"
             v-model="selected"
             :label="data.subPrompt"
             hide-details
             outlined
           ></v-select>
+
+          <VButtonGroup
+            :data="data"
+            :selected="toIndex()"
+            @selected-changed="fromIndex($event)"
+            v-else-if="data.formType === 'yes-no-select-button-toggle'"
+          />
+
+          <!-- <VButtonGroup
+            :data="data"
+            :hasSubOpts="true"
+            :selected="toIndex()"
+            @selected-changed="fromIndex($event)"
+            v-else-if="data.formType === 'yes-no-select-multi-button-toggle'"
+          /> -->
         </template>
       </VYesNoSelect>
-    </div>
-    <div
-      class="form-item-option"
-      v-else-if="data.formType == 'yes-no-select-button-toggle'"
-    >
-      <VYesNoSelect :data="data"></VYesNoSelect>
     </div>
     <div
       class="form-item-option"
