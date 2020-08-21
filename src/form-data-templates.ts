@@ -3,8 +3,9 @@ import {
   AccountSubForm,
   PlanTemplates,
   AddOn,
-  IndexingOpts,
-  AddOnOpts
+  TwoTierSelectionOpts,
+  AddOnOpts,
+  TwoTierSelection
 } from "./models";
 
 // All possible options for each selection
@@ -23,11 +24,13 @@ export function possibleOptions() {
     cloudStorage: ["15 day", "30 day", "45 day", "90 day"],
     cameraMotion: ["3 hrs", "6 hrs", "12 hrs", "24 hrs"],
     overageHandling: ["Lazy", "Charge", "Unlimited"],
-    indexing: [
-      { type: "Lazy", options: ["3 days", "7 days", "14 days", "30 days"] },
-      { type: "Query Match", options: ["10%", "25%", "50%", "90%"] },
-      { type: "Full", options: ["3 hrs", "6 hrs", "12 hrs", "24 hrs"] } // Note that these match camera motion
-    ] as Array<IndexingOpts>,
+    indexing: {
+      // eslint-disable-next-line prettier/prettier
+      "Lazy": ["3 days", "7 days", "14 days", "30 days"],
+      "Query Match": ["10%", "25%", "50%", "90%"],
+      // eslint-disable-next-line prettier/prettier
+      "Full": ["3 hrs", "6 hrs", "12 hrs", "24 hrs"] // Note that these match camera motion
+    } as TwoTierSelectionOpts,
     addOns: [
       { name: "Social Distancing", rate: [0, 100] },
       { name: "Tailgating", rate: [0, 100] },
@@ -64,8 +67,8 @@ export function planTemplates(): PlanTemplates {
       {
         fieldName: "indexing",
         selected: {
-          type: possibleOptions().indexing[0].type, // Lazy
-          option: possibleOptions().indexing[0].options[1] // 7 days
+          type: "Lazy", // Lazy
+          option: possibleOptions().indexing["Lazy"][1] // 7 days
         }
       },
       {
@@ -93,8 +96,8 @@ export function planTemplates(): PlanTemplates {
       {
         fieldName: "indexing",
         selected: {
-          type: possibleOptions().indexing[0].type, // Lazy
-          option: possibleOptions().indexing[0].options[1] // 7 days
+          type: "Lazy", // Lazy
+          option: possibleOptions().indexing["Lazy"][1] // 7 days
         }
       },
       {
@@ -122,8 +125,8 @@ export function planTemplates(): PlanTemplates {
       {
         fieldName: "indexing",
         selected: {
-          type: possibleOptions().indexing[0].type, // Lazy
-          option: possibleOptions().indexing[0].options[1] // 7 days
+          type: "Lazy", // Lazy
+          option: possibleOptions().indexing["Lazy"][1] // 7 days
         }
       },
       {
@@ -151,8 +154,8 @@ export function planTemplates(): PlanTemplates {
       {
         fieldName: "indexing",
         selected: {
-          type: possibleOptions().indexing[0].type, // Lazy
-          option: possibleOptions().indexing[0].options[1] // 7 days
+          type: "Lazy", // Lazy
+          option: possibleOptions().indexing["Lazy"][1] // 7 days
         }
       },
       {
@@ -214,10 +217,11 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       formType: "yes-no-select-multi-button-toggle",
       prompt: "Can we apply the same indexing to all your footage?",
       subPrompt: "How much indexing do you want?",
+      subSubPrompt: "How much video do you anticipate reviewing each month?",
       selectionOpts: possibleOptions().indexing,
       selected: {
-        type: possibleOptions().indexing[0].type, // Lazy
-        option: possibleOptions().indexing[0].options[1] // 7 days
+        type: "Lazy", // Lazy
+        option: possibleOptions().indexing["Lazy"][1] // 7 days
       }
     },
     {
