@@ -12,13 +12,15 @@ import VYesNoSelect from "@/components/shared/form_items/VYesNoSelect.vue";
 import VButtonGroup from "@/components/shared/form_items/VButtonGroup.vue";
 import VButtonGroupWithSubOpts from "@/components/shared/form_items/VButtonGroupWithSubOpts.vue";
 import VCheckBoxes from "@/components/shared/form_items/VCheckBoxes.vue";
+import VAdvancedOptions from "@/components/shared/form_items/VAdvancedOptions.vue";
 
 @Component({
   components: {
     VYesNoSelect,
     VButtonGroup,
     VButtonGroupWithSubOpts,
-    VCheckBoxes
+    VCheckBoxes,
+    VAdvancedOptions
   }
 })
 export default class VFormItemPicker extends Vue {
@@ -102,30 +104,11 @@ export default class VFormItemPicker extends Vue {
         </template>
       </VYesNoSelect>
     </div>
-    <div
-      class="form-item-option"
-      v-else-if="data.formType == 'yes-no-select-checkbox'"
-    >
-      <VYesNoSelect :data="data"></VYesNoSelect>
-    </div>
-    <div
-      class="form-item-option"
-      v-else-if="data.formType == 'yes-no-select-multi-button-toggle'"
-    >
-      <VYesNoSelect :data="data"></VYesNoSelect>
-    </div>
-    <div
-      class="form-item-option"
-      v-else-if="data.formType == 'advanced-options'"
-    >
-      Showing hidden options
-    </div>
-    <div
-      class="form-item-option"
-      v-else-if="data.formType == 'advanced-options'"
-    >
-      Showing dropdown of options
-    </div>
+    <VAdvancedOptions
+      :data="data"
+      @selected-changed="selected = $event"
+      v-if="data.formType === 'advanced-options'"
+    />
   </div>
 </template>
 <!----------------- END HTML ---------------------->
