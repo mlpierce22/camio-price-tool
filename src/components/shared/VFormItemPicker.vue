@@ -11,12 +11,14 @@ import {
 import VYesNoSelect from "@/components/shared/form_items/VYesNoSelect.vue";
 import VButtonGroup from "@/components/shared/form_items/VButtonGroup.vue";
 import VButtonGroupWithSubOpts from "@/components/shared/form_items/VButtonGroupWithSubOpts.vue";
+import VCheckBoxes from "@/components/shared/form_items/VCheckBoxes.vue";
 
 @Component({
   components: {
     VYesNoSelect,
     VButtonGroup,
-    VButtonGroupWithSubOpts
+    VButtonGroupWithSubOpts,
+    VCheckBoxes
   }
 })
 export default class VFormItemPicker extends Vue {
@@ -91,6 +93,11 @@ export default class VFormItemPicker extends Vue {
             :data="data"
             @selected-changed="selected = $event"
             v-else-if="data.formType === 'yes-no-select-multi-button-toggle'"
+          />
+          <VCheckBoxes
+            :data="data"
+            @selected-changed="selected = $event"
+            v-else-if="data.formType === 'yes-no-select-checkbox'"
           />
         </template>
       </VYesNoSelect>

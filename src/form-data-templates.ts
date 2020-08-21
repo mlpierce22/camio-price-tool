@@ -102,7 +102,7 @@ export function planTemplates(): PlanTemplates {
       },
       {
         fieldName: "addOns",
-        selected: [{ type: "Social Distancing", rate: 100 }] // Social Distancing selected by default
+        selected: [{ name: "Social Distancing", rate: 100 }] // Social Distancing selected by default
       },
       {
         fieldName: "camResolution",
@@ -131,7 +131,7 @@ export function planTemplates(): PlanTemplates {
       },
       {
         fieldName: "addOns",
-        selected: [{ type: "Tailgating", rate: 100 }] // Tailgating selected by default
+        selected: [{ name: "Tailgating", rate: 100 }] // Tailgating selected by default
       },
       {
         fieldName: "camResolution",
@@ -160,7 +160,7 @@ export function planTemplates(): PlanTemplates {
       },
       {
         fieldName: "addOns",
-        selected: [{ type: "Counting", rate: 100 }] // Counting selected by default
+        selected: [{ name: "Counting", rate: 100 }] // Counting selected by default
       },
       {
         fieldName: "camResolution",

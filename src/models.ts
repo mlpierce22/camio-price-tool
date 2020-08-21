@@ -77,7 +77,7 @@ export interface BasePlanOpts {
 }
 
 export interface AddOn {
-  type: string;
+  name: string;
   rate: number;
 }
 
