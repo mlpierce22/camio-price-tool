@@ -48,8 +48,9 @@ export interface AccountForm {
   formType: string;
   prompt: string;
   subPrompt: string;
-  selected: string | AddOn | Indexing | string[] | Array<AccountSubForm>;
-  selectionOpts: string[] | AddOnOpts[] | IndexingOpts[];
+  subSubPrompt?: string;
+  selected: string | TwoTierSelection | AddOn[];
+  selectionOpts: string[] | AddOnOpts[] | TwoTierSelectionOpts;
 }
 
 export interface AccountSubForm {
@@ -58,14 +59,13 @@ export interface AccountSubForm {
   subForm: Array<Omit<AccountForm, "subPrompt">>;
 }
 
-export interface Indexing {
+export interface TwoTierSelection {
   type: string;
   option: string; // could be a number, depends
 }
 
-export interface IndexingOpts {
-  type: string;
-  options: string[]; // could be a number, depends
+export interface TwoTierSelectionOpts {
+  [type: string]: string[];
 }
 
 export interface PlanTemplates {
@@ -73,7 +73,7 @@ export interface PlanTemplates {
 }
 export interface BasePlanOpts {
   fieldName: string;
-  selected: string | Indexing | string[] | Array<AddOn>;
+  selected: string | TwoTierSelection | string[] | Array<AddOn>;
 }
 
 export interface AddOn {
