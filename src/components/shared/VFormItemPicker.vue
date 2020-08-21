@@ -1,14 +1,22 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { FormItem, AccountForm, Indexing, AccountSubForm } from "@/models";
+import {
+  FormItem,
+  AccountForm,
+  TwoTierSelection,
+  AccountSubForm,
+  AddOn
+} from "@/models";
 import VYesNoSelect from "@/components/shared/form_items/VYesNoSelect.vue";
 import VButtonGroup from "@/components/shared/form_items/VButtonGroup.vue";
+import VButtonGroupWithSubOpts from "@/components/shared/form_items/VButtonGroupWithSubOpts.vue";
 
 @Component({
   components: {
     VYesNoSelect,
-    VButtonGroup
+    VButtonGroup,
+    VButtonGroupWithSubOpts
   }
 })
 export default class VFormItemPicker extends Vue {
@@ -36,9 +44,9 @@ export default class VFormItemPicker extends Vue {
     return this.data.formType.includes(check);
   }
 
-  toIndex() {
+  toIndexFromString(): number {
     let index;
-    this.data.selectionOpts.forEach((option, i) => {
+    (this.data.selectionOpts as string[]).forEach((option, i) => {
       if (option == this.selected) {
         index = i;
       }
@@ -46,7 +54,7 @@ export default class VFormItemPicker extends Vue {
     return index;
   }
 
-  fromIndex(payload) {
+  fromIndexToString(payload) {
     this.selected = this.data.selectionOpts[payload];
   }
 }
@@ -61,7 +69,6 @@ export default class VFormItemPicker extends Vue {
         :data="data"
         @changed-default="$emit('changed-default', $event)"
       >
-        <!-- <template v-slot:subPrompt>{{ data.subPrompt }}</template> -->
         <template v-slot:item>
           <v-select
             v-if="data.formType == 'yes-no-select-dropdown'"
@@ -73,19 +80,18 @@ export default class VFormItemPicker extends Vue {
           ></v-select>
 
           <VButtonGroup
-            :data="data"
-            :selected="toIndex()"
-            @selected-changed="fromIndex($event)"
+            :selectionOpts="data.selectionOpts"
+            :subPrompt="data.subPrompt"
+            :selected="toIndexFromString()"
+            @selected-changed="fromIndexToString($event)"
             v-else-if="data.formType === 'yes-no-select-button-toggle'"
           />
 
-          <!-- <VButtonGroup
+          <VButtonGroupWithSubOpts
             :data="data"
-            :hasSubOpts="true"
-            :selected="toIndex()"
-            @selected-changed="fromIndex($event)"
+            @selected-changed="selected = $event"
             v-else-if="data.formType === 'yes-no-select-multi-button-toggle'"
-          /> -->
+          />
         </template>
       </VYesNoSelect>
     </div>

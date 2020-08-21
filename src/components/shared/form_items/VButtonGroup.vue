@@ -1,13 +1,15 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { AccountForm, Indexing, AccountSubForm } from "@/models";
+import { AccountForm, TwoTierSelection, AccountSubForm } from "@/models";
 @Component({
   components: {}
 })
 export default class VButtonGroup extends Vue {
   // ---------- Props ----------
-  @Prop() data!: AccountForm;
+  @Prop() selectionOpts!: string[];
+
+  @Prop() subPrompt!: string;
 
   @Prop() selected!: number;
 
@@ -33,8 +35,7 @@ export default class VButtonGroup extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="v-button-group">
-    <slot></slot>
-    <div class="sub-prompt">{{ data.subPrompt }}</div>
+    <div class="sub-prompt">{{ subPrompt }}</div>
     <v-btn-toggle
       v-model="selectedLocal"
       :mandatory="true"
@@ -43,7 +44,7 @@ export default class VButtonGroup extends Vue {
       active-class="active"
     >
       <v-btn
-        v-for="(option, index) in data.selectionOpts"
+        v-for="(option, index) in selectionOpts"
         :key="`${index}-button-group-item`"
       >
         <div class="btn-text">{{ option }}</div>
@@ -62,7 +63,6 @@ export default class VButtonGroup extends Vue {
   .sub-prompt {
     margin-bottom: 10px;
   }
-
   ::v-deep .v-btn-toggle {
     .v-btn.v-btn {
       opacity: 1;
@@ -82,6 +82,31 @@ export default class VButtonGroup extends Vue {
         &::before {
           opacity: 0;
         }
+      }
+    }
+    @media only screen and (max-width: 665px) {
+      display: flex;
+      flex-direction: column;
+      max-width: 150px;
+
+      .v-btn.v-btn.v-btn {
+        padding: 0px 40px;
+        @media only screen and (max-width: 350px) {
+          padding: 0px;
+        }
+      }
+
+      .v-btn.v-btn:first-child {
+        border-top-left-radius: inherit;
+        border-bottom-left-radius: 0px;
+        border-top-right-radius: inherit;
+        border-bottom-right-radius: 0px;
+      }
+      .v-btn.v-btn:last-child {
+        border-top-left-radius: 0px;
+        border-bottom-left-radius: inherit;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: inherit;
       }
     }
   }

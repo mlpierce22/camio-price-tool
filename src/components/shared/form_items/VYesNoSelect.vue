@@ -64,6 +64,14 @@ export default class VYesNoSelect extends Vue {
     flex-direction: column;
     margin: 10px 0px 0px 10px;
     max-width: 600px;
+
+    @media only screen and (max-width: 665px) {
+      margin: 10px 0px 0px -10px;
+    }
+
+    @media only screen and (max-width: 500px) {
+      align-items: center;
+    }
   }
 }
 </style>
