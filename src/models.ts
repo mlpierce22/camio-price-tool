@@ -71,9 +71,15 @@ export interface TwoTierSelectionOpts {
 export interface PlanTemplates {
   [key: string]: Array<BasePlanOpts>;
 }
+
+export interface PlanTemplateWithDefaults extends BasePlanOpts {
+  isDefault: boolean;
+}
+
 export interface BasePlanOpts {
   fieldName: string;
   selected: string | TwoTierSelection | string[] | Array<AddOn>;
+  label: string;
 }
 
 export interface AddOn {
@@ -92,4 +98,31 @@ export interface PagesData {
 
 export interface PropsList {
   [prop: string]: any; // TODO: Type for each option of prop
+}
+
+export interface Plan {
+  [hash: string]: PlanAttributes;
+}
+
+export interface PlanAttributes {
+  // These could all be numbers pretty much
+  title: string;
+  storage: string;
+  cameraActivity: string;
+  indexing: { type: string; queries: string };
+  overages: string;
+  cameraSpec: string;
+  features: AddOn[];
+}
+
+export interface Location {
+  [index: number]: {
+    title: string;
+    numCameras: number;
+    plans: PlanCount;
+  };
+}
+
+export interface PlanCount {
+  [planHash: string]: number;
 }

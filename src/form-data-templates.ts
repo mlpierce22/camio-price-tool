@@ -51,21 +51,25 @@ export function possibleOptions() {
 // The templates that are available for the user to choose from and modify
 export function planTemplates(): PlanTemplates {
   return {
-    basic: [
+    Basic: [
       {
         fieldName: "cloudRetention",
+        label: "Cloud Retention",
         selected: possibleOptions().cloudStorage[1] // 30 day
       },
       {
         fieldName: "camMotion",
+        label: "Camera Motion",
         selected: possibleOptions().cameraMotion[1] // 6 hrs
       },
       {
         fieldName: "overageHandling",
+        label: "Overage Handling",
         selected: possibleOptions().overageHandling[0] // Lazy
       },
       {
         fieldName: "indexing",
+        label: "Indexing",
         selected: {
           type: "Lazy", // Lazy
           option: possibleOptions().indexing["Lazy"][1] // 7 days
@@ -73,28 +77,34 @@ export function planTemplates(): PlanTemplates {
       },
       {
         fieldName: "addOns",
+        label: "Add-Ons",
         selected: [] // None selected by default
       },
       {
         fieldName: "camResolution",
+        label: "Resolution",
         selected: [possibleOptions().resolutions[1]] // 2MP cameras
       }
     ],
-    socialDistancing: [
+    "Social Distancing": [
       {
         fieldName: "cloudRetention",
+        label: "Cloud Retention",
         selected: possibleOptions().cloudStorage[1] // 30 day
       },
       {
         fieldName: "camMotion",
+        label: "Camera Motion",
         selected: possibleOptions().cameraMotion[1] // 6 hrs
       },
       {
         fieldName: "overageHandling",
+        label: "Overage Handling",
         selected: possibleOptions().overageHandling[0] // Lazy
       },
       {
         fieldName: "indexing",
+        label: "Indexing",
         selected: {
           type: "Lazy", // Lazy
           option: possibleOptions().indexing["Lazy"][1] // 7 days
@@ -102,28 +112,34 @@ export function planTemplates(): PlanTemplates {
       },
       {
         fieldName: "addOns",
+        label: "Add-Ons",
         selected: [{ name: "Social Distancing", rate: 100 }] // Social Distancing selected by default
       },
       {
         fieldName: "camResolution",
+        label: "Resolution",
         selected: [possibleOptions().resolutions[1]] // 2MP cameras
       }
     ],
-    tailgating: [
+    Tailgating: [
       {
         fieldName: "cloudRetention",
+        label: "Cloud Retention",
         selected: possibleOptions().cloudStorage[1] // 30 day
       },
       {
         fieldName: "camMotion",
+        label: "Camera Motion",
         selected: possibleOptions().cameraMotion[1] // 6 hrs
       },
       {
         fieldName: "overageHandling",
+        label: "Overage Handling",
         selected: possibleOptions().overageHandling[0] // Lazy
       },
       {
         fieldName: "indexing",
+        label: "Indexing",
         selected: {
           type: "Lazy", // Lazy
           option: possibleOptions().indexing["Lazy"][1] // 7 days
@@ -131,28 +147,34 @@ export function planTemplates(): PlanTemplates {
       },
       {
         fieldName: "addOns",
+        label: "Add-Ons",
         selected: [{ name: "Tailgating", rate: 100 }] // Tailgating selected by default
       },
       {
         fieldName: "camResolution",
+        label: "Resolution",
         selected: [possibleOptions().resolutions[1]] // 2MP cameras
       }
     ],
-    counting: [
+    Counting: [
       {
         fieldName: "cloudRetention",
+        label: "Cloud Retention",
         selected: possibleOptions().cloudStorage[1] // 30 day
       },
       {
         fieldName: "camMotion",
+        label: "Camera Motion",
         selected: possibleOptions().cameraMotion[1] // 6 hrs
       },
       {
         fieldName: "overageHandling",
+        label: "Overage Handling",
         selected: possibleOptions().overageHandling[0] // Lazy
       },
       {
         fieldName: "indexing",
+        label: "Indexing",
         selected: {
           type: "Lazy", // Lazy
           option: possibleOptions().indexing["Lazy"][1] // 7 days
@@ -160,10 +182,12 @@ export function planTemplates(): PlanTemplates {
       },
       {
         fieldName: "addOns",
+        label: "Add-Ons",
         selected: [{ name: "Counting", rate: 100 }] // Counting selected by default
       },
       {
         fieldName: "camResolution",
+        label: "Resolution",
         selected: [possibleOptions().resolutions[1]] // 2MP cameras
       }
     ]
