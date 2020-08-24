@@ -7,7 +7,8 @@ import {
   AccountSubForm,
   PlanTemplateWithDefaults,
   Plan,
-  FullFilteredPlan
+  FullFilteredPlan,
+  PlanAttributes
 } from "@/models";
 import VPlanList from "@/components/shared/VPlanList.vue";
 import VPlanCard from "@/components/shared/VPlanCard.vue";
@@ -33,7 +34,9 @@ export default class TheCreatePlansPage extends Vue {
 
   dialogOpen = false;
 
-  currentPlanData: any = {}; // TODO: Type
+  currentPlanData = {};
+
+  plan!: Omit<PlanAttributes & { cameraSpecs: [] }, "cameraSpec">[];
   // --------- Watchers --------
 
   // ------- Lifecycle ---------
@@ -41,6 +44,7 @@ export default class TheCreatePlansPage extends Vue {
     super();
     console.log("the form data:", this.filteredAccountData);
     console.log("the plan templates:", this.planTemplates);
+    this.resetPlan();
   }
   // --------- Methods ---------
   get filteredAccountData(): AccountForm {
@@ -76,13 +80,39 @@ export default class TheCreatePlansPage extends Vue {
     });
   }
 
-  dialogClosed() {
+  dialogClosed(isSubmit) {
     // update the data structure in parent (probably plans)
+    if (isSubmit) {
+      this.createPlan();
+    }
     this.dialogOpen = false;
   }
 
   updateFormType(formType: string): string {
     return formType.replace("yes-no-select", "pure-component");
+  }
+
+  createPlan() {
+    console.log("create plan!");
+  }
+
+  updatePlan(updateInfo) {
+    console.log("updateInfo", updateInfo);
+    this.currentPlanData[updateInfo.index][updateInfo.fieldChanged];
+  }
+
+  resetPlan() {
+    this.plan = [
+      {
+        title: "",
+        storage: "",
+        cameraActivity: "",
+        indexing: { type: "", queries: "" },
+        overages: "",
+        cameraSpecs: [],
+        features: []
+      }
+    ];
   }
 
   openCreatePlanModal(planTitle) {
@@ -91,12 +121,14 @@ export default class TheCreatePlansPage extends Vue {
       (planField, index) => {
         if (planField.fieldName == this.filteredAccountData[index].fieldName) {
           const account: AccountForm = this.filteredAccountData[index];
-          return Object.assign(planField, {
+          return Object.assign({
+            fieldName: account.fieldName,
             isDefault: account.isDefault,
             formType: account.formType,
             prompt: account.prompt,
             subPrompt: account.subPrompt,
             selectionOpts: account.selectionOpts,
+            selected: account.selected,
             subSubPrompt: account.subSubPrompt ? account.subSubPrompt : ""
           }) as FullFilteredPlan;
         } else {
@@ -117,7 +149,7 @@ export default class TheCreatePlansPage extends Vue {
           }
         }
       }
-    );
+    ) as FullFilteredPlan[];
     this.dialogOpen = true;
   }
 }
@@ -144,6 +176,7 @@ export default class TheCreatePlansPage extends Vue {
       :planData="currentPlanData"
       :isVertical="isVertical"
       @dialog-closed="dialogClosed()"
+      @changed-form-item="updatePlan($event)"
     />
   </div>
 </template>
