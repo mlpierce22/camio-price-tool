@@ -35,6 +35,7 @@
                 <keep-alive>
                   <component
                     :is="step.instance"
+                    :isVertical="isVertical"
                     v-bind="computeProps(pagesData[step.propName])"
                     v-on="step.events"
                   ></component>
@@ -82,6 +83,7 @@
               <keep-alive>
                 <component
                   :is="step.instance"
+                  :isVertical="isVertical"
                   v-bind="computeProps(pagesData[step.propName])"
                   v-on="step.events"
                 ></component>
@@ -267,15 +269,15 @@ export default Vue.extend({
   },
   computed: {
     // TODO: Does this belong here (should it be moved?) also, it's wrong
-    planOptionsWithoutDefaults: function(): any {
-      const modified = Object.keys(
-        this.pagesData.accountPageFormData.props
-      ).map((object, index) => {
-        return this.pagesData.accountPageFormData.props[object];
-      });
-      //console.log("modified:", modified);
-      return modified;
-    },
+    // planOptionsWithoutDefaults: function(): any {
+    //   const modified = Object.keys(
+    //     this.pagesData.accountPageFormData.props
+    //   ).map((object, index) => {
+    //     return this.pagesData.accountPageFormData.props[object];
+    //   });
+    //   //console.log("modified:", modified);
+    //   return modified;
+    // },
     dynamicSlides: function(): (FormSteps | FormPlaceHolder)[] {
       if (this.progressionState.showLocations === false) {
         const firstSteps: {}[] = this.steps.slice(
