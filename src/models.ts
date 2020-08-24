@@ -59,6 +59,17 @@ export interface AccountSubForm {
   subForm: Array<Omit<AccountForm, "subPrompt">>;
 }
 
+export interface FullFilteredPlan {
+  fieldName: string;
+  isDefault: boolean;
+  formType: string;
+  prompt: string;
+  subPrompt: string;
+  subSubPrompt?: string;
+  selected: string | TwoTierSelection | AddOn[];
+  selectionOpts: string[] | AddOnOpts[] | TwoTierSelectionOpts;
+}
+
 export interface TwoTierSelection {
   type: string;
   option: string; // could be a number, depends
