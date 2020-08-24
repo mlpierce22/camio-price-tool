@@ -1,13 +1,15 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { AccountForm, AddOn } from "@/models";
+import { AccountForm, AddOn, AddOnOpts } from "@/models";
 @Component({
   components: {}
 })
 export default class VCheckBoxes extends Vue {
   // ---------- Props ----------
   @Prop() data!: AccountForm;
+
+  @Prop() shouldHide!: boolean;
 
   // ------- Local Vars --------
   selectedBoxes: AddOn[];
@@ -28,8 +30,23 @@ export default class VCheckBoxes extends Vue {
   constructor() {
     super();
     this.selectedBoxes = this.data.selected as AddOn[];
+    console.log("data here isn't good", this.data);
   }
   // --------- Methods ---------
+
+  get checkBoxList() {
+    if (this.shouldHide) {
+      return (this.data.selectionOpts as AddOnOpts[]).filter(option => {
+        return (
+          (this.data.selected as AddOn[]).filter(addon => {
+            return option.name !== addon.name;
+          }).length !== 0
+        );
+      });
+    } else {
+      return this.data.selectionOpts;
+    }
+  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -39,7 +56,7 @@ export default class VCheckBoxes extends Vue {
   <div class="v-check-boxes">
     <div class="prompt">{{ data.subPrompt }}</div>
     <v-checkbox
-      v-for="(options, index) in data.selectionOpts"
+      v-for="(options, index) in checkBoxList"
       :key="`checkbox-${index}`"
       v-model="selectedBoxes"
       :label="options.name"
