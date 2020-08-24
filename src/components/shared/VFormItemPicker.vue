@@ -104,6 +104,36 @@ export default class VFormItemPicker extends Vue {
         </template>
       </VYesNoSelect>
     </div>
+    <div class="form-item-option" v-else-if="checkFormType('pure-component')">
+      <v-select
+        v-if="data.formType == 'pure-component-dropdown'"
+        :items="data.selectionOpts"
+        v-model="selected"
+        :label="data.subPrompt"
+        hide-details
+        outlined
+      ></v-select>
+
+      <VButtonGroup
+        :selectionOpts="data.selectionOpts"
+        :subPrompt="data.subPrompt"
+        :selected="toIndexFromString()"
+        @selected-changed="fromIndexToString($event)"
+        v-else-if="data.formType === 'pure-component-button-toggle'"
+      />
+
+      <VButtonGroupWithSubOpts
+        :data="data"
+        @selected-changed="selected = $event"
+        v-else-if="data.formType === 'pure-component-multi-button-toggle'"
+      />
+      <VCheckBoxes
+        :data="data"
+        :shouldHide="true"
+        @selected-changed="selected = $event"
+        v-else-if="data.formType === 'pure-component-checkbox'"
+      />
+    </div>
     <VAdvancedOptions
       :data="data"
       @selected-changed="selected = $event"
