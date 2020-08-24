@@ -18,27 +18,32 @@ export default class VPlanCard extends Vue {
   // ------- Lifecycle ---------
   constructor() {
     super();
-    console.log("plan template def: ", this.planTemplate);
   }
   // --------- Methods ---------
 
-  // TODO: Why isnt this working right??
-  getPlans() {
-    return this.planTemplate.flatMap(field => {
-      console.log("field:", field);
-      if (field["isDefault"] && !field.isDefault) {
-        console.log("yay! default exists");
-        if (typeof field.selected == "string") {
-          return field;
-        } else if (typeof field.selected == "object") {
-          return field.selected["type"];
-        } else if (Array.isArray(field.selected)) {
-          return (field.selected as []).map(opts => opts["name"]);
+  get plansFlattened() {
+    const temp = this.planTemplate
+      .flatMap(field => {
+        if (!field.isDefault) {
+          if (typeof field.selected == "string") {
+            return field.label + ": " + field.selected;
+          } else if (Array.isArray(field.selected)) {
+            return field.selected.length == 0
+              ? undefined
+              : field.label +
+                  ": " +
+                  (field.selected as []).map(opts =>
+                    opts["name"] ? opts["name"] : opts
+                  );
+          } else if (typeof field.selected == "object") {
+            return field.label + ": " + field.selected["type"];
+          }
+        } else {
+          return undefined;
         }
-      } else {
-        console.log("field is not default", field);
-      }
-    });
+      })
+      .filter(label => label);
+    return temp;
   }
 }
 </script>
@@ -53,16 +58,20 @@ export default class VPlanCard extends Vue {
       <div class="list">
         <div
           class="feature-container"
-          v-for="(planAttrib, index) in getPlans()"
+          v-for="(plan, index) in plansFlattened"
           :key="`${index}-plan-attrib-${title}`"
         >
-          <div class="feature" v-if="!planAttrib.isDefault">
+          <div class="feature">
             <v-icon color="secondary" size="18">mdi-checkbox-marked</v-icon>
-            <span class="label">{{ planAttrib.label }}</span>
+            <span class="label">{{ plan }}</span>
           </div>
         </div>
       </div>
-      <v-btn class="create-btn" depressed color="primary"
+      <v-btn
+        class="create-btn"
+        depressed
+        color="primary"
+        @click.stop="$emit('create-plan', title)"
         >Create from plan</v-btn
       >
     </div>
@@ -98,9 +107,18 @@ export default class VPlanCard extends Vue {
     border-radius: 10px;
     max-width: 350px;
     padding: 30px;
+    min-height: 300px;
+    min-width: 300px;
 
     @media only screen and (max-width: 500px) {
       padding: 10px;
+      min-width: 220px;
+      min-height: 240px;
+
+      @media only screen and (max-width: 390px) {
+        min-width: 110px;
+        max-width: 160px;
+      }
     }
 
     .title {
@@ -113,18 +131,35 @@ export default class VPlanCard extends Vue {
       flex-direction: column;
       margin-left: 25px;
       margin-bottom: 15px;
+      font-size: 14px;
+
+      .feature {
+        display: flex;
+        align-items: center;
+
+        .label {
+          margin-left: 5px;
+          text-overflow: wrap;
+        }
+      }
 
       @media only screen and (max-width: 700px) {
         margin-left: 0px;
+
+        @media only screen and (max-width: 500px) {
+          font-size: 12px;
+        }
       }
     }
-
+    .create-btn {
+      margin-top: auto;
+    }
     ::v-deep .v-btn__content {
       @media only screen and (max-width: 500px) {
         font-size: 0.675rem;
       }
 
-      @media only screen and (max-width: 380px) {
+      @media only screen and (max-width: 390px) {
         font-size: 0.58rem;
       }
     }
