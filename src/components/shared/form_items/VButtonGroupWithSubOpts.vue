@@ -99,7 +99,6 @@ export default class VButtonGroupWithSubOpts extends Vue {
 <template lang="html">
   <div class="v-button-group-with-sub-opts">
     <VButtonGroup
-      :isVertical="isVertical"
       :selectionOpts="getTopLevelOpts()"
       :subPrompt="data.subPrompt"
       :selected="getSelectedIndex()"
@@ -107,7 +106,6 @@ export default class VButtonGroupWithSubOpts extends Vue {
     />
     <div class="sub-container" v-if="topLevelKey">
       <VButtonGroup
-        :isVertical="isVertical"
         :selectionOpts="getSubOpts()"
         :selected="getSubSelectedIndex()"
         :subPrompt="subSubPrompt"
@@ -126,7 +124,9 @@ export default class VButtonGroupWithSubOpts extends Vue {
 
   .sub-container {
     display: flex;
-    margin: 20px 0px 0px 10px;
+    border: 3px solid #50b536;
+    border-radius: 10px;
+    padding: 10px;
   }
 }
 </style>
