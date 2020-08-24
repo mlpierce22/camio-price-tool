@@ -11,7 +11,7 @@ import {
 // All possible options for each selection
 export function possibleOptions() {
   return {
-    resolutions: [
+    resolution: [
       "1.3 MP",
       "2 MP",
       "3 MP",
@@ -21,7 +21,7 @@ export function possibleOptions() {
       "8 MP",
       "12 MP"
     ],
-    cloudStorage: ["15 day", "30 day", "45 day", "90 day"],
+    cloudRetention: ["15 day", "30 day", "45 day", "90 day"],
     cameraMotion: ["3 hrs", "6 hrs", "12 hrs", "24 hrs"],
     overageHandling: ["Lazy", "Charge", "Unlimited"],
     indexing: {
@@ -55,10 +55,10 @@ export function planTemplates(): PlanTemplates {
       {
         fieldName: "cloudRetention",
         label: "Cloud Retention",
-        selected: possibleOptions().cloudStorage[1] // 30 day
+        selected: possibleOptions().cloudRetention[1] // 30 day
       },
       {
-        fieldName: "camMotion",
+        fieldName: "cameraMotion",
         label: "Camera Motion",
         selected: possibleOptions().cameraMotion[1] // 6 hrs
       },
@@ -81,19 +81,19 @@ export function planTemplates(): PlanTemplates {
         selected: [] // None selected by default
       },
       {
-        fieldName: "camResolution",
+        fieldName: "resolution",
         label: "Resolution",
-        selected: [possibleOptions().resolutions[1]] // 2MP cameras
+        selected: [possibleOptions().resolution[1]] // 2MP cameras
       }
     ],
     "Social Distancing": [
       {
         fieldName: "cloudRetention",
         label: "Cloud Retention",
-        selected: possibleOptions().cloudStorage[1] // 30 day
+        selected: possibleOptions().cloudRetention[1] // 30 day
       },
       {
-        fieldName: "camMotion",
+        fieldName: "cameraMotion",
         label: "Camera Motion",
         selected: possibleOptions().cameraMotion[1] // 6 hrs
       },
@@ -116,19 +116,19 @@ export function planTemplates(): PlanTemplates {
         selected: [{ name: "Social Distancing", rate: 100 }] // Social Distancing selected by default
       },
       {
-        fieldName: "camResolution",
+        fieldName: "resolution",
         label: "Resolution",
-        selected: [possibleOptions().resolutions[1]] // 2MP cameras
+        selected: [possibleOptions().resolution[1]] // 2MP cameras
       }
     ],
     Tailgating: [
       {
         fieldName: "cloudRetention",
         label: "Cloud Retention",
-        selected: possibleOptions().cloudStorage[1] // 30 day
+        selected: possibleOptions().cloudRetention[1] // 30 day
       },
       {
-        fieldName: "camMotion",
+        fieldName: "cameraMotion",
         label: "Camera Motion",
         selected: possibleOptions().cameraMotion[1] // 6 hrs
       },
@@ -151,19 +151,19 @@ export function planTemplates(): PlanTemplates {
         selected: [{ name: "Tailgating", rate: 100 }] // Tailgating selected by default
       },
       {
-        fieldName: "camResolution",
+        fieldName: "resolution",
         label: "Resolution",
-        selected: [possibleOptions().resolutions[1]] // 2MP cameras
+        selected: [possibleOptions().resolution[1]] // 2MP cameras
       }
     ],
     Counting: [
       {
         fieldName: "cloudRetention",
         label: "Cloud Retention",
-        selected: possibleOptions().cloudStorage[1] // 30 day
+        selected: possibleOptions().cloudRetention[1] // 30 day
       },
       {
-        fieldName: "camMotion",
+        fieldName: "cameraMotion",
         label: "Camera Motion",
         selected: possibleOptions().cameraMotion[1] // 6 hrs
       },
@@ -186,9 +186,9 @@ export function planTemplates(): PlanTemplates {
         selected: [{ name: "Counting", rate: 100 }] // Counting selected by default
       },
       {
-        fieldName: "camResolution",
+        fieldName: "resolution",
         label: "Resolution",
-        selected: [possibleOptions().resolutions[1]] // 2MP cameras
+        selected: [possibleOptions().resolution[1]] // 2MP cameras
       }
     ]
   };
@@ -198,13 +198,13 @@ export function planTemplates(): PlanTemplates {
 export function accountFormData(): Array<AccountForm | AccountSubForm> {
   return [
     {
-      fieldName: "camResolution",
+      fieldName: "resolution",
       isDefault: false,
       formType: "yes-no-select-dropdown",
       prompt: "Are your cameras all the same resolution?",
       subPrompt: "Resolution",
-      selectionOpts: possibleOptions().resolutions,
-      selected: possibleOptions().resolutions[1] // 2MP cameras
+      selectionOpts: possibleOptions().resolution,
+      selected: possibleOptions().resolution[1] // 2MP cameras
     },
     {
       fieldName: "cloudRetention",
@@ -213,11 +213,11 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       prompt:
         "Can we apply the same cloud storage retention time to all your cameras?",
       subPrompt: "How Long?",
-      selectionOpts: possibleOptions().cloudStorage,
-      selected: possibleOptions().cloudStorage[1] // 30 day
+      selectionOpts: possibleOptions().cloudRetention,
+      selected: possibleOptions().cloudRetention[1] // 30 day
     },
     {
-      fieldName: "camMotion",
+      fieldName: "cameraMotion",
       isDefault: false,
       formType: "yes-no-select-button-toggle",
       prompt:

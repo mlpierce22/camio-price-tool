@@ -74,7 +74,7 @@ export default class TheCreatePlansModal extends Vue {
         >
           <div
             class="top-form"
-            v-if="planItem.fieldName !== 'camResolution'"
+            v-if="planItem.fieldName !== 'resolution'"
             key="notResolution"
           >
             <VFormItemPicker
