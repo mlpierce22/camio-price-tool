@@ -2,6 +2,7 @@
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { CamResolution } from "@/models";
+import { filter } from "vue/types/umd";
 @Component({
   components: {}
 })
@@ -10,12 +11,12 @@ export default class VCameraCard extends Vue {
   @Prop() camera!: CamResolution;
 
   @Prop() isDeletable!: boolean;
+
+  @Prop() selected!: string[];
   // ------- Local Vars --------
   camCount = 1;
 
   cameraTitle = "";
-  //TODO: add output events and find the source of the error that camera title is undefined
-  //TODO: create plan
   // TODO: styling
 
   rules = {
@@ -41,6 +42,22 @@ export default class VCameraCard extends Vue {
     this.cameraTitle = this.camera.title;
   }
   // --------- Methods ---------
+
+  get usableResolutions() {
+    const filtered = this.camera.cameraOpts.filter(option => {
+      return !this.selected.includes(option);
+    });
+    filtered.push(this.cameraTitle);
+    filtered
+      .sort((a, b) => {
+        const first = +a.split(" ")[0];
+        const second = +b.split(" ")[0];
+        return first - second;
+      })
+      .filter(val => val !== "");
+    console.log("filtered", filtered);
+    return filtered;
+  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -51,7 +68,7 @@ export default class VCameraCard extends Vue {
     <v-icon class="icon" color="secondary" size="60">mdi-video-outline</v-icon>
     <div class="resolution">
       <v-select
-        :items="camera.cameraOpts"
+        :items="usableResolutions"
         v-model="cameraTitle"
         label="Resolution"
         hide-details
