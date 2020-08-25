@@ -52,32 +52,35 @@ export default class TheCreatePlansModal extends Vue {
     super();
     this.dialogOpen = this.dialog;
   }
+
   // --------- Methods ---------
   changedForm(index, fieldChanged, event) {
     this.$emit("changed-form-item", { index, fieldChanged, payload: event });
   }
 
-  get resolutions() {
-    const defaultCamera = this.planData.selected as string;
+  resolutions(planItem) {
+    const defaultCamera = planItem.selected as string;
+    console.log("the planData", planItem);
     if (
       this.cameraResolutions.filter(
         resolution => resolution.title == defaultCamera
       ).length == 0
     ) {
+      console.log("pushed");
       this.cameraResolutions.push({
         title: defaultCamera,
         numCameras: 1,
-        cameraOpts: this.planData.selectionOpts as string[]
+        cameraOpts: [...(planItem.selectionOpts as string[])]
       });
     }
     return this.cameraResolutions;
   }
 
-  addResolution() {
+  addResolution(planItem) {
     this.cameraResolutions.push({
       title: "",
       numCameras: 1,
-      cameraOpts: this.planData.selectionOpts as string[]
+      cameraOpts: [...(planItem.selectionOpts as string[])]
     });
   }
 
@@ -86,7 +89,7 @@ export default class TheCreatePlansModal extends Vue {
   }
 
   updateResolution(indexToUpdate, payload) {
-    this.cameraResolutions[indexToUpdate] = payload;
+    this.cameraResolutions[indexToUpdate][payload.field] = payload.payload;
   }
 
   submit() {
@@ -101,68 +104,87 @@ export default class TheCreatePlansModal extends Vue {
   <div class="the-create-plans-modal">
     <v-dialog
       v-model="dialogOpen"
+      content-class="dialog-content"
       :fullscreen="isVertical"
+      :attach="$el"
       persistent
       max-width="1200"
     >
       <v-card class="modal">
-        <div
-          v-for="(planItem, index) in planData"
-          :key="`${index}-form-item`"
-          class="form-item"
-        >
+        <div class="wrapper">
           <div
-            class="top-form"
-            v-if="planItem.fieldName !== 'resolution'"
-            key="notResolution"
+            v-for="(planItem, index) in planData"
+            :key="`${index}-form-item`"
+            class="form-item"
           >
-            <VFormItemPicker
-              :data="planItem"
-              @selected-changed="changedForm(index, planItem.fieldName, $event)"
-            />
-          </div>
-          <div class="bottom-form" v-else key="resolution">
-            <div class="title">
-              Subscribe Cameras
+            <div
+              class="top-form"
+              v-if="planItem.fieldName !== 'resolution'"
+              key="notResolution"
+            >
+              <VFormItemPicker
+                :data="planItem"
+                @selected-changed="
+                  changedForm(index, planItem.fieldName, $event)
+                "
+              />
             </div>
-            <div class="camera-card-container">
-              <VCameraCard :camera="resolutions[0]" />
-              <v-checkbox
-                v-model="multiResoution"
-                label="I need to subscribe more than one camera resolution to this plan."
-              ></v-checkbox>
-              <div class="sub-container">
-                <div class="warning-box">
-                  Every extra camera you add will generate a duplicate plan at
-                  that resolution in the form “plan-name resolution”. (e.g.
-                  Social Distancing 3MP)
-                </div>
-                <div
-                  class="cameras"
-                  v-for="(camera, index) in resolutions"
-                  :key="`camera-${index}`"
+            <div class="bottom-form" v-else key="resolution">
+              <div class="title-container">
+                <v-icon class="icon" color="primary" size="60"
+                  >mdi-video-outline</v-icon
                 >
-                  <VCameraCard
-                    :camera="camera"
-                    @delete="removeResolution"
-                    @update="updateResolution"
-                    v-if="index > 0 && multiResoution"
-                  />
+                <div class="form-title" color="primary">
+                  Subscribe Cameras
                 </div>
-                <v-btn @click="addResolution" color="secondary"
-                  >Add Camera Type</v-btn
-                >
+              </div>
+              <div class="camera-card-container">
+                <VCameraCard
+                  key="top-card"
+                  :camera="resolutions(planItem)[0]"
+                  :isDeletable="false"
+                  @update="updateResolution(0, $event)"
+                />
+                <v-checkbox
+                  class="checkbox"
+                  v-model="multiResoution"
+                  :hide-details="true"
+                  label="I need to subscribe more than one camera resolution to this plan."
+                ></v-checkbox>
+                <div class="sub-container" v-if="multiResoution">
+                  <div class="warning-box">
+                    Every extra camera you add will generate a duplicate plan at
+                    that resolution in the form “plan-name resolution”. (e.g.
+                    Social Distancing 3MP)
+                  </div>
+                  <div
+                    class="cameras"
+                    v-for="(camera, index) in resolutions(planItem)"
+                    :key="`camera-${index}`"
+                  >
+                    <VCameraCard
+                      :camera="camera"
+                      :isDeletable="index > 1"
+                      @delete="removeResolution(index)"
+                      @update="updateResolution(index, $event)"
+                      v-if="index > 0"
+                    />
+                  </div>
+                  <v-btn @click="addResolution(planItem)" color="secondary"
+                    >Add Camera Type</v-btn
+                  >
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <VBackNextButton
-          @next-click="submit()"
-          @back-click="dialogOpen = false"
-          next="Create Plan"
-          back="Cancel"
-        />
+          <VBackNextButton
+            @next-click="submit()"
+            @back-click="dialogOpen = false"
+            next="Create Plan"
+            back="Cancel"
+          />
+        </div>
       </v-card>
     </v-dialog>
   </div>
@@ -172,6 +194,86 @@ export default class TheCreatePlansModal extends Vue {
 <!----------------- BEGIN CSS/SCSS ---------------->
 <style scoped lang="scss">
 .the-create-plans-modal {
+  display: flex;
+  flex-direction: column;
+
+  ::v-deep .dialog-content {
+    .modal {
+      padding: 20px;
+
+      .wrapper {
+        border: 3px solid #f7931e;
+        border-radius: 20px;
+        padding: 20px;
+
+        .form-item {
+          margin-top: 41px;
+          max-width: 80%;
+        }
+
+        .bottom-form {
+          display: flex;
+          flex-direction: column;
+
+          .title-container {
+            display: flex;
+            margin-bottom: 20px;
+
+            .icon {
+            }
+            .form-title {
+              font-size: 50px;
+              font-weight: bold;
+              color: #f7931e;
+              margin-left: 20px;
+            }
+          }
+          .camera-card-container {
+            display: flex;
+            flex-direction: column;
+
+            .checkbox {
+              background-color: white;
+              //line-height: 20px;
+              z-index: 1;
+              max-width: 500px;
+
+              .v-label {
+                color: #222222 !important;
+              }
+            }
+
+            .sub-container {
+              border: 3px solid #50b536;
+              border-radius: 10px;
+              padding: 30px 20px 20px;
+              margin-top: -15px;
+              margin-left: 9px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+
+              .warning-box {
+                background: #fcf8e3;
+                border: 1px solid #f7931e;
+                border-radius: 10px;
+                color: #71592f;
+                padding: 5px;
+                margin-bottom: 5px;
+              }
+
+              .cameras {
+                align-self: flex-start;
+                margin-top: 5px;
+                margin-bottom: 5px;
+                width: 100%;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 </style>
 <!----------------- END CSS/SCSS ------------------>
