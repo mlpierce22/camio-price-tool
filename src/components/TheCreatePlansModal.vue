@@ -79,7 +79,7 @@ export default class TheCreatePlansModal extends Vue {
           >
             <VFormItemPicker
               :data="planItem"
-              @selected-changed="changedForm(index, 'selected', $event)"
+              @selected-changed="changedForm(index, planItem.fieldName, $event)"
             />
           </div>
           <div class="bottom-form" v-else key="resolution">
