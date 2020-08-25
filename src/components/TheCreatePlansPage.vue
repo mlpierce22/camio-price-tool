@@ -36,6 +36,10 @@ export default class TheCreatePlansPage extends Vue {
 
   currentPlanData: any = {};
 
+  isMultiResolution = false;
+
+  cameraResolutionList = [];
+
   // --------- Watchers --------
 
   // ------- Lifecycle ---------
@@ -175,6 +179,8 @@ export default class TheCreatePlansPage extends Vue {
       :isVertical="isVertical"
       @dialog-closed="dialogClosed()"
       @changed-form-item="updatePlan($event)"
+      @resolution-change="cameraResolutionList = $event"
+      @multi-resolution="isMultiResolution = $event"
     />
   </div>
 </template>
