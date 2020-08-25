@@ -13,7 +13,7 @@ export default class VTextInput extends Vue {
   inputValue: string;
 
   rules = {
-    empty: value => !!value || "Every plan must have a name."
+    empty: value => !!value || "Required."
     // TODO: Add exists rule! (here and in template)
     // exists: value => {
     //   this.$root.$data["plans"];

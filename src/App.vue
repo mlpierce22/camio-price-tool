@@ -145,6 +145,8 @@ function initialState(componentInstance) {
       showLocations: true,
       locationStep: 4
     },
+    plans: {},
+    locations: {},
     steps: [
       {
         stepNumber: 1,
