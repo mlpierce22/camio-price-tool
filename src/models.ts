@@ -137,3 +137,9 @@ export interface Location {
 export interface PlanCount {
   [planHash: string]: number;
 }
+
+export interface CamResolution {
+  title: string;
+  numCameras: number;
+  cameraOpts: string[];
+}
