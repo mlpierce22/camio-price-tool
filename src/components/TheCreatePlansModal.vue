@@ -30,9 +30,13 @@ export default class TheCreatePlansModal extends Vue {
 
   dialogOpen!: boolean;
 
-  multiResoution = false;
+  multiResolution = false;
 
   cameraResolutions: Array<CamResolution> = [];
+
+  selectedResolutions: string[] = [];
+
+  selectionOps!: string[];
 
   // --------- Watchers --------
   @Watch("dialogOpen")
@@ -45,6 +49,23 @@ export default class TheCreatePlansModal extends Vue {
     if ($event) {
       this.dialogOpen = this.dialog;
     }
+  }
+
+  @Watch("multiResolution")
+  multiStatusChange($event) {
+    this.$emit("multi-resolution", $event);
+    if ($event) {
+      this.addResolution();
+    } else {
+      // reset camera resolutions
+      this.selectedResolutions = [this.selectedResolutions[0]];
+      this.cameraResolutions = [this.cameraResolutions[0]];
+    }
+  }
+
+  @Watch("cameraResolutions")
+  resolutionListChange() {
+    this.$emit("resolution-change", this.cameraResolutions);
   }
 
   constructor() {
@@ -60,36 +81,45 @@ export default class TheCreatePlansModal extends Vue {
 
   resolutions(planItem) {
     const defaultCamera = planItem.selected as string;
-    console.log("the planData", planItem);
-    if (
-      this.cameraResolutions.filter(
-        resolution => resolution.title == defaultCamera
-      ).length == 0
-    ) {
-      console.log("pushed");
+    this.selectionOps = [...(planItem.selectionOpts as string[])];
+
+    if (this.cameraResolutions.length == 0) {
+      this.selectedResolutions.push(defaultCamera);
       this.cameraResolutions.push({
         title: defaultCamera,
         numCameras: 1,
-        cameraOpts: [...(planItem.selectionOpts as string[])]
+        cameraOpts: this.selectionOps
       });
     }
     return this.cameraResolutions;
   }
 
-  addResolution(planItem) {
+  addResolution() {
+    const titleToAdd = this.selectionOps.filter(option => {
+      return !this.selectedResolutions.includes(option);
+    })[0];
+
     this.cameraResolutions.push({
-      title: "",
+      title: titleToAdd,
       numCameras: 1,
-      cameraOpts: [...(planItem.selectionOpts as string[])]
+      cameraOpts: this.selectionOps
     });
+    this.selectedResolutions.push(titleToAdd);
   }
 
   removeResolution(indexToRemove) {
     this.cameraResolutions.splice(indexToRemove, 1);
+    this.selectedResolutions.splice(indexToRemove, 1);
   }
 
   updateResolution(indexToUpdate, payload) {
     this.cameraResolutions[indexToUpdate][payload.field] = payload.payload;
+    if (
+      payload.field == "title" &&
+      !this.selectedResolutions.includes(payload.payload)
+    ) {
+      this.selectedResolutions.splice(indexToUpdate, 1, payload.payload);
+    }
   }
 
   submit() {
@@ -108,7 +138,7 @@ export default class TheCreatePlansModal extends Vue {
       :fullscreen="isVertical"
       :attach="$el"
       persistent
-      max-width="1200"
+      max-width="900"
     >
       <v-card class="modal">
         <div class="wrapper">
@@ -142,16 +172,17 @@ export default class TheCreatePlansModal extends Vue {
                 <VCameraCard
                   key="top-card"
                   :camera="resolutions(planItem)[0]"
+                  :selected="selectedResolutions"
                   :isDeletable="false"
                   @update="updateResolution(0, $event)"
                 />
                 <v-checkbox
                   class="checkbox"
-                  v-model="multiResoution"
+                  v-model="multiResolution"
                   :hide-details="true"
                   label="I need to subscribe more than one camera resolution to this plan."
                 ></v-checkbox>
-                <div class="sub-container" v-if="multiResoution">
+                <div class="sub-container" v-if="multiResolution">
                   <div class="warning-box">
                     Every extra camera you add will generate a duplicate plan at
                     that resolution in the form “plan-name resolution”. (e.g.
@@ -163,14 +194,21 @@ export default class TheCreatePlansModal extends Vue {
                     :key="`camera-${index}`"
                   >
                     <VCameraCard
+                      :key="`camera-card-${camera.title}`"
                       :camera="camera"
                       :isDeletable="index > 1"
+                      :selected="selectedResolutions"
                       @delete="removeResolution(index)"
                       @update="updateResolution(index, $event)"
                       v-if="index > 0"
                     />
                   </div>
-                  <v-btn @click="addResolution(planItem)" color="secondary"
+                  <v-btn
+                    :disabled="
+                      selectionOps.length == selectedResolutions.length
+                    "
+                    @click="addResolution()"
+                    color="secondary"
                     >Add Camera Type</v-btn
                   >
                 </div>
