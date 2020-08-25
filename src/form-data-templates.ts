@@ -29,7 +29,7 @@ export function possibleOptions() {
       "Lazy": ["3 days", "7 days", "14 days", "30 days"],
       "Query Match": ["10%", "25%", "50%", "90%"],
       // eslint-disable-next-line prettier/prettier
-      "Full": ["3 hrs", "6 hrs", "12 hrs", "24 hrs"] // Note that these match camera motion
+      "Full": [] // Edit: these shouldn't display a button. Note that these match camera motion "3 hrs", "6 hrs", "12 hrs", "24 hrs"
     } as TwoTierSelectionOpts,
     addOns: [
       { name: "Social Distancing", rate: [0, 100] },
@@ -241,7 +241,11 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       formType: "yes-no-select-multi-button-toggle",
       prompt: "Can we apply the same indexing to all your footage?",
       subPrompt: "How much indexing do you want?",
-      subSubPrompt: "How much video do you anticipate reviewing each month?",
+      subSubPrompts: {
+        Lazy: "How much video do you anticipate reviewing each month?",
+        "Query Match": "How often will activity match the desired query?",
+        Full: "This option uses the camera motion provided earlier."
+      },
       selectionOpts: possibleOptions().indexing,
       selected: {
         type: "Lazy", // Lazy

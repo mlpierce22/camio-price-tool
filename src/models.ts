@@ -48,7 +48,7 @@ export interface AccountForm {
   formType: string;
   prompt: string;
   subPrompt: string;
-  subSubPrompt?: string;
+  subSubPrompts?: { [topKey: string]: string };
   selected: string | TwoTierSelection | AddOn[];
   selectionOpts: string[] | AddOnOpts[] | TwoTierSelectionOpts;
 }
@@ -65,7 +65,7 @@ export interface FullFilteredPlan {
   formType: string;
   prompt: string;
   subPrompt: string;
-  subSubPrompt?: string;
+  subSubPrompt?: string[];
   selected: string | TwoTierSelection | AddOn[];
   selectionOpts: string[] | AddOnOpts[] | TwoTierSelectionOpts;
 }
