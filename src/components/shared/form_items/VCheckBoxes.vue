@@ -13,6 +13,8 @@ export default class VCheckBoxes extends Vue {
 
   // ------- Local Vars --------
   selectedBoxes: AddOn[];
+
+  selectionOptions: AddOnOpts[];
   // --------- Watchers --------
   @Watch("selectedBoxes")
   boxesChanged() {
@@ -23,26 +25,28 @@ export default class VCheckBoxes extends Vue {
         rate: selection.rate[1]
       };
     });
-    console.log("emitting this: ", withRate);
     this.$emit("selected-changed", withRate);
   }
   // ------- Lifecycle ---------
   constructor() {
     super();
     this.selectedBoxes = this.data.selected as AddOn[];
-    console.log("data here isn't good", this.data);
+    this.selectionOptions = this.selectOptions();
   }
+
   // --------- Methods ---------
+  selectOptions() {
+    const selectedNames = (this.data.selected as AddOn[]).map(
+      selected => selected.name
+    );
+    return (this.data.selectionOpts as AddOnOpts[]).filter(option => {
+      return !selectedNames.includes(option.name);
+    });
+  }
 
   get checkBoxList() {
     if (this.shouldHide) {
-      return (this.data.selectionOpts as AddOnOpts[]).filter(option => {
-        return (
-          (this.data.selected as AddOn[]).filter(addon => {
-            return option.name !== addon.name;
-          }).length !== 0
-        );
-      });
+      return this.selectionOptions;
     } else {
       return this.data.selectionOpts;
     }
