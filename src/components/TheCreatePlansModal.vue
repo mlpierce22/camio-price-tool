@@ -5,15 +5,18 @@ import {
   PlanTemplates,
   AccountSubForm,
   AccountForm,
-  FullFilteredPlan
+  FullFilteredPlan,
+  CamResolution
 } from "@/models";
 import VBackNextButton from "@/components/shared/VBackNextButton.vue";
 import VFormItemPicker from "@/components/shared/VFormItemPicker.vue";
+import VCameraCard from "@/components/shared/VCameraCard.vue";
 
 @Component({
   components: {
     VBackNextButton,
-    VFormItemPicker
+    VFormItemPicker,
+    VCameraCard
   }
 })
 export default class TheCreatePlansModal extends Vue {
@@ -26,6 +29,10 @@ export default class TheCreatePlansModal extends Vue {
   // ------- Local Vars --------
 
   dialogOpen!: boolean;
+
+  multiResoution = false;
+
+  cameraResolutions: Array<CamResolution> = [];
 
   // --------- Watchers --------
   @Watch("dialogOpen")
@@ -48,6 +55,38 @@ export default class TheCreatePlansModal extends Vue {
   // --------- Methods ---------
   changedForm(index, fieldChanged, event) {
     this.$emit("changed-form-item", { index, fieldChanged, payload: event });
+  }
+
+  get resolutions() {
+    const defaultCamera = this.planData.selected as string;
+    if (
+      this.cameraResolutions.filter(
+        resolution => resolution.title == defaultCamera
+      ).length == 0
+    ) {
+      this.cameraResolutions.push({
+        title: defaultCamera,
+        numCameras: 1,
+        cameraOpts: this.planData.selectionOpts as string[]
+      });
+    }
+    return this.cameraResolutions;
+  }
+
+  addResolution() {
+    this.cameraResolutions.push({
+      title: "",
+      numCameras: 1,
+      cameraOpts: this.planData.selectionOpts as string[]
+    });
+  }
+
+  removeResolution(indexToRemove) {
+    this.cameraResolutions.splice(indexToRemove, 1);
+  }
+
+  updateResolution(indexToUpdate, payload) {
+    this.cameraResolutions[indexToUpdate] = payload;
   }
 
   submit() {
@@ -83,26 +122,41 @@ export default class TheCreatePlansModal extends Vue {
             />
           </div>
           <div class="bottom-form" v-else key="resolution">
-            Bottom form
+            <div class="title">
+              Subscribe Cameras
+            </div>
+            <div class="camera-card-container">
+              <VCameraCard :camera="resolutions[0]" />
+              <v-checkbox
+                v-model="multiResoution"
+                label="I need to subscribe more than one camera resolution to this plan."
+              ></v-checkbox>
+              <div class="sub-container">
+                <div class="warning-box">
+                  Every extra camera you add will generate a duplicate plan at
+                  that resolution in the form “plan-name resolution”. (e.g.
+                  Social Distancing 3MP)
+                </div>
+                <div
+                  class="cameras"
+                  v-for="(camera, index) in resolutions"
+                  :key="`camera-${index}`"
+                >
+                  <VCameraCard
+                    :camera="camera"
+                    @delete="removeResolution"
+                    @update="updateResolution"
+                    v-if="index > 0 && multiResoution"
+                  />
+                </div>
+                <v-btn @click="addResolution" color="secondary"
+                  >Add Camera Type</v-btn
+                >
+              </div>
+            </div>
           </div>
         </div>
-        Yaya!
-        <!-- <v-card-title class="headline"
-          >Use Google's location service?</v-card-title
-        >
-        <v-card-text
-          >Let Google help apps determine location. This means sending anonymous
-          location data to Google, even when no apps are running.</v-card-text
-        >
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="green darken-1" text @click="dialog = false"
-            >Disagree</v-btn
-          >
-          <v-btn color="green darken-1" text @click="dialog = false"
-            >Agree</v-btn
-          >
-        </v-card-actions> -->
+
         <VBackNextButton
           @next-click="submit()"
           @back-click="dialogOpen = false"
