@@ -12,8 +12,11 @@ export default class VTextInput extends Vue {
   // ------- Local Vars --------
   inputValue: string;
 
+  counter = 50;
+
   rules = {
-    empty: value => !!value || "Required."
+    empty: value => !!value || "Required.",
+    max: v => v.length <= this.counter || `Max ${this.counter} characters`
     // TODO: Add exists rule! (here and in template)
     // exists: value => {
     //   this.$root.$data["plans"];
@@ -45,8 +48,10 @@ export default class VTextInput extends Vue {
       v-model="inputValue"
       background-color="#CBE3C4"
       color="#50B536"
+      :counter="counter"
+      outlined
       :validate-on-blur="true"
-      :rules="[rules.empty]"
+      :rules="[rules.empty, rules.max]"
     ></v-text-field>
   </div>
 </template>
@@ -55,6 +60,10 @@ export default class VTextInput extends Vue {
 <!----------------- BEGIN CSS/SCSS ---------------->
 <style scoped lang="scss">
 .v-text-input {
+  ::v-deep .text-box {
+    max-width: 250px;
+    margin-bottom: -20px;
+  }
 }
 </style>
 <!----------------- END CSS/SCSS ------------------>

@@ -12,6 +12,8 @@
         min="1"
         step="1"
         type="number"
+        outlined
+        :hide-details="true"
         :validate-on-blur="true"
         :rules="[rules.empty, rules.min]"
       ></v-text-field>
@@ -80,9 +82,21 @@ export default class VPromptedNumberInput extends Vue {
     display: flex;
     align-items: center;
 
+    ::v-deep .text-box input {
+      text-align: center;
+    }
+    ::v-deep .v-text-field input {
+      padding: 8px 0px 8px 13px;
+    }
+
+    ::v-deep .text-box .v-input__slot {
+      border-radius: 10px;
+      min-height: 0px;
+    }
+
     .text-box {
       flex-grow: 0;
-      max-width: 70px;
+      max-width: 80px;
 
       .v-text-field >>> input {
         font-weight: 900;

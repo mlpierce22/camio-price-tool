@@ -129,6 +129,8 @@ export default class VButtonGroupWithSubOpts extends Vue {
     border: 3px solid #50b536;
     border-radius: 10px;
     padding: 10px;
+    margin-top: 14px;
+    margin-left: 10px;
   }
 }
 </style>
