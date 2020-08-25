@@ -8,7 +8,8 @@ import {
   PlanTemplateWithDefaults,
   Plan,
   FullFilteredPlan,
-  PlanAttributes
+  PlanAttributes,
+  CamResolution
 } from "@/models";
 import VPlanList from "@/components/shared/VPlanList.vue";
 import VPlanCard from "@/components/shared/VPlanCard.vue";
@@ -39,6 +40,8 @@ export default class TheCreatePlansPage extends Vue {
   isMultiResolution = false;
 
   cameraResolutionList = [];
+
+  selectedPlanTemplate = "Basic";
 
   // --------- Watchers --------
 
@@ -96,16 +99,32 @@ export default class TheCreatePlansPage extends Vue {
 
   createPlans() {
     console.log("create plan!");
-    // this needs to iterate through resolutions
+    const plans = this.cameraResolutionList.map(
+      (cameraResolution: CamResolution) => {
+        const purePlanObj = {};
+        this.currentPlanData.map(planField => {
+          if (planField.fieldName == "resolution") {
+            // TODO: What do we do with the camera count!???
+            purePlanObj[planField.fieldName] = cameraResolution.title;
+          } else {
+            purePlanObj[planField.fieldName] = planField.selected;
+          }
+        });
+        return purePlanObj;
+      }
+    );
+    this.$emit("create-plans-final", plans);
+    this.cameraResolutionList = [];
+    this.isMultiResolution = false;
   }
 
   updatePlan(updateInfo) {
     console.log("updateInfo", updateInfo);
-    this.currentPlanData[updateInfo.index][updateInfo.fieldChanged] =
-      updateInfo.payload;
+    this.currentPlanData[updateInfo.index].selected = updateInfo.payload;
   }
 
   openCreatePlanModal(planTitle) {
+    this.selectedPlanTemplate = planTitle;
     // combine account data and plan template data
     this.currentPlanData = this.planTemplates[planTitle].map(
       (planField, index) => {
@@ -174,10 +193,11 @@ export default class TheCreatePlansPage extends Vue {
     </div>
     <TheCreatePlansModal
       v-if="currentPlanData"
+      :key="selectedPlanTemplate"
       :dialog="dialogOpen"
       :planData="currentPlanData"
       :isVertical="isVertical"
-      @dialog-closed="dialogClosed()"
+      @dialog-closed="dialogClosed($event)"
       @changed-form-item="updatePlan($event)"
       @resolution-change="cameraResolutionList = $event"
       @multi-resolution="isMultiResolution = $event"

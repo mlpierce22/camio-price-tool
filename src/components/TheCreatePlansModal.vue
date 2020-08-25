@@ -28,7 +28,7 @@ export default class TheCreatePlansModal extends Vue {
   @Prop() isVertical!: boolean;
   // ------- Local Vars --------
 
-  dialogOpen!: boolean;
+  dialogOpen = false;
 
   multiResolution = false;
 
@@ -40,15 +40,15 @@ export default class TheCreatePlansModal extends Vue {
 
   // --------- Watchers --------
   @Watch("dialogOpen")
-  dialogClosed() {
-    this.$emit("dialog-closed");
+  dialogClosed($event) {
+    if (!$event) {
+      this.$emit("dialog-closed", false);
+    }
   }
 
   @Watch("dialog")
-  dialogChange($event) {
-    if ($event) {
-      this.dialogOpen = this.dialog;
-    }
+  dialogChange() {
+    this.dialogOpen = this.dialog;
   }
 
   @Watch("multiResolution")
@@ -123,6 +123,8 @@ export default class TheCreatePlansModal extends Vue {
   }
 
   submit() {
+    this.multiResolution = false;
+    this.selectedResolutions = [];
     this.$emit("dialog-closed", true);
   }
 }
