@@ -13,6 +13,7 @@ import VButtonGroup from "@/components/shared/form_items/VButtonGroup.vue";
 import VButtonGroupWithSubOpts from "@/components/shared/form_items/VButtonGroupWithSubOpts.vue";
 import VCheckBoxes from "@/components/shared/form_items/VCheckBoxes.vue";
 import VAdvancedOptions from "@/components/shared/form_items/VAdvancedOptions.vue";
+import VTextInput from "@/components/shared/form_items/VTextInput.vue";
 
 @Component({
   components: {
@@ -20,7 +21,8 @@ import VAdvancedOptions from "@/components/shared/form_items/VAdvancedOptions.vu
     VButtonGroup,
     VButtonGroupWithSubOpts,
     VCheckBoxes,
-    VAdvancedOptions
+    VAdvancedOptions,
+    VTextInput
   }
 })
 export default class VFormItemPicker extends Vue {
@@ -132,6 +134,11 @@ export default class VFormItemPicker extends Vue {
         :shouldHide="true"
         @selected-changed="selected = $event"
         v-else-if="data.formType === 'pure-component-checkbox'"
+      />
+      <VTextInput
+        :data="data"
+        @input-changed="selected = $event"
+        v-else-if="data.formType === 'pure-component-textbox'"
       />
     </div>
     <VAdvancedOptions

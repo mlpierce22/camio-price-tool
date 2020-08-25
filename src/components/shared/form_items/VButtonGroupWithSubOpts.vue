@@ -89,7 +89,9 @@ export default class VButtonGroupWithSubOpts extends Vue {
 
   /** Get a subsub prompt if it exists. */
   get subSubPrompt() {
-    return this.data["subSubPrompt"] ? this.data.subSubPrompt : "";
+    return this.data["subSubPrompts"]
+      ? this.data.subSubPrompts[this.topLevelKey]
+      : "";
   }
 }
 </script>
