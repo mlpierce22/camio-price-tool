@@ -26,6 +26,8 @@ export default class TheCreatePlansModal extends Vue {
   @Prop() planData!: FullFilteredPlan;
 
   @Prop() isVertical!: boolean;
+
+  @Prop() title!: string;
   // ------- Local Vars --------
 
   dialogOpen = false;
@@ -144,6 +146,11 @@ export default class TheCreatePlansModal extends Vue {
     >
       <v-card class="modal">
         <div class="wrapper">
+          <div class="plan-title">
+            <v-icon color="primary" size="60">mdi-wrench</v-icon>
+            Creating Plan from:
+            {{ title }}
+          </div>
           <div
             v-for="(planItem, index) in planData"
             :key="`${index}-form-item`"
@@ -155,7 +162,6 @@ export default class TheCreatePlansModal extends Vue {
               key="notResolution"
             >
               <VFormItemPicker
-                v-if="!planItem.isDefault"
                 :data="planItem"
                 @selected-changed="
                   changedForm(index, planItem.fieldName, $event)
@@ -246,6 +252,18 @@ export default class TheCreatePlansModal extends Vue {
         border: 3px solid #f7931e;
         border-radius: 20px;
         padding: 20px;
+
+        .plan-title {
+          font-size: 40px;
+          font-weight: bold;
+          color: #f7931e;
+          display: flex;
+          align-items: center;
+
+          i {
+            margin-right: 30px;
+          }
+        }
 
         .form-item {
           margin-top: 41px;
