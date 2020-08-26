@@ -100,6 +100,7 @@ export default class VFormItemPicker extends Vue {
           />
           <VCheckBoxes
             :data="data"
+            :shouldHide="false"
             @selected-changed="selected = $event"
             v-else-if="data.formType === 'yes-no-select-checkbox'"
           />
