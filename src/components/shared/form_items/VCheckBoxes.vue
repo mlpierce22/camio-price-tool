@@ -12,44 +12,111 @@ export default class VCheckBoxes extends Vue {
   @Prop() shouldHide!: boolean;
 
   // ------- Local Vars --------
-  selectedBoxes: AddOn[];
+  selectedBoxes: boolean[] = [];
 
-  selectionOptions: AddOnOpts[];
+  filteredBoxes: Array<{ name: string; rate: boolean }> = [];
+
   // --------- Watchers --------
+
   @Watch("selectedBoxes")
-  boxesChanged() {
-    const withRate = this.selectedBoxes.map(selection => {
-      console.log(selection);
-      return {
-        name: selection.name,
-        rate: selection.rate[1]
-      };
-    });
-    this.$emit("selected-changed", withRate);
+  selectedChanged() {
+    console.log("rate:", this.selectedBoxes);
+
+    this.$emit(
+      "selected-changed",
+      this.filteredBoxes
+        .map((item, index) => {
+          return {
+            name: item.name,
+            rate: this.convertRate(this.selectedBoxes[index]) as number
+          };
+        })
+        .concat(
+          (this.data.selected as AddOn[]).map(selected => {
+            return {
+              name: selected.name,
+              rate: selected.rate
+            };
+          })
+        )
+        .filter(option => {
+          return option.rate !== 0;
+        })
+    );
   }
   // ------- Lifecycle ---------
+
+  // TODO:
+  /** Need to come back to this because it has a difficult functionality to handle:
+   * We want this component to take the incoming selected data and get rid of entries that contain it (but only the first time, because it is updated in the parent and we would get a problem where checkboxes cancel out as you click them)
+   * This logic should probably be handled in the parent - where though??
+   *
+   */
   constructor() {
     super();
-    this.selectedBoxes = this.data.selected as AddOn[];
-    this.selectionOptions = this.selectOptions();
+    if (this.shouldHide && this.data.isDefault) {
+      // create an object that is the selection options
+      const selectedNames = (this.data.selected as AddOn[]).map(
+        selected => selected.name
+      );
+      const selectedRates = (this.data.selected as AddOn[]).map(
+        selected => selected.rate
+      );
+      console.log("names n rates", selectedNames, selectedRates);
+      this.filteredBoxes = (this.data.selectionOpts as AddOnOpts[])
+        .map((option, index) => {
+          console.log(
+            selectedRates.length - 1,
+            "is >=?",
+            index,
+            selectedRates.length - 1 >= index,
+            "the value here is: ",
+            selectedRates[index]
+          );
+          return {
+            name: option.name,
+            rate:
+              selectedRates.length - 1 >= index
+                ? (this.convertRate(selectedRates[index]) as boolean)
+                : (this.convertRate(0) as boolean)
+          };
+        })
+        .filter(option => {
+          return !selectedNames.includes(option.name);
+        });
+    } else {
+      // make it so the rate is 0 and all display
+      this.filteredBoxes = (this.data.selectionOpts as AddOnOpts[]).map(
+        option => {
+          return {
+            name: option.name,
+            rate: this.convertRate(0) as boolean
+          };
+        }
+      );
+    }
+    this.selectedBoxes = this.filteredBoxes.map(box => {
+      return box.rate;
+    });
   }
 
   // --------- Methods ---------
-  selectOptions() {
-    const selectedNames = (this.data.selected as AddOn[]).map(
-      selected => selected.name
-    );
-    return (this.data.selectionOpts as AddOnOpts[]).filter(option => {
-      return !selectedNames.includes(option.name);
-    });
+
+  convertRate(rate: boolean | number) {
+    if (typeof rate == "number") {
+      console.log(
+        "converting number, " + rate + " to ",
+        rate == 0 ? false : true
+      );
+      return rate == 0 ? false : true;
+    } else {
+      console.log("converting boolean, " + rate + " to ", rate ? 100 : 0);
+      return rate ? 100 : 0;
+    }
   }
 
   get checkBoxList() {
-    if (this.shouldHide) {
-      return this.selectionOptions;
-    } else {
-      return this.data.selectionOpts;
-    }
+    return this.filteredBoxes;
   }
 }
 </script>
@@ -62,9 +129,8 @@ export default class VCheckBoxes extends Vue {
     <v-checkbox
       v-for="(options, index) in checkBoxList"
       :key="`checkbox-${index}`"
-      v-model="selectedBoxes"
+      v-model="selectedBoxes[index]"
       :label="options.name"
-      :value="options"
       hide-details
       dense
       color="primary"
