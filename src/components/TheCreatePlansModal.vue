@@ -155,6 +155,7 @@ export default class TheCreatePlansModal extends Vue {
               key="notResolution"
             >
               <VFormItemPicker
+                v-if="!planItem.isDefault"
                 :data="planItem"
                 @selected-changed="
                   changedForm(index, planItem.fieldName, $event)
@@ -162,7 +163,7 @@ export default class TheCreatePlansModal extends Vue {
               />
             </div>
             <div class="bottom-form" v-else key="resolution">
-              <div class="title-container">
+              <div class="title-container" v-if="!planItem.isDefault">
                 <v-icon class="icon" color="primary" size="60"
                   >mdi-video-outline</v-icon
                 >
@@ -170,7 +171,7 @@ export default class TheCreatePlansModal extends Vue {
                   Subscribe Cameras
                 </div>
               </div>
-              <div class="camera-card-container">
+              <div class="camera-card-container" v-if="!planItem.isDefault">
                 <VCameraCard
                   key="top-card"
                   :camera="resolutions(planItem)[0]"
