@@ -185,7 +185,9 @@ function initialState(componentInstance) {
           nextText: "Next",
           backText: "Back"
         },
-        events: {},
+        events: {
+          "create-plans-final": componentInstance.addNewPlans
+        },
         propName: "createPlansPageFormData"
       },
       {
@@ -361,6 +363,26 @@ export default Vue.extend({
       this.pagesData.quoteIntroPageFormData.props[
         newValObj.key
       ].value = castVal;
+    },
+    generatePlanCode(plan) {
+      // Courtesy of https://stackoverflow.com/a/33647870
+      let hash = 0;
+      let i = 0;
+      const str = JSON.stringify(plan);
+      const length = str.length;
+
+      while (i < length) {
+        hash = ((hash << 5) - hash + str.charCodeAt(i++)) << 0;
+      }
+
+      return hash;
+    },
+    addNewPlans: function(plans) {
+      console.log("creating new plans, ", plans);
+      plans.forEach(plan => {
+        const planCode = this.generatePlanCode(plan);
+        this.plans[planCode] = plan;
+      });
     },
     nextStep: function() {
       // If we are on the first step, we need to decide whether or not to show locations
