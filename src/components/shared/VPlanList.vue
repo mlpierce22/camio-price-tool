@@ -1,6 +1,6 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { Plan } from "@/models";
 @Component({
   components: {}
@@ -12,24 +12,28 @@ export default class VPlanList extends Vue {
   @Prop() title!: string;
   // ------- Local Vars --------
 
+  unhashedPlan: Plan[] | null = null;
   // --------- Watchers --------
 
+  @Watch("plans")
+  dehash($event) {
+    console.log("it ran, heres the event", $event);
+    if (this.plans) {
+      console.log("plans exist");
+      const planArray: any[] = [];
+      Object.keys(this.plans).map(key => {
+        planArray.push(this.plans[key]);
+      });
+      this.unhashedPlan = planArray;
+    } else {
+      this.unhashedPlan = null;
+    }
+  }
   // ------- Lifecycle ---------
   constructor() {
     super();
   }
   // --------- Methods ---------
-  get unhashedPlan() {
-    if (this.plans) {
-      const planArray: any[] = [];
-      Object.keys(this.plans).map(key => {
-        planArray.push(this.plans[key]);
-      });
-      return planArray;
-    } else {
-      return undefined;
-    }
-  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -37,19 +41,24 @@ export default class VPlanList extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="v-plan-list">
-    <div class="no-plans" v-if="!unhashedPlan">
+    <div class="no-plans" v-show="!unhashedPlan" key="plans-do-not-exist">
       <v-icon size="60" color="primary">mdi-clipboard-text</v-icon>
       <div class="explanation">
         You have not created any plans. Select from one of the templates below
         to create a plan.
       </div>
     </div>
-    <div
-      class="plans"
-      v-for="(plan, index) in unhashedPlan"
-      :key="`${index}-plan`"
-    >
-      {{ plan }}
+    <div class="plan-container" v-show="unhashedPlan" key="plans-exist">
+      <div class="num-cameras">
+        # cameras
+      </div>
+      <div
+        class="plans"
+        v-for="(plan, index) in unhashedPlan"
+        :key="`${index}-plan`"
+      >
+        {{ plan }}
+      </div>
     </div>
   </div>
 </template>
