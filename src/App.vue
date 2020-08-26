@@ -240,6 +240,7 @@ function initialState(componentInstance) {
       },
       createPlansPageFormData: {
         planTemplates: planTemplates(),
+        createdPlans: {},
         include: [
           {
             data: "accountPageFormData",
@@ -249,7 +250,13 @@ function initialState(componentInstance) {
         ]
       },
       addLocationsPageFormData: {
-        temp: {}
+        include: [
+          {
+            data: "createPlansPageFormData",
+            propName: "plans",
+            field: "createdPlans"
+          }
+        ]
       },
       estimatePageData: {
         temp: {}
@@ -382,6 +389,7 @@ export default Vue.extend({
       plans.forEach(plan => {
         const planCode = this.generatePlanCode(plan);
         this.plans[planCode] = plan;
+        this.pagesData.createPlansPageFormData.createdPlans[planCode] = plan;
       });
     },
     nextStep: function() {
