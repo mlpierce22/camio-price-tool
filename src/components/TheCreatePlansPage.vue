@@ -9,7 +9,9 @@ import {
   Plan,
   FullFilteredPlan,
   PlanAttributes,
-  CamResolution
+  CamResolution,
+  BasePlanOpts,
+  AddOn
 } from "@/models";
 import VPlanList from "@/components/shared/VPlanList.vue";
 import VPlanCard from "@/components/shared/VPlanCard.vue";
@@ -28,14 +30,14 @@ export default class TheCreatePlansPage extends Vue {
 
   @Prop() accountData!: Array<AccountForm | AccountSubForm>;
 
-  @Prop() createdPlans!: Array<Plan>;
+  @Prop() createdPlans!: Plan;
 
   @Prop() isVertical!: boolean;
   // ------- Local Vars --------
 
   dialogOpen = false;
 
-  currentPlanData: any = {};
+  currentPlanData: FullFilteredPlan[] | undefined = [];
 
   isMultiResolution = false;
 
@@ -91,6 +93,7 @@ export default class TheCreatePlansPage extends Vue {
       this.createPlans();
     }
     this.dialogOpen = false;
+    this.currentPlanData = undefined;
   }
 
   updateFormType(formType: string): string {
@@ -102,32 +105,68 @@ export default class TheCreatePlansPage extends Vue {
     const plans = this.cameraResolutionList.map(
       (cameraResolution: CamResolution) => {
         const purePlanObj = {};
-        this.currentPlanData.map(planField => {
+        (this.currentPlanData as FullFilteredPlan[]).map(planField => {
           if (planField.fieldName == "resolution") {
-            // TODO: What do we do with the camera count!???
             purePlanObj[planField.fieldName] = cameraResolution.title;
+          } else if (
+            planField.fieldName == "title" &&
+            this.cameraResolutionList.length > 1
+          ) {
+            purePlanObj[planField.fieldName] =
+              planField.selected + " w/" + cameraResolution.title;
           } else {
             purePlanObj[planField.fieldName] = planField.selected;
           }
         });
+        purePlanObj["numCameras"] = cameraResolution.numCameras;
         return purePlanObj;
       }
     );
-    this.$emit("create-plans-final", plans);
+    this.$emit("create-plans-final", [...plans]);
     this.cameraResolutionList = [];
     this.isMultiResolution = false;
   }
 
   updatePlan(updateInfo) {
     console.log("updateInfo", updateInfo);
-    this.currentPlanData[updateInfo.index].selected = updateInfo.payload;
+    (this.currentPlanData as FullFilteredPlan[])[updateInfo.index].selected =
+      updateInfo.payload;
+  }
+
+  handleSelected(fromPlan: BasePlanOpts, fromAccount: AccountForm) {
+    if (
+      Array.isArray(fromAccount.selected) &&
+      Array.isArray(fromPlan.selected)
+    ) {
+      // then we need to handle addons accordingly
+      console.log(
+        "this is from account, then from plan",
+        fromAccount,
+        fromPlan
+      );
+      if (fromAccount.isDefault) {
+        // return the ones to exclude
+        return [...(fromAccount.selected as [])];
+      } else {
+        return [...(fromPlan.selected as [])];
+        // return the ones to include (with rate 100)
+      }
+    } else {
+      return fromAccount.selected;
+    }
   }
 
   openCreatePlanModal(planTitle) {
     this.selectedPlanTemplate = planTitle;
+    console.log("plan templates:", this.planTemplates);
     // combine account data and plan template data
+    // Add-ons explanation:
+    // if an add-on "isDefault" = true, then everything in the selected array for account is the ones that are default (we cancel those checkboxes out).
+    // if an addon "isDefault" = false, then everything in the selected array should come from the plan template
+    // TODO: get rid of conditional? how much is the speedup really?
     this.currentPlanData = this.planTemplates[planTitle].map(
       (planField, index) => {
+        console.log("the planfield: ", planField, index);
         if (planField.fieldName == this.filteredAccountData[index].fieldName) {
           const account: AccountForm = this.filteredAccountData[index];
           return Object.assign({
@@ -137,13 +176,19 @@ export default class TheCreatePlansPage extends Vue {
             prompt: "",
             subPrompt: planField.label,
             selectionOpts: account.selectionOpts,
-            selected: account.selected,
+            selected: this.handleSelected(planField, account),
             subSubPrompts: account.subSubPrompts ? account.subSubPrompts : []
           }) as FullFilteredPlan;
         } else {
           for (const i in this.filteredAccountData) {
             if (planField.fieldName == this.filteredAccountData[i].fieldName) {
               const account: AccountForm = this.filteredAccountData[i];
+              console.log(
+                "adding field",
+                planField.fieldName,
+                "It has these attibs in account",
+                this.filteredAccountData[i]
+              );
               return Object.assign({
                 fieldName: account.fieldName,
                 isDefault: account.isDefault,
@@ -151,7 +196,7 @@ export default class TheCreatePlansPage extends Vue {
                 prompt: "",
                 subPrompt: planField.label,
                 selectionOpts: account.selectionOpts,
-                selected: account.selected,
+                selected: this.handleSelected(planField, account),
                 subSubPrompts: account.subSubPrompts
                   ? account.subSubPrompts
                   : []
@@ -165,13 +210,18 @@ export default class TheCreatePlansPage extends Vue {
     this.currentPlanData.unshift({
       fieldName: "title",
       formType: "pure-component-textbox",
+      isDefault: false,
       prompt: "Plan Name",
       subPrompt: "",
-      selectionOpts: "",
+      selectionOpts: [""],
       selected: planTitle
     });
 
     this.dialogOpen = true;
+  }
+
+  get randomKey() {
+    return Math.floor(Math.random() * 1000);
   }
 }
 </script>
@@ -180,7 +230,7 @@ export default class TheCreatePlansPage extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="the-create-plans-page">
-    <VPlanList />
+    <VPlanList :plans="createdPlans" title="My Plans" />
     <div class="plan-cards">
       <VPlanCard
         v-for="(plan, key) in planTemplateDefaults"
@@ -193,10 +243,11 @@ export default class TheCreatePlansPage extends Vue {
     </div>
     <TheCreatePlansModal
       v-if="currentPlanData"
-      :key="selectedPlanTemplate"
+      :key="`${selectedPlanTemplate}-${randomKey}`"
       :dialog="dialogOpen"
       :planData="currentPlanData"
       :isVertical="isVertical"
+      :title="selectedPlanTemplate"
       @dialog-closed="dialogClosed($event)"
       @changed-form-item="updatePlan($event)"
       @resolution-change="cameraResolutionList = $event"
