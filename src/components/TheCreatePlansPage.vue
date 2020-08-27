@@ -106,8 +106,11 @@ export default class TheCreatePlansPage extends Vue {
       (cameraResolution: CamResolution) => {
         const purePlanObj = {};
         (this.currentPlanData as FullFilteredPlan[]).map(planField => {
+          // Assign the title to the resolution field (since it isnt handled in the plan)
           if (planField.fieldName == "resolution") {
             purePlanObj[planField.fieldName] = cameraResolution.title;
+
+            // handle custom naming if multiple resolutions
           } else if (
             planField.fieldName == "title" &&
             this.cameraResolutionList.length > 1
@@ -118,7 +121,11 @@ export default class TheCreatePlansPage extends Vue {
             purePlanObj[planField.fieldName] = planField.selected;
           }
         });
+
+        // Add num cameras field
         purePlanObj["numCameras"] = cameraResolution.numCameras;
+        // represents how many cameras are assigned to a location
+        purePlanObj["camerasAssigned"] = 0;
         return purePlanObj;
       }
     );
@@ -223,6 +230,15 @@ export default class TheCreatePlansPage extends Vue {
   get randomKey() {
     return Math.floor(Math.random() * 1000);
   }
+
+  get dehashPlans() {
+    return Object.keys(this.createdPlans).map(key => {
+      return {
+        planKey: key,
+        planData: this.createdPlans[key]
+      };
+    });
+  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -230,7 +246,7 @@ export default class TheCreatePlansPage extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="the-create-plans-page">
-    <VPlanList :plans="createdPlans" title="My Plans" />
+    <VPlanList :plans="dehashPlans" title="My Plans" />
     <div class="plan-cards">
       <VPlanCard
         v-for="(plan, key) in planTemplateDefaults"
