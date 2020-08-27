@@ -250,6 +250,7 @@ function initialState(componentInstance) {
         ]
       },
       addLocationsPageFormData: {
+        plans: {},
         include: [
           {
             data: "createPlansPageFormData",
@@ -328,11 +329,17 @@ export default Vue.extend({
           propObj.include.forEach(inclusion => {
             // Allow to choose one subfield specifically
             if (inclusion["field"]) {
-              propObj[inclusion.propName] = this.pagesData[inclusion.data][
-                inclusion.field
-              ];
+              this.$set(
+                propObj,
+                inclusion.propName,
+                this.pagesData[inclusion.data][inclusion.field]
+              );
             } else {
-              propObj[inclusion.propName] = this.pagesData[inclusion.data];
+              this.$set(
+                propObj,
+                inclusion.propName,
+                this.pagesData[inclusion.data]
+              );
             }
           });
           delete propObj.include;
@@ -343,6 +350,7 @@ export default Vue.extend({
         return;
       }
     },
+    // TODO: does this need this.$set?
     resetToDefaults: function() {
       const data = initialState(this);
       Object.keys(data).forEach(key => (this[key] = data[key]));
@@ -361,15 +369,19 @@ export default Vue.extend({
       this.isVertical = window.innerWidth <= this.orientationThreshold;
     },
     updateAccountPageVals: function(newValObj) {
-      this.pagesData.accountPageFormData.formData[newValObj.index][
-        newValObj.fieldChanged
-      ] = newValObj.payload;
+      this.$set(
+        this.pagesData.accountPageFormData.formData[newValObj.index],
+        newValObj.fieldChanged,
+        newValObj.payload
+      );
     },
     updateQuotePageVals: function(newValObj) {
       const castVal = parseInt(newValObj.newVal, 10);
-      this.pagesData.quoteIntroPageFormData.props[
-        newValObj.key
-      ].value = castVal;
+      this.$set(
+        this.pagesData.quoteIntroPageFormData.props[newValObj.key],
+        "value",
+        castVal
+      );
     },
     generatePlanCode(plan) {
       // Courtesy of https://stackoverflow.com/a/33647870
@@ -385,11 +397,16 @@ export default Vue.extend({
       return hash;
     },
     addNewPlans: function(plans) {
+      // TODO: bug fixes = check for all resetting of data and make sure to use this.$set()
       console.log("creating new plans, ", plans);
       plans.forEach(plan => {
         const planCode = this.generatePlanCode(plan);
-        this.plans[planCode] = plan;
-        this.pagesData.createPlansPageFormData.createdPlans[planCode] = plan;
+        this.$set(this.plans, planCode, plan);
+        this.$set(
+          this.pagesData.createPlansPageFormData.createdPlans,
+          planCode,
+          plan
+        );
       });
     },
     nextStep: function() {
