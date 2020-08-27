@@ -123,6 +123,8 @@ export interface PlanAttributes {
   indexing: { type: string; queries: string };
   overages: string;
   cameraSpec: string;
+  numCameras: number;
+  camerasAssigned: number;
   features: AddOn[];
 }
 
@@ -142,4 +144,9 @@ export interface CamResolution {
   title: string;
   numCameras: number;
   cameraOpts: string[];
+}
+
+export interface DeconstructedHashPlan {
+  planKey: string;
+  planData: PlanAttributes;
 }
