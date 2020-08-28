@@ -79,6 +79,7 @@ export default class VPlanList extends Vue {
           v-for="(plan, index) in plans"
           :key="`${index}-plan`"
         >
+          <!-- TODO: Should this be a button with no border? -->
           <v-hover v-slot:default="{ hover }">
             <div class="hover-container">
               <div class="plan-count" :class="`${getColor(plan)}--text`">
