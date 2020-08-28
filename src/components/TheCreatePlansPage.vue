@@ -48,6 +48,7 @@ export default class TheCreatePlansPage extends Vue {
   // --------- Watchers --------
 
   // ------- Lifecycle ---------
+  // TODO: Replace the constructor with created everywhere
   constructor() {
     super();
     console.log("the form data:", this.filteredAccountData);
@@ -287,7 +288,7 @@ export default class TheCreatePlansPage extends Vue {
     align-self: center;
     max-width: 650px;
 
-    @media only screen and (max-width: 945px) {
+    @media only screen and (max-width: 961px) {
       justify-content: center;
     }
   }
