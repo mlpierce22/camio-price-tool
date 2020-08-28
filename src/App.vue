@@ -199,7 +199,10 @@ function initialState(componentInstance) {
           nextText: "Next",
           backText: "Back"
         },
-        events: {},
+        events: {
+          "assigned-plans-updated": componentInstance.updateAssignedPlansCount,
+          "update-location-app": componentInstance.updateLocation
+        },
         propName: "addLocationsPageFormData"
       },
       {
@@ -251,11 +254,17 @@ function initialState(componentInstance) {
       },
       addLocationsPageFormData: {
         plans: {},
+        locations: {},
         include: [
           {
             data: "createPlansPageFormData",
             propName: "plans",
             field: "createdPlans"
+          },
+          {
+            data: "quoteIntroPageFormData",
+            propName: "initialFormData",
+            field: "formData"
           }
         ]
       },
@@ -350,6 +359,32 @@ export default Vue.extend({
         return;
       }
     },
+    updateLocation(locations) {
+      this.$set(
+        this.pagesData["addLocationsPageFormData"],
+        "locations",
+        locations
+      );
+    },
+    updateAssignedPlansCount(
+      planCounts: { planId: number; sumAssigned: number }[]
+    ) {
+      planCounts.forEach(plan => {
+        console.log(
+          "this is it",
+          this.pagesData["addLocationsPageFormData"]["plans"],
+          plan
+        );
+        // if (this.pagesData["addLocationsPageFormData"]["plans"][plan.planId]) {
+        console.log("is this ever true");
+        this.$set(
+          this.pagesData["addLocationsPageFormData"]["plans"][plan.planId],
+          "camerasAssigned",
+          plan.sumAssigned
+        );
+        // }
+      });
+    },
     // TODO: does this need this.$set?
     resetToDefaults: function() {
       const data = initialState(this);
@@ -377,12 +412,15 @@ export default Vue.extend({
     },
     updateQuotePageVals: function(newValObj) {
       const castVal = parseInt(newValObj.newVal, 10);
+      console.log("this runs?");
       this.$set(
-        this.pagesData.quoteIntroPageFormData.props[newValObj.key],
+        this.pagesData.quoteIntroPageFormData.formData[newValObj.key],
         "value",
         castVal
       );
+      console.log("yep?");
     },
+    // TODO: Determine hashing function
     generatePlanCode(plan) {
       // Courtesy of https://stackoverflow.com/a/33647870
       let hash = 0;
