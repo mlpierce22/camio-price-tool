@@ -86,11 +86,12 @@ export default class VPlanCard extends Vue {
 
   &.margins {
     margin-right: 3vw;
-    @media only screen and (max-width: 938px) {
-      margin-right: 20px;
-    }
-    @media only screen and (max-width: 500px) {
-      margin: 0px;
+    @media only screen and (max-width: 961px) {
+      margin-right: 10px;
+      margin-left: 5px;
+      @media only screen and (max-width: 500px) {
+        margin-left: 3vw;
+      }
     }
   }
   @media only screen and (max-width: 938px) {

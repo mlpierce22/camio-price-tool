@@ -37,13 +37,17 @@ export default class VPlanList extends Vue {
   }
 
   get totalPlansLeftToAssign() {
-    return this.plans
-      .map(plan => {
-        return this.camerasRemaining(plan);
-      })
-      .reduce((prevPlan, currPlan) => {
-        return prevPlan + currPlan;
-      });
+    if (this.plans.length > 0) {
+      return this.plans
+        .map(plan => {
+          return this.camerasRemaining(plan);
+        })
+        .reduce((prevPlan, currPlan) => {
+          return prevPlan + currPlan;
+        });
+    } else {
+      return 999;
+    }
   }
 }
 </script>
@@ -107,9 +111,9 @@ export default class VPlanList extends Vue {
 .v-plan-list {
   display: flex;
   flex-direction: column;
-  width: 92%;
   max-width: 650px;
   align-self: center;
+  width: 100%;
 
   .plan-title {
     font-weight: bold;
