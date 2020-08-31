@@ -201,7 +201,8 @@ function initialState(componentInstance) {
         },
         events: {
           "assigned-plans-updated": componentInstance.updateAssignedPlansCount,
-          "update-location-app": componentInstance.updateLocation
+          "update-location-app": componentInstance.updateLocation,
+          "location-count-change": componentInstance.updateLocationCount
         },
         propName: "addLocationsPageFormData"
       },
@@ -228,13 +229,13 @@ function initialState(componentInstance) {
         formData: {
           numCameras: {
             prompt: "How many cameras do you have?",
-            units: "Camera",
+            units: "Cameras",
             value: 10
           },
           numLANLocations: {
             prompt: "Across how many LAN locations are your cameras located?",
             units: "Location",
-            value: 2
+            value: 1
           }
         } as QuoteIntroForm
       },
@@ -309,12 +310,19 @@ export default Vue.extend({
           .slice(this.progressionState.locationStep, this.steps.length)
           .map((arrItem, indx) => {
             arrItem.stepNumber = this.progressionState.locationStep + indx;
+            arrItem.stepIndex = this.progressionState.locationStep + indx - 1;
 
             return arrItem;
           });
         return [].concat(firstSteps as [], lastSteps as []);
       } else {
-        return this.steps;
+        const renumbered = this.steps.map((step, index) => {
+          const newStep = step;
+          newStep.stepNumber = index + 1;
+          newStep.stepIndex = index;
+          return newStep;
+        });
+        return [].concat(renumbered as []);
       }
     }
   },
@@ -365,6 +373,18 @@ export default Vue.extend({
         "locations",
         locations
       );
+      // if (locations) {
+      //   this.$set(
+      //     this.pagesData["quoteIntroPageFormData"]["formData"][
+      //       "numLANLocations"
+      //     ],
+      //     "value",
+      //     Object.keys(locations).length
+      //   );
+      // }
+    },
+    updateLocationCount(count: number) {
+      this.updateQuotePageVals({ key: "numLANLocations", newVal: count });
     },
     updateAssignedPlansCount(
       planCounts: { planId: number; sumAssigned: number }[]

@@ -34,31 +34,37 @@ export default class TheAddLocationsPage extends Vue {
   @Watch("locations", { deep: true })
   locationChanged() {
     this.$emit("update-location-app", this.locations);
-    console.log("locations updated!");
-    //console.log("update location!", this.locations);
   }
 
   @Watch("initialFormData.numLANLocations", { deep: true })
   formDataChange(event) {
-    console.log("reinitializing");
-    if (event > this.furthestLocation) {
+    console.log("reinitializing", event);
+    if (event.value > this.furthestLocation) {
       // start at furthest and iterate until closest
-    } else if (event < this.furthestLocation) {
+      for (let i = this.furthestLocation; i < event.value; ++i) {
+        this.createLocation();
+      }
+    } else if (event.value < this.furthestLocation) {
+      Object.keys(this.locations).forEach(key => {
+        if (key > event) {
+          this.deleteLocation(key);
+        }
+      });
       // splice out the elements from the event till the end
     } else {
       // they are equal
     }
     // TODO: We want to update this lan locations when we do the add locations button, but we would have an infinite loop here if we did that (what if we just added if there were more?) slice if there are too many, add extras if there arent
-    for (let i = 1; i <= this.initialFormData["numLANLocations"].value; i++) {
-      this.furthestLocation = i;
-      this.$set(this.locations, i, {
-        title: "Location " + i,
-        numCameras: 1,
-        planCounts: { 1: 1 }, // set some default so the empty card displays
-        useVM: false
-      });
-    }
-    this.$emit("update-location-app", this.locations);
+    // for (let i = 1; i <= this.initialFormData["numLANLocations"].value; i++) {
+    //   this.furthestLocation = i;
+    //   this.$set(this.locations, i, {
+    //     title: "Location " + i,
+    //     numCameras: 1,
+    //     planCounts: { 1: 1 }, // set some default so the empty card displays
+    //     useVM: false
+    //   });
+    // }
+    //this.$emit("update-location-app", this.locations);
   }
   // ------- Lifecycle ---------
   constructor() {
@@ -134,13 +140,13 @@ export default class TheAddLocationsPage extends Vue {
       useVM: false
     });
 
-    this.$emit("location-increased"); // TODO: handle Do we need to update num lan locations?
+    this.$emit("location-count-change", Object.keys(this.locations).length);
   }
 
   deleteLocation(index) {
     //TODO: is this necessary?
     this.$delete(this.locations, index);
-    this.$emit("location-decreased"); // TODO: handle
+    this.$emit("location-count-change", Object.keys(this.locations).length);
   }
 
   updateLocation(index, payload) {
@@ -148,7 +154,7 @@ export default class TheAddLocationsPage extends Vue {
   }
 
   openEditModal() {
-    console.log("opening the edit modal"); // TODO: what should happen here?
+    console.log("editing!"); // TODO: what should happen here?
   }
 }
 </script>
