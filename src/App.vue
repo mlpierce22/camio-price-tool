@@ -138,9 +138,16 @@ import {
   PropsList,
   PropBuilderOptions,
   ComponentProps,
-  PromptedNumberInputObject
+  PromptedNumberInputObject,
+  AccountForm,
+  AccountSubForm
 } from "@/models";
-import { FinalYAMLObject, OverallData, OverallChange } from "@/new-models";
+import {
+  FinalYAMLObject,
+  OverallData,
+  OverallChange,
+  DefaultChange
+} from "@/new-models";
 import {
   possibleOptions,
   planTemplates,
@@ -172,9 +179,9 @@ function initialState(componentInstance) {
       overall: {
         totalCameras: 10,
         totalLocations: 1,
-        SOCTools: "",
-        directoryIntegration: "",
-        reporting: ""
+        socTools: possibleOptions().socTools[0], // None
+        directoryIntegration: possibleOptions().directoryIntegration[0], // None
+        reporting: possibleOptions().reporting[0] // Basic
       },
       plans: {},
       locations: {
@@ -186,6 +193,7 @@ function initialState(componentInstance) {
         }
       }
     } as FinalYAMLObject,
+    defaults: {},
     plans: {},
     locations: {},
     steps: [
@@ -234,9 +242,22 @@ function initialState(componentInstance) {
           backText: "Back"
         },
         events: {
-          "changed-form-item": componentInstance.updateAccountPageVals
+          "changed-form-item": componentInstance.updateAccountPageVals,
+          "change-overall": componentInstance.changeOverall,
+          "add-default": componentInstance.addDefault,
+          "remove-default": componentInstance.removeDefault,
+          "modify-default": componentInstance.modifyDefault
         },
-        propName: "accountPageFormData"
+        propName: "accountPageFormData",
+        props: {
+          get: [
+            {
+              field: "formData",
+              getterFunction: "getDefaultsForm",
+              importedFunction: null
+            }
+          ]
+        }
       },
       {
         stepNumber: 3,
@@ -362,6 +383,25 @@ export default Vue.extend({
     //   //console.log("modified:", modified);
     //   return modified;
     // },
+
+    getDefaultsForm: function() {
+      const form = accountFormData();
+      form.map(formObject => {
+        if (formObject.fieldName == "advancedOptions") {
+          (formObject as AccountSubForm).subForm = (formObject as AccountSubForm).subForm.map(
+            form => {
+              form.selected = this.finalYAMLObject.overall[form.fieldName];
+              return form;
+            }
+          );
+        } else if (this.defaults[formObject.fieldName]) {
+          (formObject as AccountForm).selected = this.defaults[
+            formObject.fieldName
+          ];
+        }
+      });
+      return form;
+    },
     getLocations: function() {
       return this.finalYAMLObject.locations;
     },
@@ -455,6 +495,15 @@ export default Vue.extend({
           totalLocations - 1
         );
       }
+    },
+    addDefault(payload: DefaultChange) {
+      this.$set(this.defaults, payload.field, payload.value);
+    },
+    removeDefault(fieldToRemove: string) {
+      this.$delete(this.defaults, fieldToRemove);
+    },
+    modifyDefault(payload: DefaultChange) {
+      this.$set(this.defaults, payload.field, payload.value);
     },
 
     // END FUNCTIONS TO MODIFY FINAL YAML OBJECT
@@ -616,8 +665,8 @@ export default Vue.extend({
     nextStep: function() {
       // If we are on the first step, we need to decide whether or not to show locations
       if (
-        this.pagesData.quoteIntroPageFormData.formData["numLANLocations"]
-          .value === 1
+        this.finalYAMLObject.overall.totalLocations == 1 &&
+        this.progressionState.onStep == 1
       ) {
         this.progressionState.showLocations = false;
       } else {
