@@ -1,35 +1,66 @@
+<!----------------- BEGIN JS/TS ------------------->
+<script lang="ts">
+import { Component, Vue, Prop } from "vue-property-decorator";
+import { OverallData } from "@/new-models";
+import { PromptedNumberInputObject, QuoteIntroForm } from "@/models";
+import VPromptedNumberInput from "@/components/shared/VPromptedNumberInput.vue";
+@Component({
+  components: { VPromptedNumberInput }
+})
+export default class TheQuoteIntroPage extends Vue {
+  // ---------- Props ----------
+  @Prop() formItems: Array<QuoteIntroForm>;
+
+  @Prop() overall: OverallData;
+  // ------- Local Vars --------
+
+  // --------- Watchers --------
+
+  // ------- Lifecycle ---------
+  constructor() {
+    super();
+  }
+  // --------- Methods ---------
+
+  get combined(): Array<PromptedNumberInputObject> {
+    return this.formItems.map(item => {
+      return {
+        key: item.key,
+        prompt: item.prompt,
+        units: item.units,
+        value: this.overall[item.key]
+      };
+    });
+  }
+
+  newValue(value, index) {
+    this.$emit("change-overall", {
+      key: this.combined[index].key,
+      value: parseInt(value)
+    });
+  }
+}
+</script>
+<!----------------- END JS/TS --------------------->
+
+<!----------------- BEGIN HTML -------------------->
 <template lang="html">
-  <div class="the-quote-intro-page" v-if="formData">
-    <div class="number-inputs" v-for="(value, key) in formData" :key="key">
+  <div class="the-quote-intro-page" v-if="combined">
+    <div
+      class="number-inputs"
+      v-for="(value, index) in combined"
+      :key="`${combined[index].key}-input`"
+    >
       <VPromptedNumberInput
         :inputData="value"
-        @new-value="newValue($event, key)"
+        @new-value="newValue($event, index)"
       />
     </div>
   </div>
 </template>
+<!----------------- END HTML ---------------------->
 
-<script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { QuoteIntroForm } from "@/models";
-import VPromptedNumberInput from "@/components/shared/VPromptedNumberInput.vue";
-
-@Component({
-  components: {
-    VPromptedNumberInput
-  }
-})
-export default class TheQuoteIntroPage extends Vue {
-  // TODO: add correct formatting here.
-  @Prop()
-  private formData!: QuoteIntroForm;
-
-  newValue(newVal, key) {
-    this.$emit("new-value-keyed", { newVal, key });
-  }
-}
-</script>
-
+<!----------------- BEGIN CSS/SCSS ---------------->
 <style scoped lang="scss">
 .the-quote-intro-page {
   display: flex;
@@ -41,3 +72,4 @@ export default class TheQuoteIntroPage extends Vue {
   }
 }
 </style>
+<!----------------- END CSS/SCSS ------------------>
