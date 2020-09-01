@@ -32,7 +32,16 @@
                 :key="`${index}-content`"
                 :step="step.stepNumber"
               >
-                <keep-alive>
+                <div class="REMOVE!" v-if="step.props">
+                  <component
+                    :is="step.instance"
+                    :isVertical="isVertical"
+                    v-bind="buildInputObject(step.props)"
+                    v-on="step.events"
+                  ></component>
+                </div>
+                <keep-alive v-else>
+                  <!-- TODO: remove this else -->
                   <component
                     :is="step.instance"
                     :isVertical="isVertical"
@@ -121,15 +130,24 @@ import {
   FormSteps,
   FormPlaceHolder,
   PagesData,
-  PropsList
+  PropsList,
+  PropBuilderOptions,
+  ComponentProps,
+  PromptedNumberInputObject
 } from "@/models";
+import { FinalYAMLObject, OverallData } from "@/new-models";
 import {
   possibleOptions,
   planTemplates,
   accountFormData
 } from "@/form-data-templates";
-// TODO: Move these functions to seperate file.
-// TODO: add correct formatting here.
+// TODO:
+/**
+ * Addons are just an array of strings - for default case - ["social distancing"] means exclude social distancing from options
+ * create "defaults" array that we use to filter the options available
+ * change prop names to be a bunch of objects [{ fromFinal: boolean, field: string }]
+ *
+ */
 
 /** Set the initial state of the function - allows us to reset everything. */
 function initialState(componentInstance) {
@@ -145,6 +163,17 @@ function initialState(componentInstance) {
       showLocations: true,
       locationStep: 4
     },
+    finalYAMLObject: {
+      overall: {
+        totalCameras: 10,
+        totalLocations: 1,
+        SOCTools: "",
+        directoryIntegration: "",
+        reporting: ""
+      },
+      plans: {},
+      locations: {}
+    } as FinalYAMLObject,
     plans: {},
     locations: {},
     steps: [
@@ -160,7 +189,29 @@ function initialState(componentInstance) {
         events: {
           "new-value-keyed": componentInstance.updateQuotePageVals
         },
-        propName: "quoteIntroPageFormData"
+        propName: "quoteIntroPageFormData",
+        props: {
+          get: [
+            {
+              fromFinal: true,
+              field: "overall",
+              getterFunction: "",
+              importedFunction: null
+            }
+          ],
+          formItems: [
+            {
+              key: "totalCameras",
+              prompt: "How many cameras do you have?",
+              units: "Cameras"
+            },
+            {
+              key: "totalLocations",
+              prompt: "Across how many LAN locations are your cameras located?",
+              units: "Location"
+            }
+          ] as Array<PromptedNumberInputObject>
+        }
       },
       {
         stepNumber: 2,
@@ -225,20 +276,20 @@ function initialState(componentInstance) {
       }
     ] as Array<FormSteps | FormPlaceHolder>,
     pagesData: {
-      quoteIntroPageFormData: {
-        formData: {
-          numCameras: {
-            prompt: "How many cameras do you have?",
-            units: "Cameras",
-            value: 10
-          },
-          numLANLocations: {
-            prompt: "Across how many LAN locations are your cameras located?",
-            units: "Location",
-            value: 1
-          }
-        } as QuoteIntroForm
-      },
+      // quoteIntroPageFormData: {
+      //   formData: {
+      //     numCameras: {
+      //       prompt: "How many cameras do you have?",
+      //       units: "Cameras",
+      //       value: 10
+      //     },
+      //     numLANLocations: {
+      //       prompt: "Across how many LAN locations are your cameras located?",
+      //       units: "Location",
+      //       value: 1
+      //     }
+      //   } as QuoteIntroForm
+      // },
       accountPageFormData: {
         formData: accountFormData()
       },
@@ -339,6 +390,44 @@ export default Vue.extend({
     this.$vuetify.theme.themes.light.error = "#FF0000";
   },
   methods: {
+    // BEGIN FUNCTIONS TO MODIFY FINAL YAML OBJECT
+    changeOverall(key, value) {
+      console.log("overall");
+    },
+
+    // END FUNCTIONS TO MODIFY FINAL YAML OBJECT
+
+    buildInputObject(props: ComponentProps) {
+      if (props) {
+        const propObject = {};
+        Object.keys(props).map(key => {
+          if (key == "get") {
+            props[key].forEach(prop => {
+              if (prop.fromFinal) {
+                this.$set(
+                  propObject,
+                  prop.field,
+                  this.finalYAMLObject[prop.field]
+                );
+              } else if (prop.getterFunction !== "") {
+                this.$set(propObject, prop.field, this[prop.getterFunction]);
+              } else if (prop.importedFunction) {
+                this.$set(propObject, prop.field, prop.importedFunction);
+              } else {
+                this.$set(propObject, prop.field, this[prop.field]);
+              }
+            });
+          } else {
+            this.$set(propObject, key, props[key]);
+          }
+        });
+
+        console.log(propObject);
+        return propObject;
+      }
+      // Done case
+      return;
+    },
     computeProps(propObj: PropsList) {
       // Make sure the object exists
       if (propObj) {

@@ -5,9 +5,9 @@ export interface QuoteIntroForm {
 }
 
 export interface PromptedNumberInputObject {
+  key: string;
   prompt: string;
   units: string;
-  value: number;
 }
 
 export interface BackNextButtonConfig {
@@ -30,7 +30,7 @@ export interface FormSteps {
   instance: Component;
   navButtons: BackNextButtonConfig;
   events?: ComponentEvents;
-  props?: PropsList;
+  props: ComponentProps;
 }
 
 export interface FormPlaceHolder {
@@ -109,6 +109,18 @@ export interface PagesData {
 
 export interface PropsList {
   [prop: string]: any; // TODO: Type for each option of prop
+}
+
+export interface PropBuilderOptions {
+  fromFinal: boolean;
+  field: string;
+  getterFunction: string;
+  importedFunction: Function;
+}
+
+export interface ComponentProps {
+  get: Array<PropBuilderOptions>;
+  [propName: string]: Record<string, any>;
 }
 
 export interface Plan {
