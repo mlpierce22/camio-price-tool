@@ -22,31 +22,27 @@ export default class TheDonePage extends Vue {
 
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
-  <div class="the-done-page">
-    <div class="the-done-page elevation-1">
-      <v-icon class="big-icon" color="secondary"
-        >mdi-check-circle-outline</v-icon
-      >
-      <div class="secondary--text done-text">You're All Done!</div>
-      <div class="text">Thank you for your interest in Camio!</div>
-      <div class="text">
-        Your official quote was sent to
-        <span class="primary--text">mason@camio.com.</span>
-      </div>
-      <v-btn class="edit" @click="$emit('edit')" depressed color="success">
-        <v-icon>mdi-pencil</v-icon>
-        <div class="btn-text">Edit this quote</div>
-      </v-btn>
-      <v-btn
-        class="restart"
-        @click="$emit('start-over')"
-        depressed
-        color="success"
-      >
-        <v-icon>mdi-refresh</v-icon>
-        <div class="btn-text">Start new quote</div>
-      </v-btn>
+  <div class="the-done-page elevation-1">
+    <v-icon class="big-icon" color="secondary">mdi-check-circle-outline</v-icon>
+    <div class="secondary--text done-text">You're All Done!</div>
+    <div class="text">Thank you for your interest in Camio!</div>
+    <div class="text">
+      Your official quote was sent to
+      <span class="primary--text">mason@camio.com.</span>
     </div>
+    <v-btn class="edit" @click="$emit('edit')" depressed color="success">
+      <v-icon>mdi-pencil</v-icon>
+      <div class="btn-text">Edit this quote</div>
+    </v-btn>
+    <v-btn
+      class="restart"
+      @click="$emit('start-over')"
+      depressed
+      color="success"
+    >
+      <v-icon>mdi-refresh</v-icon>
+      <div class="btn-text">Start new quote</div>
+    </v-btn>
   </div>
 </template>
 <!----------------- END HTML ---------------------->
