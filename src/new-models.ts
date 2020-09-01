@@ -22,6 +22,10 @@ export interface DefaultChange {
   value: any;
 }
 
+export interface DefaultMap {
+  [fieldName: string]: any;
+}
+
 export interface PlanHashes {
   [hash: string]: PlanAttributes;
 }

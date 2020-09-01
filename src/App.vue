@@ -271,7 +271,31 @@ function initialState(componentInstance) {
         events: {
           "create-plans-final": componentInstance.addNewPlans
         },
-        propName: "createPlansPageFormData"
+        propName: "createPlansPageFormData",
+        props: {
+          get: [
+            {
+              field: "planTemplates",
+              getterFunction: "getFilteredPlanTemplates",
+              importedFunction: null
+            },
+            {
+              field: "accountData",
+              getterFunction: "getFilteredAccountData",
+              importedFunction: null
+            },
+            {
+              field: "createdPlans",
+              getterFunction: "getPlans",
+              importedFunction: null
+            },
+            {
+              field: "isVertical",
+              getterFunction: "",
+              importedFunction: null
+            }
+          ]
+        }
       },
       {
         stepNumber: 4,
@@ -373,17 +397,39 @@ export default Vue.extend({
     return initialState(this);
   },
   computed: {
-    // TODO: Does this belong here (should it be moved?) also, it's wrong
-    // planOptionsWithoutDefaults: function(): any {
-    //   const modified = Object.keys(
-    //     this.pagesData.accountPageFormData.props
-    //   ).map((object, index) => {
-    //     return this.pagesData.accountPageFormData.props[object];
-    //   });
-    //   //console.log("modified:", modified);
-    //   return modified;
-    // },
-
+    getFilteredAccountData: function() {
+      const data = accountFormData();
+      return data.filter(field => {
+        if (field.fieldName == "addOns") {
+          return true;
+        }
+        return this.defaults[field.fieldName] ||
+          field.fieldName == "advancedOptions"
+          ? false
+          : true;
+      });
+    },
+    getFilteredPlanTemplates: function() {
+      const planTemplatesToFilter = planTemplates();
+      const filtered = Object.keys(planTemplatesToFilter).map(key => {
+        return {
+          title: key,
+          templateOptions: planTemplatesToFilter[key].filter(planOption => {
+            // special case because we still want to show addons
+            if (planOption.fieldName == "addOns") {
+              return true;
+            }
+            // if it is in defaults, don't return it
+            return this.defaults[planOption.fieldName] ? false : true;
+          })
+        };
+      });
+      const reconstructed = {};
+      filtered.map(planTemplates => {
+        reconstructed[planTemplates.title] = planTemplates.templateOptions;
+      });
+      return reconstructed;
+    },
     getDefaultsForm: function() {
       const form = accountFormData();
       form.map(formObject => {
@@ -672,6 +718,8 @@ export default Vue.extend({
       } else {
         this.progressionState.showLocations = true;
       }
+
+      // TODO: skip plans too if getFilteredAccountData is empty - name it default plan
 
       // Change the max steps to match
       this.progressionState.maxStep = this.dynamicSlides.length;
