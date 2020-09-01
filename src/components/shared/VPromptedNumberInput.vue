@@ -43,7 +43,9 @@ export default class VPromptedNumberInput extends Vue {
   @Watch("fieldValue")
   handlePluralAndUpdateParent() {
     // Update Parent
-    this.$emit("new-value", this.fieldValue);
+    if (this.fieldValue && this.fieldValue > 0) {
+      this.$emit("new-value", this.fieldValue);
+    }
     // https://github.com/plurals/pluralize
     if (!this.fieldValue && this.fieldValue !== 0) {
       return this.units;
