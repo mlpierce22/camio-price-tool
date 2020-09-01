@@ -16,6 +16,7 @@ import {
 import VPlanList from "@/components/shared/VPlanList.vue";
 import VPlanCard from "@/components/shared/VPlanCard.vue";
 import TheCreatePlansModal from "@/components/TheCreatePlansModal.vue";
+import { DefaultMap } from "@/new-models";
 
 @Component({
   components: {
@@ -26,9 +27,12 @@ import TheCreatePlansModal from "@/components/TheCreatePlansModal.vue";
 })
 export default class TheCreatePlansPage extends Vue {
   // ---------- Props ----------
+  // TODO: Does this need a refactor??
   @Prop() planTemplates!: PlanTemplates;
 
-  @Prop() accountData!: Array<AccountForm | AccountSubForm>;
+  @Prop() accountData!: Array<AccountForm>;
+
+  @Prop() defaults!: DefaultMap;
 
   @Prop() createdPlans!: Plan;
 
@@ -51,34 +55,27 @@ export default class TheCreatePlansPage extends Vue {
   // TODO: Replace the constructor with created everywhere
   constructor() {
     super();
-    console.log("the form data:", this.filteredAccountData);
+    console.log("the form data:", this.accountData);
     console.log("the plan templates:", this.planTemplates);
   }
   // --------- Methods ---------
-  get filteredAccountData(): AccountForm {
-    return (this.accountData.filter(
-      field => field.fieldName !== "advancedOptions"
-    ) as unknown) as AccountForm;
-  }
 
   get planTemplateDefaults() {
     return Object.keys(this.planTemplates).map(key => {
       return {
         key: key,
         value: this.planTemplates[key].map((planItem, index) => {
-          if (planItem.fieldName == this.filteredAccountData[index].fieldName) {
+          if (planItem.fieldName == this.accountData[index].fieldName) {
             return Object.assign(planItem, {
-              isDefault: (this.filteredAccountData[index] as AccountForm)
-                .isDefault,
+              isDefault: (this.accountData[index] as AccountForm).isDefault,
               key
             }) as PlanTemplateWithDefaults;
           } else {
             // otherwise, it's out of order, so we need to search everything
-            for (const i in this.filteredAccountData) {
-              if (planItem.fieldName == this.filteredAccountData[i].fieldName) {
+            for (const i in this.accountData) {
+              if (planItem.fieldName == this.accountData[i].fieldName) {
                 return Object.assign(planItem, {
-                  isDefault: (this.filteredAccountData[i] as AccountForm)
-                    .isDefault
+                  isDefault: (this.accountData[i] as AccountForm).isDefault
                 }) as PlanTemplateWithDefaults;
               }
             }
@@ -168,48 +165,21 @@ export default class TheCreatePlansPage extends Vue {
     this.selectedPlanTemplate = planTitle;
     console.log("plan templates:", this.planTemplates);
     // combine account data and plan template data
-    // Add-ons explanation:
-    // if an add-on "isDefault" = true, then everything in the selected array for account is the ones that are default (we cancel those checkboxes out).
-    // if an addon "isDefault" = false, then everything in the selected array should come from the plan template
-    // TODO: get rid of conditional? how much is the speedup really?
     this.currentPlanData = this.planTemplates[planTitle].map(
       (planField, index) => {
-        console.log("the planfield: ", planField, index);
-        if (planField.fieldName == this.filteredAccountData[index].fieldName) {
-          const account: AccountForm = this.filteredAccountData[index];
-          return Object.assign({
-            fieldName: account.fieldName,
-            isDefault: account.isDefault,
-            formType: account.formType,
-            prompt: "",
-            subPrompt: planField.label,
-            selectionOpts: account.selectionOpts,
-            selected: this.handleSelected(planField, account),
-            subSubPrompts: account.subSubPrompts ? account.subSubPrompts : []
-          }) as FullFilteredPlan;
-        } else {
-          for (const i in this.filteredAccountData) {
-            if (planField.fieldName == this.filteredAccountData[i].fieldName) {
-              const account: AccountForm = this.filteredAccountData[i];
-              console.log(
-                "adding field",
-                planField.fieldName,
-                "It has these attibs in account",
-                this.filteredAccountData[i]
-              );
-              return Object.assign({
-                fieldName: account.fieldName,
-                isDefault: account.isDefault,
-                formType: this.updateFormType(account.formType),
-                prompt: "",
-                subPrompt: planField.label,
-                selectionOpts: account.selectionOpts,
-                selected: this.handleSelected(planField, account),
-                subSubPrompts: account.subSubPrompts
-                  ? account.subSubPrompts
-                  : []
-              }) as FullFilteredPlan;
-            }
+        for (const i in this.accountData) {
+          if (planField.fieldName == this.accountData[i].fieldName) {
+            const account: AccountForm = this.accountData[i];
+            return Object.assign({
+              fieldName: account.fieldName,
+              isDefault: account.isDefault,
+              formType: this.updateFormType(account.formType),
+              prompt: "",
+              subPrompt: planField.label,
+              selectionOpts: account.selectionOpts,
+              selected: account.selected, //this.handleSelected(planField, account), // TODO: determine if this is necessary
+              subSubPrompts: account.subSubPrompts ? account.subSubPrompts : []
+            }) as FullFilteredPlan;
           }
         }
       }
@@ -250,10 +220,10 @@ export default class TheCreatePlansPage extends Vue {
     <VPlanList :plans="dehashPlans" title="My Plans" />
     <div class="plan-cards">
       <VPlanCard
-        v-for="(plan, key) in planTemplateDefaults"
+        v-for="(plan, key) in planTemplates"
         :key="`${key}-plan-card`"
-        :planTemplate="plan.value"
-        :title="plan.key"
+        :planTemplate="plan"
+        :title="key"
         :class="{ margins: key % 2 === 0 }"
         @create-plan="openCreatePlanModal($event)"
       />

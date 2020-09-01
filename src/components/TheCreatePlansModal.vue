@@ -168,8 +168,12 @@ export default class TheCreatePlansModal extends Vue {
                 "
               />
             </div>
-            <div class="bottom-form" v-else key="resolution">
-              <div class="title-container" v-if="!planItem.isDefault">
+            <div
+              class="bottom-form"
+              v-if="planItem.fieldName == 'resolution'"
+              key="resolution"
+            >
+              <div class="title-container">
                 <v-icon class="icon" color="primary" size="60"
                   >mdi-video-outline</v-icon
                 >
@@ -177,7 +181,7 @@ export default class TheCreatePlansModal extends Vue {
                   Subscribe Cameras
                 </div>
               </div>
-              <div class="camera-card-container" v-if="!planItem.isDefault">
+              <div class="camera-card-container">
                 <VCameraCard
                   key="top-card"
                   :camera="resolutions(planItem)[0]"
