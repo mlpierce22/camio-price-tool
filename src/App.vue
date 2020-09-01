@@ -293,6 +293,11 @@ function initialState(componentInstance) {
               field: "isVertical",
               getterFunction: "",
               importedFunction: null
+            },
+            {
+              field: "defaults",
+              getterFunction: "",
+              importedFunction: null
             }
           ]
         }

@@ -11,6 +11,7 @@ import {
 import VBackNextButton from "@/components/shared/VBackNextButton.vue";
 import VFormItemPicker from "@/components/shared/VFormItemPicker.vue";
 import VCameraCard from "@/components/shared/VCameraCard.vue";
+import { DefaultMap } from "@/new-models";
 
 @Component({
   components: {
@@ -28,6 +29,8 @@ export default class TheCreatePlansModal extends Vue {
   @Prop() isVertical!: boolean;
 
   @Prop() title!: string;
+
+  @Prop() defaults!: DefaultMap;
   // ------- Local Vars --------
 
   dialogOpen = false;
@@ -79,6 +82,10 @@ export default class TheCreatePlansModal extends Vue {
   // --------- Methods ---------
   changedForm(index, fieldChanged, event) {
     this.$emit("changed-form-item", { index, fieldChanged, payload: event });
+  }
+
+  get addOnDefaults() {
+    return this.defaults["addOns"] ? this.defaults["addOns"] : undefined;
   }
 
   resolutions(planItem) {
@@ -163,6 +170,7 @@ export default class TheCreatePlansModal extends Vue {
             >
               <VFormItemPicker
                 :data="planItem"
+                :defaults="addOnDefaults"
                 @selected-changed="
                   changedForm(index, planItem.fieldName, $event)
                 "

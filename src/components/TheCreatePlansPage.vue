@@ -27,7 +27,6 @@ import { DefaultMap } from "@/new-models";
 })
 export default class TheCreatePlansPage extends Vue {
   // ---------- Props ----------
-  // TODO: Does this need a refactor??
   @Prop() planTemplates!: PlanTemplates;
 
   @Prop() accountData!: Array<AccountForm>;
@@ -59,31 +58,6 @@ export default class TheCreatePlansPage extends Vue {
     console.log("the plan templates:", this.planTemplates);
   }
   // --------- Methods ---------
-
-  get planTemplateDefaults() {
-    return Object.keys(this.planTemplates).map(key => {
-      return {
-        key: key,
-        value: this.planTemplates[key].map((planItem, index) => {
-          if (planItem.fieldName == this.accountData[index].fieldName) {
-            return Object.assign(planItem, {
-              isDefault: (this.accountData[index] as AccountForm).isDefault,
-              key
-            }) as PlanTemplateWithDefaults;
-          } else {
-            // otherwise, it's out of order, so we need to search everything
-            for (const i in this.accountData) {
-              if (planItem.fieldName == this.accountData[i].fieldName) {
-                return Object.assign(planItem, {
-                  isDefault: (this.accountData[i] as AccountForm).isDefault
-                }) as PlanTemplateWithDefaults;
-              }
-            }
-          }
-        })
-      };
-    });
-  }
 
   dialogClosed(isSubmit) {
     // update the data structure in parent (probably plans)
@@ -136,29 +110,6 @@ export default class TheCreatePlansPage extends Vue {
     console.log("updateInfo", updateInfo);
     (this.currentPlanData as FullFilteredPlan[])[updateInfo.index].selected =
       updateInfo.payload;
-  }
-
-  handleSelected(fromPlan: BasePlanOpts, fromAccount: AccountForm) {
-    if (
-      Array.isArray(fromAccount.selected) &&
-      Array.isArray(fromPlan.selected)
-    ) {
-      // then we need to handle addons accordingly
-      console.log(
-        "this is from account, then from plan",
-        fromAccount,
-        fromPlan
-      );
-      if (fromAccount.isDefault) {
-        // return the ones to exclude
-        return [...(fromAccount.selected as [])];
-      } else {
-        return [...(fromPlan.selected as [])];
-        // return the ones to include (with rate 100)
-      }
-    } else {
-      return fromAccount.selected;
-    }
   }
 
   openCreatePlanModal(planTitle) {
@@ -235,6 +186,7 @@ export default class TheCreatePlansPage extends Vue {
       :planData="currentPlanData"
       :isVertical="isVertical"
       :title="selectedPlanTemplate"
+      :defaults="defaults"
       @dialog-closed="dialogClosed($event)"
       @changed-form-item="updatePlan($event)"
       @resolution-change="cameraResolutionList = $event"
