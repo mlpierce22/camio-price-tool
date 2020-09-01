@@ -12,6 +12,11 @@ export interface OverallData {
   reporting: string;
 }
 
+export interface OverallChange {
+  key: string;
+  value: string | number;
+}
+
 export interface PlanHashes {
   [hash: string]: PlanAttributes;
 }
@@ -35,12 +40,14 @@ export interface AddOn {
 }
 
 export interface LocationHashes {
-  [hash: string]: LocationAttributes;
+  [id: number]: LocationAttributes;
 }
 
 export interface LocationAttributes {
+  title: string;
   numCameras: number;
   planIds: PlanIdCounts;
+  useVM: boolean;
 }
 
 export interface PlanIdCounts {

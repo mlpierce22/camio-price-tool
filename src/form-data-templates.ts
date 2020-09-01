@@ -38,7 +38,6 @@ export function possibleOptions() {
     ] as Array<AddOnOpts>,
     socTools: [
       "None",
-
       "Basic (Event Streaming, Concurrent Review",
       "Plus (Basic + Camera Groups)",
       "Pro (Plus + Domain Hooks, Webhook Retries)"

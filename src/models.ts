@@ -1,13 +1,16 @@
 import { Component } from "vue/types/umd";
 
 export interface QuoteIntroForm {
-  [index: string]: PromptedNumberInputObject;
-}
-
-export interface PromptedNumberInputObject {
   key: string;
   prompt: string;
   units: string;
+}
+
+export interface PromptedNumberInputObject {
+  value: number;
+  prompt: string;
+  units: string;
+  key: string;
 }
 
 export interface BackNextButtonConfig {
