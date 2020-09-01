@@ -18,23 +18,36 @@ export default class VAdvancedOptions extends Vue {
   // --------- Watchers --------
 
   @Watch("selected")
-  selectedChanged() {
-    const tempSubform = [...this.data.subForm];
-    tempSubform.forEach((form, i) => {
-      form.selected = this.selected[i];
+  selectedChanged(event) {
+    const tempSubform = this.data.subForm.map((form, index) => {
+      return {
+        key: form.fieldName,
+        value: event[index]
+      };
     });
-    this.$emit("selected-changed", tempSubform);
+    // tempSubform.forEach((form, i) => {
+    //   form.selected = this.selected[i];
+    // });
+    tempSubform.forEach(formItem => this.$emit("advanced-changed", formItem));
   }
   // ------- Lifecycle ---------
   constructor() {
     super();
-    this.data.subForm.forEach(formItem => {
-      this.selected.push(formItem.selected as string);
+    this.selected = this.data.subForm.map(option => {
+      return option.selected as string;
     });
   }
   // --------- Methods ---------
   get checkifOpen() {
     return this.isOpen.length > 0;
+  }
+
+  get subOpts() {
+    return this.data.subForm.map(option => {
+      return (option.selectionOpts as []).map(opt => {
+        return opt;
+      });
+    });
   }
 }
 </script>
@@ -68,7 +81,7 @@ export default class VAdvancedOptions extends Vue {
               :key="`${index}-advanced-option`"
             >
               <v-select
-                :items="option.selectionOpts"
+                :items="subOpts[index]"
                 v-model="selected[index]"
                 :label="option.prompt"
                 hide-details
