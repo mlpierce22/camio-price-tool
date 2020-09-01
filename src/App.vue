@@ -33,22 +33,27 @@
                 :step="step.stepNumber"
               >
                 <div class="REMOVE!" v-if="step.props">
-                  <component
-                    :is="step.instance"
-                    :isVertical="isVertical"
-                    v-bind="buildInputObject(step.props)"
-                    v-on="step.events"
-                  ></component>
+                  <keep-alive>
+                    <component
+                      :is="step.instance"
+                      :isVertical="isVertical"
+                      v-bind="buildInputObject(step.props)"
+                      v-on="step.events"
+                    ></component>
+                  </keep-alive>
                 </div>
-                <keep-alive v-else>
-                  <!-- TODO: remove this else -->
-                  <component
-                    :is="step.instance"
-                    :isVertical="isVertical"
-                    v-bind="computeProps(pagesData[step.propName])"
-                    v-on="step.events"
-                  ></component>
-                </keep-alive>
+                <div class="REMOVE!" v-else>
+                  <keep-alive>
+                    <!-- TODO: remove this else -->
+                    <component
+                      :is="step.instance"
+                      :isVertical="isVertical"
+                      v-bind="computeProps(pagesData[step.propName])"
+                      v-on="step.events"
+                    ></component>
+                  </keep-alive>
+                </div>
+
                 <VBackNextButton
                   v-if="step['navButtons']"
                   @next-click="nextStep()"
@@ -135,7 +140,7 @@ import {
   ComponentProps,
   PromptedNumberInputObject
 } from "@/models";
-import { FinalYAMLObject, OverallData } from "@/new-models";
+import { FinalYAMLObject, OverallData, OverallChange } from "@/new-models";
 import {
   possibleOptions,
   planTemplates,
@@ -172,7 +177,14 @@ function initialState(componentInstance) {
         reporting: ""
       },
       plans: {},
-      locations: {}
+      locations: {
+        1: {
+          title: "Location 1",
+          numCameras: 1,
+          planIds: { 1: 1 }, // set some default
+          useVM: false
+        }
+      }
     } as FinalYAMLObject,
     plans: {},
     locations: {},
@@ -187,15 +199,14 @@ function initialState(componentInstance) {
           backText: "Back"
         },
         events: {
-          "new-value-keyed": componentInstance.updateQuotePageVals
+          "change-overall": componentInstance.changeOverall
         },
         propName: "quoteIntroPageFormData",
         props: {
           get: [
             {
-              fromFinal: true,
               field: "overall",
-              getterFunction: "",
+              getterFunction: "getOverall",
               importedFunction: null
             }
           ],
@@ -210,7 +221,7 @@ function initialState(componentInstance) {
               prompt: "Across how many LAN locations are your cameras located?",
               units: "Location"
             }
-          ] as Array<PromptedNumberInputObject>
+          ] as Array<QuoteIntroForm>
         }
       },
       {
@@ -351,6 +362,17 @@ export default Vue.extend({
     //   //console.log("modified:", modified);
     //   return modified;
     // },
+    getLocations: function() {
+      return this.finalYAMLObject.locations;
+    },
+
+    getPlans: function() {
+      return this.finalYAMLObject.plans;
+    },
+
+    getOverall: function() {
+      return this.finalYAMLObject.overall;
+    },
     dynamicSlides: function(): (FormSteps | FormPlaceHolder)[] {
       if (this.progressionState.showLocations === false) {
         const firstSteps: {}[] = this.steps.slice(
@@ -391,8 +413,48 @@ export default Vue.extend({
   },
   methods: {
     // BEGIN FUNCTIONS TO MODIFY FINAL YAML OBJECT
-    changeOverall(key, value) {
-      console.log("overall");
+    changeOverall(change: OverallChange) {
+      const totalLocations = this.finalYAMLObject.overall.totalLocations;
+      if (change.key == "totalLocations") {
+        if (change.value > totalLocations) {
+          for (let i = totalLocations + 1; i <= change.value; ++i) {
+            this.addLocation();
+          }
+        } else if (change.value < totalLocations) {
+          for (let i = (change.value as number) + 1; i <= totalLocations; ++i) {
+            this.deleteLocation(i);
+          }
+        }
+      } else {
+        this.$set(this.finalYAMLObject.overall, change.key, change.value);
+      }
+    },
+
+    addLocation() {
+      const newLocNum = Object.keys(this.finalYAMLObject.locations).length + 1;
+      this.$set(this.finalYAMLObject.locations, newLocNum, {
+        title: "Location " + newLocNum,
+        numCameras: 1,
+        planCounts: { 1: 1 }, // set some default
+        useVM: false
+      });
+      this.$set(
+        this.finalYAMLObject.overall,
+        "totalLocations",
+        Object.keys(this.finalYAMLObject.locations).length
+      );
+    },
+
+    deleteLocation(locationId: number) {
+      const totalLocations = Object.keys(this.finalYAMLObject.locations).length;
+      if (totalLocations > 1) {
+        this.$delete(this.finalYAMLObject.locations, locationId);
+        this.$set(
+          this.finalYAMLObject.overall,
+          "totalLocations",
+          totalLocations - 1
+        );
+      }
     },
 
     // END FUNCTIONS TO MODIFY FINAL YAML OBJECT
@@ -403,13 +465,7 @@ export default Vue.extend({
         Object.keys(props).map(key => {
           if (key == "get") {
             props[key].forEach(prop => {
-              if (prop.fromFinal) {
-                this.$set(
-                  propObject,
-                  prop.field,
-                  this.finalYAMLObject[prop.field]
-                );
-              } else if (prop.getterFunction !== "") {
+              if (prop.getterFunction !== "") {
                 this.$set(propObject, prop.field, this[prop.getterFunction]);
               } else if (prop.importedFunction) {
                 this.$set(propObject, prop.field, prop.importedFunction);
@@ -429,27 +485,28 @@ export default Vue.extend({
       return;
     },
     computeProps(propObj: PropsList) {
+      console.log(propObj);
       // Make sure the object exists
       if (propObj) {
-        if ("include" in propObj) {
-          propObj.include.forEach(inclusion => {
-            // Allow to choose one subfield specifically
-            if (inclusion["field"]) {
-              this.$set(
-                propObj,
-                inclusion.propName,
-                this.pagesData[inclusion.data][inclusion.field]
-              );
-            } else {
-              this.$set(
-                propObj,
-                inclusion.propName,
-                this.pagesData[inclusion.data]
-              );
-            }
-          });
-          delete propObj.include;
-        }
+        // if ("include" in propObj) {
+        //   propObj.include.forEach(inclusion => {
+        //     // Allow to choose one subfield specifically
+        //     if (inclusion["field"]) {
+        //       this.$set(
+        //         propObj,
+        //         inclusion.propName,
+        //         this.pagesData[inclusion.data][inclusion.field]
+        //       );
+        //     } else {
+        //       this.$set(
+        //         propObj,
+        //         inclusion.propName,
+        //         this.pagesData[inclusion.data]
+        //       );
+        //     }
+        //   });
+        //   delete propObj.include;
+        // }
         return propObj;
       } else {
         // This is for the done case.
