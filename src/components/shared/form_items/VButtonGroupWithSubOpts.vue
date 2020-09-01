@@ -19,7 +19,7 @@ export default class VButtonGroupWithSubOpts extends Vue {
   @Watch("topLevelKey")
   topLevelKeyChange() {
     console.log("Change to the top level key, it is now: " + this.topLevelKey);
-    this.constructSelected(this.getSubSelectedIndex());
+    this.constructSelected(this.subSelectedIndex);
   }
   // ------- Lifecycle ---------
   constructor() {
@@ -28,12 +28,12 @@ export default class VButtonGroupWithSubOpts extends Vue {
   }
   // --------- Methods ---------
   /** Gets the option keys to display at the top level. */
-  getTopLevelOpts() {
+  get topLevelOpts() {
     return Object.keys(this.data.selectionOpts);
   }
 
   /** Converts the selected top level "type" into an index for the button component.  */
-  getSelectedIndex() {
+  get selectedIndex() {
     let index = NaN;
     Object.keys(this.data.selectionOpts).forEach((key, idx) => {
       if ((this.data.selected as TwoTierSelection).type == key) {
@@ -45,7 +45,7 @@ export default class VButtonGroupWithSubOpts extends Vue {
   }
 
   /** Converts the selected "option" from a string into an index for the button component. */
-  getSubSelectedIndex() {
+  get subSelectedIndex() {
     let index = NaN;
     this.data.selectionOpts[this.topLevelKey].forEach((subItem, idx) => {
       if ((this.data.selected as TwoTierSelection).option == subItem) {
@@ -61,7 +61,7 @@ export default class VButtonGroupWithSubOpts extends Vue {
   }
 
   /** Gets the sub options array based on a key. */
-  getSubOpts() {
+  get subOpts() {
     return this.data.selectionOpts[this.topLevelKey];
   }
 
@@ -101,15 +101,16 @@ export default class VButtonGroupWithSubOpts extends Vue {
 <template lang="html">
   <div class="v-button-group-with-sub-opts">
     <VButtonGroup
-      :selectionOpts="getTopLevelOpts()"
+      :selectionOpts="topLevelOpts"
       :subPrompt="data.subPrompt"
-      :selected="getSelectedIndex()"
+      :selected="selectedIndex"
       @selected-changed="convertIndexToKey($event)"
     />
     <div class="sub-container" v-if="topLevelKey">
       <VButtonGroup
-        :selectionOpts="getSubOpts()"
-        :selected="getSubSelectedIndex()"
+        :key="`${selectedIndex}-subopts`"
+        :selectionOpts="subOpts"
+        :selected="subSelectedIndex"
         :subPrompt="subSubPrompt"
         @selected-changed="constructSelected($event)"
       />
