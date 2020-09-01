@@ -29,6 +29,8 @@ export default class VFormItemPicker extends Vue {
   // ---------- Props ----------
   @Prop() public data!: AccountForm;
 
+  @Prop() defaults!: Array<string>;
+
   // ------- Local Vars --------
 
   selected: any; // TODO: typing
@@ -136,6 +138,7 @@ export default class VFormItemPicker extends Vue {
       <VCheckBoxes
         :data="data"
         :shouldHide="true"
+        :defaults="defaults"
         @selected-changed="selected = $event"
         v-else-if="data.formType === 'pure-component-checkbox'"
       />

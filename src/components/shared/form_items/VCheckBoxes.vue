@@ -11,39 +11,54 @@ export default class VCheckBoxes extends Vue {
 
   @Prop() shouldHide!: boolean;
 
-  // ------- Local Vars --------
-  selectedBoxes: boolean[] = [];
+  @Prop() defaults: Array<string>;
 
-  filteredBoxes: Array<{ name: string; rate: boolean }> = [];
+  // ------- Local Vars --------
+  selectedBoxes: Array<string> = [];
+
+  // filteredBoxes: Array<{ name: string; rate: boolean }> = [];
 
   // --------- Watchers --------
 
   @Watch("selectedBoxes")
   selectedChanged() {
-    console.log("rate:", this.selectedBoxes);
-
-    this.$emit(
-      "selected-changed",
-      this.filteredBoxes
-        .map((item, index) => {
-          return {
-            name: item.name,
-            rate: this.convertRate(this.selectedBoxes[index]) as number
-          };
-        })
-        .concat(
-          (this.data.selected as AddOn[]).map(selected => {
-            return {
-              name: selected.name,
-              rate: selected.rate
-            };
-          })
-        )
-        .filter(option => {
-          return option.rate !== 0;
-        })
-    );
+    let arrayToEmit = [];
+    if (this.shouldHide) {
+      //return with rate
+      arrayToEmit = this.selectedBoxes.map((checkbox, index) => {
+        return {
+          name: checkbox,
+          rate: this.data.selectionOpts[index].rate[1] // 100
+        };
+      });
+    } else {
+      arrayToEmit = this.selectedBoxes;
+      // return just array of strings (selected)
+    }
+    this.$emit("selected-changed", arrayToEmit);
   }
+  //   this.$emit(
+  //     "selected-changed",
+  //     this.filteredBoxes
+  //       .map((item, index) => {
+  //         return {
+  //           name: item.name,
+  //           rate: this.convertRate(this.selectedBoxes[index]) as number
+  //         };
+  //       })
+  //       .concat(
+  //         (this.data.selected as AddOn[]).map(selected => {
+  //           return {
+  //             name: selected.name,
+  //             rate: selected.rate
+  //           };
+  //         })
+  //       )
+  //       .filter(option => {
+  //         return option.rate !== 0;
+  //       })
+  //   );
+  // }
   // ------- Lifecycle ---------
 
   // TODO:
@@ -54,69 +69,81 @@ export default class VCheckBoxes extends Vue {
    */
   constructor() {
     super();
-    if (this.shouldHide && this.data.isDefault) {
-      // create an object that is the selection options
-      const selectedNames = (this.data.selected as AddOn[]).map(
-        selected => selected.name
-      );
-      const selectedRates = (this.data.selected as AddOn[]).map(
-        selected => selected.rate
-      );
-      console.log("names n rates", selectedNames, selectedRates);
-      this.filteredBoxes = (this.data.selectionOpts as AddOnOpts[])
-        .map((option, index) => {
-          console.log(
-            selectedRates.length - 1,
-            "is >=?",
-            index,
-            selectedRates.length - 1 >= index,
-            "the value here is: ",
-            selectedRates[index]
-          );
-          return {
-            name: option.name,
-            rate:
-              selectedRates.length - 1 >= index
-                ? (this.convertRate(selectedRates[index]) as boolean)
-                : (this.convertRate(0) as boolean)
-          };
-        })
-        .filter(option => {
-          return !selectedNames.includes(option.name);
-        });
-    } else {
-      // make it so the rate is 0 and all display
-      this.filteredBoxes = (this.data.selectionOpts as AddOnOpts[]).map(
-        option => {
-          return {
-            name: option.name,
-            rate: this.convertRate(0) as boolean
-          };
-        }
-      );
-    }
-    this.selectedBoxes = this.filteredBoxes.map(box => {
-      return box.rate;
-    });
+
+    // if (this.shouldHide && this.data.isDefault) {
+    //   // create an object that is the selection options
+    //   const selectedNames = (this.data.selected as AddOn[]).map(
+    //     selected => selected.name
+    //   );
+    //   const selectedRates = (this.data.selected as AddOn[]).map(
+    //     selected => selected.rate
+    //   );
+    //   console.log("names n rates", selectedNames, selectedRates);
+    //   this.filteredBoxes = (this.data.selectionOpts as AddOnOpts[])
+    //     .map((option, index) => {
+    //       console.log(
+    //         selectedRates.length - 1,
+    //         "is >=?",
+    //         index,
+    //         selectedRates.length - 1 >= index,
+    //         "the value here is: ",
+    //         selectedRates[index]
+    //       );
+    //       return {
+    //         name: option.name,
+    //         rate:
+    //           selectedRates.length - 1 >= index
+    //             ? (this.convertRate(selectedRates[index]) as boolean)
+    //             : (this.convertRate(0) as boolean)
+    //       };
+    //     })
+    //     .filter(option => {
+    //       return !selectedNames.includes(option.name);
+    //     });
+    // } else {
+    //   // make it so the rate is 0 and all display
+    //   this.filteredBoxes = (this.data.selectionOpts as AddOnOpts[]).map(
+    //     option => {
+    //       return {
+    //         name: option.name,
+    //         rate: this.convertRate(0) as boolean
+    //       };
+    //     }
+    //   );
+    // }
+    // this.selectedBoxes = this.filteredBoxes.map(box => {
+    //   return box.rate;
+    // });
   }
 
   // --------- Methods ---------
 
-  convertRate(rate: boolean | number) {
-    if (typeof rate == "number") {
-      console.log(
-        "converting number, " + rate + " to ",
-        rate == 0 ? false : true
-      );
-      return rate == 0 ? false : true;
-    } else {
-      console.log("converting boolean, " + rate + " to ", rate ? 100 : 0);
-      return rate ? 100 : 0;
-    }
-  }
+  // convertRate(rate: boolean | number) {
+  //   if (typeof rate == "number") {
+  //     console.log(
+  //       "converting number, " + rate + " to ",
+  //       rate == 0 ? false : true
+  //     );
+  //     return rate == 0 ? false : true;
+  //   } else {
+  //     console.log("converting boolean, " + rate + " to ", rate ? 100 : 0);
+  //     return rate ? 100 : 0;
+  //   }
+  // }
 
   get checkBoxList() {
-    return this.filteredBoxes;
+    if (this.defaults) {
+      return (this.data.selectionOpts as AddOnOpts[]).map(option => {
+        return {
+          name: option.name,
+          disable: this.defaults.includes(option.name)
+        };
+      });
+    } else {
+      return (this.data.selectionOpts as AddOnOpts[]).map(option => {
+        return { name: option.name, disable: false };
+      });
+    }
   }
 }
 </script>
@@ -126,15 +153,31 @@ export default class VCheckBoxes extends Vue {
 <template lang="html">
   <div class="v-check-boxes">
     <div class="prompt">{{ data.subPrompt }}</div>
-    <v-checkbox
-      v-for="(options, index) in checkBoxList"
+    <div
+      class="checkboxes"
+      v-for="(option, index) in checkBoxList"
       :key="`checkbox-${index}`"
-      v-model="selectedBoxes[index]"
-      :label="options.name"
-      hide-details
-      dense
-      color="primary"
-    ></v-checkbox>
+    >
+      <v-checkbox
+        v-if="option.disable"
+        input-value="true"
+        :label="option.name"
+        hide-details
+        dense
+        disabled
+        key="fake-checkbox"
+      ></v-checkbox>
+      <v-checkbox
+        v-else
+        :key="`fake-checkbox-${index}`"
+        :value="option.name"
+        v-model="selectedBoxes"
+        :label="option.name"
+        hide-details
+        dense
+        color="primary"
+      ></v-checkbox>
+    </div>
   </div>
 </template>
 <!----------------- END HTML ---------------------->
