@@ -271,7 +271,7 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
           formType: "dropdown",
           prompt: "Directory Integration",
           selectionOpts: possibleOptions().directoryIntegration,
-          selected: possibleOptions().directoryIntegration[0] // None
+          selected: "" // selected from finalYAMLObject
         },
         {
           fieldName: "socTools",
@@ -279,7 +279,7 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
           formType: "dropdown",
           prompt: "SOC Tools",
           selectionOpts: possibleOptions().socTools,
-          selected: possibleOptions().socTools[0] // None
+          selected: "" // selected from finalYAMLObject
         },
         {
           fieldName: "reporting",
@@ -287,7 +287,7 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
           formType: "dropdown",
           prompt: "Reporting",
           selectionOpts: possibleOptions().reporting,
-          selected: possibleOptions().reporting[1] // Basic
+          selected: "" // selected from finalYAMLObject
         }
       ]
     }

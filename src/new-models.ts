@@ -7,7 +7,7 @@ export interface FinalYAMLObject {
 export interface OverallData {
   totalCameras: number;
   totalLocations: number;
-  SOCTools: string;
+  socTools: string;
   directoryIntegration: string;
   reporting: string;
 }
@@ -15,6 +15,11 @@ export interface OverallData {
 export interface OverallChange {
   key: string;
   value: string | number;
+}
+
+export interface DefaultChange {
+  field: string;
+  value: any;
 }
 
 export interface PlanHashes {
