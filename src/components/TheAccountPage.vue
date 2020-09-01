@@ -1,14 +1,14 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { AccountForm, PlanTemplates } from "@/models";
+import { AccountForm, PlanTemplates, AccountSubForm } from "@/models";
 import VFormItemPicker from "@/components/shared/VFormItemPicker.vue";
 @Component({
   components: { VFormItemPicker }
 })
 export default class TheAccountPage extends Vue {
   // ---------- Props ----------
-  @Prop() formData!: Array<AccountForm>;
+  @Prop() formData!: Array<AccountForm | AccountSubForm>;
 
   // ------- Local Vars --------
 
@@ -21,14 +21,26 @@ export default class TheAccountPage extends Vue {
     console.log(this.formData);
   }
   // --------- Methods ---------
-  changedForm(index, fieldChanged, event) {
-    this.$emit("changed-form-item", { index, fieldChanged, payload: event });
-    console.log(
-      "Changed form on the event page. The event is:",
-      event,
-      `At index ${index} with item,`,
-      fieldChanged
-    );
+  changedForm(index, payload) {
+    this.$emit("modify-default", {
+      field: this.formData[index].fieldName,
+      value: payload
+    });
+  }
+
+  toggleDefault(index, payload) {
+    if (payload == true) {
+      this.$emit("add-default", {
+        field: this.formData[index].fieldName,
+        value: (this.formData[index] as AccountForm).selected
+      });
+    } else {
+      this.$emit("remove-default", this.formData[index].fieldName);
+    }
+  }
+
+  changeOverall(event) {
+    this.$emit("change-overall", event);
   }
 }
 </script>
@@ -44,8 +56,9 @@ export default class TheAccountPage extends Vue {
     >
       <VFormItemPicker
         :data="formItem"
-        @changed-default="changedForm(index, 'isDefault', $event)"
-        @selected-changed="changedForm(index, 'selected', $event)"
+        @changed-default="toggleDefault(index, $event)"
+        @selected-changed="changedForm(index, $event)"
+        @advanced-changed="changeOverall($event)"
       />
     </div>
   </div>

@@ -42,7 +42,6 @@ export default class VFormItemPicker extends Vue {
   // ------- Lifecycle ---------
   constructor() {
     super();
-    console.log(this.data);
     this.selected = this.data.selected;
   }
   // --------- Methods ---------
@@ -62,6 +61,10 @@ export default class VFormItemPicker extends Vue {
 
   fromIndexToString(payload) {
     this.selected = this.data.selectionOpts[payload];
+  }
+
+  advancedChanged(payload) {
+    this.$emit("advanced-changed", payload);
   }
 }
 </script>
@@ -144,7 +147,7 @@ export default class VFormItemPicker extends Vue {
     </div>
     <VAdvancedOptions
       :data="data"
-      @selected-changed="selected = $event"
+      @advanced-changed="advancedChanged($event)"
       v-if="data.formType === 'advanced-options'"
     />
   </div>

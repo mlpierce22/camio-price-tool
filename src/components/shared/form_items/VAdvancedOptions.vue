@@ -25,9 +25,6 @@ export default class VAdvancedOptions extends Vue {
         value: event[index]
       };
     });
-    // tempSubform.forEach((form, i) => {
-    //   form.selected = this.selected[i];
-    // });
     tempSubform.forEach(formItem => this.$emit("advanced-changed", formItem));
   }
   // ------- Lifecycle ---------
