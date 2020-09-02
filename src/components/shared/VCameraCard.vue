@@ -13,6 +13,8 @@ export default class VCameraCard extends Vue {
   @Prop() isDeletable!: boolean;
 
   @Prop() selected!: string[];
+
+  @Prop() disabled!: boolean;
   // ------- Local Vars --------
   camCount = 1;
 
@@ -27,7 +29,10 @@ export default class VCameraCard extends Vue {
 
   @Watch("camCount")
   moreCams() {
-    this.$emit("update", { field: "numCameras", payload: this.camCount });
+    this.$emit("update", {
+      field: "numCameras",
+      payload: this.camCountAsNumber
+    });
   }
 
   @Watch("cameraTitle")
@@ -58,6 +63,10 @@ export default class VCameraCard extends Vue {
     console.log("filtered", filtered);
     return filtered;
   }
+
+  get camCountAsNumber() {
+    return parseInt(this.camCount as any);
+  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -73,6 +82,7 @@ export default class VCameraCard extends Vue {
         label="Resolution"
         hide-details
         outlined
+        :disabled="disabled"
       ></v-select>
     </div>
     <div class="num-streams">
