@@ -143,16 +143,16 @@ export interface PlanAttributes {
   features: AddOn[];
 }
 
-export interface LocationAttrib {
-  title: string;
-  numCameras: number;
-  useVM: boolean;
-  planCounts: PlanCount;
-}
+// export interface LocationAttrib {
+//   title: string;
+//   numCameras: number;
+//   useVM: boolean;
+//   planIds: PlanCount;
+// }
 
-export interface Location {
-  [index: number]: LocationAttrib;
-}
+// export interface Location {
+//   [index: number]: LocationAttrib;
+// }
 
 export interface PlanCount {
   [planHash: string]: number; // represents the plan hash followed by the number of cameras of that plan in this location
