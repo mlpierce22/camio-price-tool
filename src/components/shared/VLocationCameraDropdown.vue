@@ -1,9 +1,10 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { DeconstructedHashPlan, LocationAttrib, Plan } from "@/models";
+import { DeconstructedHashPlan, Plan } from "@/models";
 import VTextInput from "@/components/shared/form_items/VTextInput.vue";
 import VCameraAssignmentDropdownCard from "@/components/shared/VCameraAssignmentDropdownCard.vue";
+import { LocationAttributes } from "@/new-models";
 @Component({
   components: {
     VTextInput,
@@ -16,7 +17,7 @@ export default class VLocationCameraDropdown extends Vue {
 
   @Prop() dehashPlans!: Array<DeconstructedHashPlan>;
 
-  @Prop() location!: LocationAttrib;
+  @Prop() location!: LocationAttributes;
 
   @Prop() canDelete!: boolean;
 
@@ -69,30 +70,30 @@ export default class VLocationCameraDropdown extends Vue {
   }
 
   deletePlan(id) {
-    const locationCountCopy = { ...this.location.planCounts };
+    const locationCountCopy = { ...this.location.planIds };
     delete locationCountCopy[id];
     this.$emit("update-location", {
-      field: "planCounts",
+      field: "planIds",
       payload: locationCountCopy
     });
     this.$emit("update-counts");
   }
 
   addPlan() {
-    const locationCountCopy = { ...this.location.planCounts };
+    const locationCountCopy = { ...this.location.planIds };
     locationCountCopy[Math.floor(Math.random() * 1234)] = 1;
     this.$emit("update-location", {
-      field: "planCounts",
+      field: "planIds",
       payload: locationCountCopy
     });
     this.$emit("update-counts");
   }
 
   countChange(id, newCount) {
-    const locationCountCopy = { ...this.location.planCounts };
+    const locationCountCopy = { ...this.location.planIds };
     locationCountCopy[id] = newCount;
     this.$emit("update-location", {
-      field: "planCounts",
+      field: "planIds",
       payload: locationCountCopy
     });
     this.$emit("update-counts");
@@ -102,12 +103,12 @@ export default class VLocationCameraDropdown extends Vue {
     // Don't need to update if they selected the same thing they already had
     if (planToSwap !== newPlanId) {
       console.log(`swap ${planToSwap} with ${newPlanId}`);
-      const locationCountCopy = { ...this.location.planCounts };
+      const locationCountCopy = { ...this.location.planIds };
       const swappedCount = locationCountCopy[planToSwap];
       locationCountCopy[newPlanId] = swappedCount;
       delete locationCountCopy[planToSwap];
       this.$emit("update-location", {
-        field: "planCounts",
+        field: "planIds",
         payload: locationCountCopy
       });
       this.$emit("update-counts");
@@ -115,7 +116,7 @@ export default class VLocationCameraDropdown extends Vue {
   }
 
   get canDeletePlan() {
-    return Object.keys(this.location.planCounts).length - 1 > 0;
+    return Object.keys(this.location.planIds).length - 1 > 0;
   }
 }
 </script>
@@ -157,7 +158,7 @@ export default class VLocationCameraDropdown extends Vue {
           <div class="location-container">
             <div class="camera-plan">
               <VCameraAssignmentDropdownCard
-                v-for="(content, id) in location.planCounts"
+                v-for="(content, id) in location.planIds"
                 :key="`${id}-camera-plan`"
                 :planId="id"
                 :plansAsArray="dehashPlans"
