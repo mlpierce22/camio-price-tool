@@ -293,3 +293,122 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
     }
   ];
 }
+
+// ------------------------------------- Pricing helpers -------------------------------------
+
+// The camio box info (like how many of each resolution they can have)
+export function camioBoxes() {
+  return {
+    "1770R": {
+      description:
+        "Box 2U, 2 x Intel Xeon Gold 5220 2.2G, 18C/36T, 10.4GT/s, 24.75M Cache, 96GB RAM, 2 x NVIDIA Quadro RTX 5000, 480GB SSD, 2 x 8TB SATA HDD",
+      bom: { cores: 36, ram: 96 },
+      link: "/box/#1770R",
+      price: 1320200,
+      counts: {
+        "480": 146 * 3,
+        "720": 71 * 3,
+        "1080": 42 * 3,
+        "1536": 32 * 3,
+        "1520": 26 * 3,
+        "1960": 22 * 3,
+        "2048": 20 * 3,
+        "2160": 16 * 3
+      }
+    },
+    "1730R": {
+      description:
+        "Box 2U Intel Xeon Silver 4214 2.2G, 12C/24T, 9.6GT/s, 16.5M Cache, 32 GB RAM, NVIDIA Quadro RTX 4000, 480 GB SSD, 2 x 1TB SATA HDD",
+      bom: { cores: 12, ram: 32 },
+      link: "/box/#1730R",
+      price: 572000,
+      counts: {
+        "480": 146,
+        "720": 71,
+        "1080": 42,
+        "1536": 32,
+        "1520": 26,
+        "1960": 22,
+        "2048": 20,
+        "2160": 16
+      }
+    },
+    "1510A": {
+      description:
+        "Box appliance Intel i5-9500 (Coffee Lake) 3.0 GHz 6C/6T, NVIDIA GTX 1660S, 16 GB RAM, 256 GB SSD, 1920 GB SATA SSD",
+      bom: { cores: 6, ram: 16 },
+      link: "/box/#1510A",
+      price: 199200,
+      counts: {
+        "480": 48,
+        "720": 23,
+        "1080": 14,
+        "1536": 10,
+        "1520": 8,
+        "1960": 7,
+        "2048": 6,
+        "2160": 5
+      }
+    },
+    "1110A": {
+      description:
+        "Box ARM® Cortex® A53 (ARMv8) 1.5GHz 4C/4T, 2 GB RAM (no disk storage)",
+      bom: { cores: 4, ram: 2 },
+      link: "/box/#1110A",
+      price: 19900,
+      counts: {
+        "480": 6,
+        "720": 3,
+        "1080": 2,
+        "1536": 1,
+        "1520": 1,
+        "1960": 1,
+        "2048": 0,
+        "2160": 0
+      }
+    },
+    BoxVM: {
+      description:
+        "<strong>OR</strong> the free <a href='/box/vm'>Box VM</a> installed on your own hardware",
+      link: "/box/#VM",
+      price: 0,
+      counts: {
+        "480": 146,
+        "720": 71,
+        "1080": 42,
+        "1536": 32,
+        "1520": 26,
+        "1960": 22,
+        "2048": 20,
+        "2160": 16
+      }
+    }
+  };
+}
+
+export function megapixelMappings() {
+  // TODO: what does 1.3 map to?? also anything bigger than 8MP?
+  return {
+    "0.3 MP": { resolution: "640×480", p: "480", bitrate: 512 },
+    "0.9 MP": { resolution: "1280×720", p: "720", bitrate: 1024 },
+    "2 MP": { resolution: "1920x1080", p: "1080", bitrate: 1536 },
+    "3 MP": { resolution: "2048x1536", p: "1536", bitrate: 2048 },
+    "4 MP": { resolution: "2592x1520", p: "1520", bitrate: 2048 },
+    "5 MP": { resolution: "2560x1960", p: "1960", bitrate: 2048 + 512 },
+    "6 MP": { resolution: "3072x2048", p: "2048", bitrate: 1024 * 3 },
+    "8 MP": { resolution: "3840x2160", p: "2160", bitrate: 2048 * 2 }
+  };
+}
+
+// Get important info for calculating cloud pricing
+export function cloudData() {
+  return {
+    FPS_RATED: 20, // https://help.camio.com/hc/en-us/articles/115005656586-How-many-video-streams-can-one-Camio-Box-handle-
+    GIGABYTE_BYTES: 1073741824,
+    KILOBITS: 1024,
+    PRICE_PER_EVENT_WRITTEN_STORED_PER_MONTH_CENTS: 0.026704 * 1.4,
+    PRICE_GCS_PER_GIGABYTE_PER_MONTH_CENTS: 100 * 0.026,
+    PRICE_GCS_PER_BYTE_PER_MONTH_CENTS: (100 * 0.026) / 1073741824,
+    EVENT_DURATION_SECONDS: 24
+  };
+}
