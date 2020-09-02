@@ -1,18 +1,7 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import {
-  PlanTemplates,
-  AccountForm,
-  AccountSubForm,
-  PlanTemplateWithDefaults,
-  Plan,
-  FullFilteredPlan,
-  PlanAttributes,
-  CamResolution,
-  BasePlanOpts,
-  AddOn
-} from "@/models";
+import { PlanTemplates, AccountForm, Plan, FullFilteredPlan } from "@/models";
 import VPlanList from "@/components/shared/VPlanList.vue";
 import VPlanCard from "@/components/shared/VPlanCard.vue";
 import TheCreatePlansModal from "@/components/TheCreatePlansModal.vue";
@@ -94,25 +83,23 @@ export default class TheCreatePlansPage extends Vue {
     this.selectedPlanTemplate = planTitle;
     console.log("plan templates:", this.planTemplates);
     // combine account data and plan template data
-    this.currentPlanData = this.planTemplates[planTitle].map(
-      (planField, index) => {
-        for (const i in this.accountData) {
-          if (planField.fieldName == this.accountData[i].fieldName) {
-            const account: AccountForm = this.accountData[i];
-            return Object.assign({
-              fieldName: account.fieldName,
-              isDefault: account.isDefault,
-              formType: this.updateFormType(account.formType),
-              prompt: "",
-              subPrompt: planField.label,
-              selectionOpts: account.selectionOpts,
-              selected: account.selected, //this.handleSelected(planField, account), // TODO: determine if this is necessary
-              subSubPrompts: account.subSubPrompts ? account.subSubPrompts : []
-            }) as FullFilteredPlan;
-          }
+    this.currentPlanData = this.planTemplates[planTitle].map(planField => {
+      for (const i in this.accountData) {
+        if (planField.fieldName == this.accountData[i].fieldName) {
+          const account: AccountForm = this.accountData[i];
+          return Object.assign({
+            fieldName: account.fieldName,
+            isDefault: account.isDefault,
+            formType: this.updateFormType(account.formType),
+            prompt: "",
+            subPrompt: planField.label,
+            selectionOpts: account.selectionOpts,
+            selected: account.selected,
+            subSubPrompts: account.subSubPrompts ? account.subSubPrompts : []
+          }) as FullFilteredPlan;
         }
       }
-    ) as FullFilteredPlan[];
+    }) as FullFilteredPlan[];
 
     this.currentPlanData.unshift({
       fieldName: "title",

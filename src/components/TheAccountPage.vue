@@ -18,7 +18,6 @@ export default class TheAccountPage extends Vue {
   // ------- Lifecycle ---------
   constructor() {
     super();
-    console.log(this.formData);
   }
   // --------- Methods ---------
   changedForm(index, payload) {

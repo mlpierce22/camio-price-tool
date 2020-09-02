@@ -163,14 +163,6 @@ import {
   planTemplates,
   accountFormData
 } from "@/form-data-templates";
-import { Prop } from "vue-property-decorator";
-// TODO:
-/**
- * Addons are just an array of strings - for default case - ["social distancing"] means exclude social distancing from options
- * create "defaults" array that we use to filter the options available
- * change prop names to be a bunch of objects [{ fromFinal: boolean, field: string }]
- *
- */
 
 /** Set the initial state of the function - allows us to reset everything. */
 function initialState(componentInstance) {
@@ -221,7 +213,6 @@ function initialState(componentInstance) {
         events: {
           "change-overall": componentInstance.changeOverall
         },
-        propName: "quoteIntroPageFormData",
         props: {
           get: [
             {
@@ -260,7 +251,6 @@ function initialState(componentInstance) {
           "remove-default": componentInstance.removeDefault,
           "modify-default": componentInstance.modifyDefault
         },
-        propName: "accountPageFormData",
         props: {
           get: [
             {
@@ -283,7 +273,6 @@ function initialState(componentInstance) {
         events: {
           "add-plan": componentInstance.addPlan
         },
-        propName: "createPlansPageFormData",
         props: {
           get: [
             {
@@ -329,7 +318,6 @@ function initialState(componentInstance) {
           "delete-location": componentInstance.deleteLocation,
           "modify-plan": componentInstance.modifyPlan
         },
-        propName: "addLocationsPageFormData",
         props: {
           get: [
             {
@@ -359,8 +347,7 @@ function initialState(componentInstance) {
           nextText: "Next",
           backText: "Back"
         },
-        events: {},
-        propName: "estimatePageData"
+        events: {}
       },
       {
         stepNumber: 6,
@@ -397,22 +384,22 @@ function initialState(componentInstance) {
       //     }
       //   ]
       // },
-      addLocationsPageFormData: {
-        plans: {},
-        locations: {},
-        include: [
-          {
-            data: "createPlansPageFormData",
-            propName: "plans",
-            field: "createdPlans"
-          },
-          {
-            data: "quoteIntroPageFormData",
-            propName: "initialFormData",
-            field: "formData"
-          }
-        ]
-      },
+      // addLocationsPageFormData: {
+      //   plans: {},
+      //   locations: {},
+      //   include: [
+      //     {
+      //       data: "createPlansPageFormData",
+      //       propName: "plans",
+      //       field: "createdPlans"
+      //     },
+      //     {
+      //       data: "quoteIntroPageFormData",
+      //       propName: "initialFormData",
+      //       field: "formData"
+      //     }
+      //   ]
+      // },
       estimatePageData: {
         temp: {}
       }
@@ -665,6 +652,7 @@ export default Vue.extend({
     },
 
     deletePlan(planId: string) {
+      // TODO: delete plan from plans and delete from locations
       console.log("deleting plan!");
     },
 
@@ -721,25 +709,6 @@ export default Vue.extend({
       console.log(propObj);
       // Make sure the object exists
       if (propObj) {
-        // if ("include" in propObj) {
-        //   propObj.include.forEach(inclusion => {
-        //     // Allow to choose one subfield specifically
-        //     if (inclusion["field"]) {
-        //       this.$set(
-        //         propObj,
-        //         inclusion.propName,
-        //         this.pagesData[inclusion.data][inclusion.field]
-        //       );
-        //     } else {
-        //       this.$set(
-        //         propObj,
-        //         inclusion.propName,
-        //         this.pagesData[inclusion.data]
-        //       );
-        //     }
-        //   });
-        //   delete propObj.include;
-        // }
         return propObj;
       } else {
         // This is for the done case.
@@ -752,15 +721,6 @@ export default Vue.extend({
         "locations",
         locations
       );
-      // if (locations) {
-      //   this.$set(
-      //     this.pagesData["quoteIntroPageFormData"]["formData"][
-      //       "numLANLocations"
-      //     ],
-      //     "value",
-      //     Object.keys(locations).length
-      //   );
-      // }
     },
     updateLocationCount(count: number) {
       this.updateQuotePageVals({ key: "numLANLocations", newVal: count });
