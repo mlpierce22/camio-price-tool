@@ -40,7 +40,7 @@ export default class TheCreatePlansPage extends Vue {
 
   dialogOpen = false;
 
-  currentPlanData: FullFilteredPlan[] | undefined = [];
+  currentPlanData: FullFilteredPlan[] = [];
 
   isMultiResolution = false;
 
@@ -73,35 +73,10 @@ export default class TheCreatePlansPage extends Vue {
   }
 
   createPlans() {
-    console.log("create plan!");
-    const plans = this.cameraResolutionList.map(
-      (cameraResolution: CamResolution) => {
-        const purePlanObj = {};
-        (this.currentPlanData as FullFilteredPlan[]).map(planField => {
-          // Assign the title to the resolution field (since it isnt handled in the plan)
-          if (planField.fieldName == "resolution") {
-            purePlanObj[planField.fieldName] = cameraResolution.title;
-
-            // handle custom naming if multiple resolutions
-          } else if (
-            planField.fieldName == "title" &&
-            this.cameraResolutionList.length > 1
-          ) {
-            purePlanObj[planField.fieldName] =
-              planField.selected + " w/" + cameraResolution.title;
-          } else {
-            purePlanObj[planField.fieldName] = planField.selected;
-          }
-        });
-
-        // Add num cameras field
-        purePlanObj["numCameras"] = cameraResolution.numCameras;
-        // represents how many cameras are assigned to a location
-        purePlanObj["camerasAssigned"] = 0;
-        return purePlanObj;
-      }
-    );
-    this.$emit("create-plans-final", [...plans]);
+    this.$emit("add-plan", {
+      resolutionsToHandle: this.cameraResolutionList,
+      plan: this.currentPlanData
+    });
     this.cameraResolutionList = [];
     this.isMultiResolution = false;
   }
@@ -110,6 +85,9 @@ export default class TheCreatePlansPage extends Vue {
     console.log("updateInfo", updateInfo);
     (this.currentPlanData as FullFilteredPlan[])[updateInfo.index].selected =
       updateInfo.payload;
+  }
+  get resolutionIsDefault() {
+    return this.defaults["resolution"];
   }
 
   openCreatePlanModal(planTitle) {
@@ -146,6 +124,20 @@ export default class TheCreatePlansPage extends Vue {
       selected: planTitle
     });
 
+    // if the resolution is default, add it back in because it was filtered out
+    if (this.resolutionIsDefault) {
+      const resolutionItem = {
+        fieldName: "resolution",
+        formType: "does-not-matter",
+        isDefault: true,
+        prompt: "",
+        selected: this.resolutionIsDefault,
+        selectionOpts: [this.resolutionIsDefault],
+        subPrompt: ""
+      };
+      this.currentPlanData.push(resolutionItem);
+    }
+
     this.dialogOpen = true;
   }
 
@@ -176,6 +168,7 @@ export default class TheCreatePlansPage extends Vue {
         :planTemplate="plan"
         :title="key"
         :class="{ margins: key % 2 === 0 }"
+        :defaults="defaults"
         @create-plan="openCreatePlanModal($event)"
       />
     </div>

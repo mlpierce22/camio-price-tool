@@ -116,6 +116,10 @@ export default class TheCreatePlansModal extends Vue {
     this.selectedResolutions.push(titleToAdd);
   }
 
+  get resolutionIsDefault() {
+    return this.defaults["resolution"];
+  }
+
   removeResolution(indexToRemove) {
     this.cameraResolutions.splice(indexToRemove, 1);
     this.selectedResolutions.splice(indexToRemove, 1);
@@ -195,9 +199,11 @@ export default class TheCreatePlansModal extends Vue {
                   :camera="resolutions(planItem)[0]"
                   :selected="selectedResolutions"
                   :isDeletable="false"
+                  :disabled="resolutionIsDefault"
                   @update="updateResolution(0, $event)"
                 />
                 <v-checkbox
+                  v-if="!resolutionIsDefault"
                   class="checkbox"
                   v-model="multiResolution"
                   :hide-details="true"
