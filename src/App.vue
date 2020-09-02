@@ -281,7 +281,6 @@ function initialState(componentInstance) {
           backText: "Back"
         },
         events: {
-          "create-plans-final": componentInstance.addNewPlans,
           "add-plan": componentInstance.addPlan
         },
         propName: "createPlansPageFormData",
@@ -325,11 +324,31 @@ function initialState(componentInstance) {
           backText: "Back"
         },
         events: {
-          "assigned-plans-updated": componentInstance.updateAssignedPlansCount,
-          "update-location-app": componentInstance.updateLocation,
-          "location-count-change": componentInstance.updateLocationCount
+          "add-location": componentInstance.addLocation,
+          "modify-location": componentInstance.modifyLocation,
+          "delete-location": componentInstance.deleteLocation,
+          "modify-plan": componentInstance.modifyPlan
         },
-        propName: "addLocationsPageFormData"
+        propName: "addLocationsPageFormData",
+        props: {
+          get: [
+            {
+              field: "plans",
+              getterFunction: "getPlans",
+              importedFunction: null
+            },
+            {
+              field: "initialFormData",
+              getterFunction: "getOverall",
+              importedFunction: null
+            },
+            {
+              field: "locations",
+              getterFunction: "getLocations",
+              importedFunction: null
+            }
+          ]
+        }
       },
       {
         stepNumber: 5,
@@ -364,20 +383,20 @@ function initialState(componentInstance) {
       //     }
       //   } as QuoteIntroForm
       // },
-      accountPageFormData: {
-        formData: accountFormData()
-      },
-      createPlansPageFormData: {
-        planTemplates: planTemplates(),
-        createdPlans: {},
-        include: [
-          {
-            data: "accountPageFormData",
-            propName: "accountData",
-            field: "formData"
-          }
-        ]
-      },
+      // accountPageFormData: {
+      //   formData: accountFormData()
+      // },
+      // createPlansPageFormData: {
+      //   planTemplates: planTemplates(),
+      //   createdPlans: {},
+      //   include: [
+      //     {
+      //       data: "accountPageFormData",
+      //       propName: "accountData",
+      //       field: "formData"
+      //     }
+      //   ]
+      // },
       addLocationsPageFormData: {
         plans: {},
         locations: {},
@@ -555,7 +574,7 @@ export default Vue.extend({
       this.$set(this.finalYAMLObject.locations, newLocNum, {
         title: "Location " + newLocNum,
         numCameras: 1,
-        planCounts: { 1: 1 }, // set some default
+        planIds: { 1: 1 }, // set some default
         useVM: false
       });
       this.$set(
@@ -575,6 +594,13 @@ export default Vue.extend({
           totalLocations - 1
         );
       }
+    },
+    modifyLocation(toEdit: { index: number; field: string; payload: any }) {
+      this.$set(
+        this.finalYAMLObject.locations[toEdit.index],
+        toEdit.field,
+        toEdit.payload
+      );
     },
     addDefault(payload: DefaultChange) {
       this.$set(this.defaults, payload.field, payload.value);
@@ -642,9 +668,23 @@ export default Vue.extend({
       console.log("deleting plan!");
     },
 
-    modifyPlan(payload: { planId: number; planObject: any }) {
-      // TODO: Type
-      console.log("modifying plan!");
+    modifyPlan(payload: { planId: number; field: string; payload: any }) {
+      if (Array.isArray(payload)) {
+        payload.forEach(planToModify => {
+          this.$set(
+            this.finalYAMLObject.plans[planToModify.planId],
+            planToModify.field,
+            planToModify.payload
+          );
+        });
+      } else {
+        // TODO: is this ever true? how to we reset from the initial 1: in locations object
+        this.$set(
+          this.finalYAMLObject.plans[payload.planId],
+          payload.field,
+          payload.payload
+        );
+      }
     },
 
     // END FUNCTIONS TO MODIFY FINAL YAML OBJECT
@@ -726,9 +766,9 @@ export default Vue.extend({
       this.updateQuotePageVals({ key: "numLANLocations", newVal: count });
     },
     updateAssignedPlansCount(
-      planCounts: { planId: number; sumAssigned: number }[]
+      planIds: { planId: number; sumAssigned: number }[]
     ) {
-      planCounts.forEach(plan => {
+      planIds.forEach(plan => {
         console.log(
           "this is it",
           this.pagesData["addLocationsPageFormData"]["plans"],
