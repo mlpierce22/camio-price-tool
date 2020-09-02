@@ -1,8 +1,9 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { PlanTemplateWithDefaults } from "@/models";
+import { PlanTemplateWithDefaults, AddOn } from "@/models";
 import { filter } from "vue/types/umd";
+import { DefaultMap } from "@/new-models";
 @Component({
   components: {}
 })
@@ -11,6 +12,8 @@ export default class VPlanCard extends Vue {
   @Prop() planTemplate!: PlanTemplateWithDefaults[];
 
   @Prop() title!: string;
+
+  @Prop() defaults!: DefaultMap;
   // ------- Local Vars --------
 
   // --------- Watchers --------
@@ -22,9 +25,9 @@ export default class VPlanCard extends Vue {
   // --------- Methods ---------
 
   get plansFlattened() {
-    const temp = this.planTemplate
+    return this.planTemplate
       .flatMap(field => {
-        if (!field.isDefault) {
+        if (!this.defaults[field.fieldName]) {
           if (typeof field.selected == "string") {
             return field.label + ": " + field.selected;
           } else if (Array.isArray(field.selected)) {
@@ -39,11 +42,23 @@ export default class VPlanCard extends Vue {
             return field.label + ": " + field.selected["type"];
           }
         } else {
-          return undefined;
+          if (Array.isArray(field.selected)) {
+            const filtered = (field.selected as AddOn[]).filter(
+              option => !this.defaults[field.fieldName].includes(option.name)
+            );
+            return filtered.length == 0
+              ? undefined
+              : field.label +
+                  ": " +
+                  (field.selected as []).map(opts =>
+                    opts["name"] ? opts["name"] : opts
+                  );
+          } else {
+            return undefined;
+          }
         }
       })
       .filter(label => label);
-    return temp;
   }
 }
 </script>
@@ -54,8 +69,16 @@ export default class VPlanCard extends Vue {
   <div class="v-plan-card">
     <div class="card">
       <div class="title">{{ title }}</div>
-      <div class="subtitle"><i>Includes</i></div>
+      <div class="subtitle" v-if="plansFlattened.length > 0">
+        <i>Includes</i>
+      </div>
       <div class="list">
+        <div class="feature" v-if="plansFlattened.length == 0">
+          All defaults already selected.
+        </div>
+        <div class="feature" v-if="plansFlattened.length == 0">
+          Choose a plan to add cameras and a name.
+        </div>
         <div
           class="feature-container"
           v-for="(plan, index) in plansFlattened"
@@ -106,7 +129,7 @@ export default class VPlanCard extends Vue {
     box-sizing: border-box;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
-    max-width: 350px;
+    max-width: 300px;
     padding: 30px;
     min-height: 300px;
     min-width: 300px;
