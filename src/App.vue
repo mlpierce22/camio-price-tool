@@ -1,6 +1,11 @@
 <template>
   <v-app>
     <v-main>
+      <v-dialog v-model="showEditPlanModal" max-width="290">
+        <v-card>
+          TEst!
+        </v-card>
+      </v-dialog>
       <template v-if="progressionState.onStep != progressionState.maxStep">
         <v-stepper
           :alt-labels="true"
@@ -140,7 +145,12 @@ import {
   ComponentProps,
   PromptedNumberInputObject,
   AccountForm,
-  AccountSubForm
+  AccountSubForm,
+  CamResolution,
+  Plan,
+  FullFilteredPlan,
+  AddOn,
+  AddOnOpts
 } from "@/models";
 import {
   FinalYAMLObject,
@@ -153,6 +163,7 @@ import {
   planTemplates,
   accountFormData
 } from "@/form-data-templates";
+import { Prop } from "vue-property-decorator";
 // TODO:
 /**
  * Addons are just an array of strings - for default case - ["social distancing"] means exclude social distancing from options
@@ -175,6 +186,7 @@ function initialState(componentInstance) {
       showLocations: true,
       locationStep: 4
     },
+    showEditPlanModal: false,
     finalYAMLObject: {
       overall: {
         totalCameras: 10,
@@ -269,7 +281,8 @@ function initialState(componentInstance) {
           backText: "Back"
         },
         events: {
-          "create-plans-final": componentInstance.addNewPlans
+          "create-plans-final": componentInstance.addNewPlans,
+          "add-plan": componentInstance.addPlan
         },
         propName: "createPlansPageFormData",
         props: {
@@ -405,7 +418,16 @@ export default Vue.extend({
     getFilteredAccountData: function() {
       const data = accountFormData();
       return data.filter(field => {
+        // special case because we still want to show addons, if they exist
         if (field.fieldName == "addOns") {
+          if (this.defaults[field.fieldName]) {
+            const filteredSelected = ((field as AccountForm)
+              .selectionOpts as AddOnOpts[]).filter(
+              selected =>
+                !this.defaults[field.fieldName].includes(selected.name)
+            );
+            return filteredSelected.length !== 0;
+          }
           return true;
         }
         return this.defaults[field.fieldName] ||
@@ -420,8 +442,15 @@ export default Vue.extend({
         return {
           title: key,
           templateOptions: planTemplatesToFilter[key].filter(planOption => {
-            // special case because we still want to show addons
+            // special case because we still want to show addons, if they exist
             if (planOption.fieldName == "addOns") {
+              if (this.defaults[planOption.fieldName]) {
+                const filteredSelected = possibleOptions().addOns.filter(
+                  selected =>
+                    !this.defaults[planOption.fieldName].includes(selected.name)
+                );
+                return filteredSelected.length !== 0;
+              }
               return true;
             }
             // if it is in defaults, don't return it
@@ -556,9 +585,73 @@ export default Vue.extend({
     modifyDefault(payload: DefaultChange) {
       this.$set(this.defaults, payload.field, payload.value);
     },
+    addPlan(payload: {
+      resolutionsToHandle: Array<CamResolution>;
+      plan: Array<AccountForm>;
+    }) {
+      const defaultKeys = Object.keys(this.defaults);
+      const plans = payload.resolutionsToHandle.map(
+        (cameraResolution: CamResolution) => {
+          const purePlanObj = {};
+          payload.plan.map(planField => {
+            // Assign the title to the resolution field (since it isnt handled in the plan)
+            if (planField.fieldName == "resolution") {
+              purePlanObj[planField.fieldName] = cameraResolution.title;
+
+              // handle custom naming if multiple resolutions
+            } else if (
+              planField.fieldName == "title" &&
+              payload.resolutionsToHandle.length > 1
+            ) {
+              purePlanObj[planField.fieldName] =
+                planField.selected + " w/" + cameraResolution.title;
+            } else {
+              purePlanObj[planField.fieldName] = planField.selected;
+            }
+          });
+          // add defaults and try to merge if key exists
+          defaultKeys.map(key => {
+            // currently that means it is resolution or addons
+            if (purePlanObj[key]) {
+              if (Array.isArray(purePlanObj[key])) {
+                purePlanObj[key] = [].concat(
+                  purePlanObj[key],
+                  this.defaults[key]
+                );
+              }
+            } else {
+              purePlanObj[key] = this.defaults[key];
+            }
+          });
+          // Add num cameras field
+          purePlanObj["numCameras"] = cameraResolution.numCameras;
+          // represents how many cameras are assigned to a location
+          purePlanObj["camerasAssigned"] = 0;
+
+          return purePlanObj;
+        }
+      );
+      plans.forEach(plan => {
+        const planCode = this.generatePlanCode(plan);
+        this.$set(this.finalYAMLObject.plans, planCode, plan);
+      });
+      console.log("added this plan!", plans);
+    },
+
+    deletePlan(planId: string) {
+      console.log("deleting plan!");
+    },
+
+    modifyPlan(payload: { planId: number; planObject: any }) {
+      // TODO: Type
+      console.log("modifying plan!");
+    },
 
     // END FUNCTIONS TO MODIFY FINAL YAML OBJECT
 
+    openEditPlanModal(planId: number) {
+      console.log("opening the edit plan modal!"); // TODO: handle this
+    },
     buildInputObject(props: ComponentProps) {
       if (props) {
         const propObject = {};
@@ -720,11 +813,12 @@ export default Vue.extend({
         this.progressionState.onStep == 1
       ) {
         this.progressionState.showLocations = false;
-      } else {
+      } else if (
+        this.finalYAMLObject.overall.totalLocations > 1 &&
+        this.progressionState.onStep == 1
+      ) {
         this.progressionState.showLocations = true;
       }
-
-      // TODO: skip plans too if getFilteredAccountData is empty - name it default plan
 
       // Change the max steps to match
       this.progressionState.maxStep = this.dynamicSlides.length;
