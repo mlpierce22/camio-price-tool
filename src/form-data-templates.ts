@@ -12,6 +12,8 @@ import {
 export function possibleOptions() {
   return {
     resolution: [
+      "0.3 MP",
+      "0.9 MP",
       "1.3 MP",
       "2 MP",
       "3 MP",
@@ -298,6 +300,7 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
 
 // The camio box info (like how many of each resolution they can have)
 export function camioBoxes() {
+  // TODO: figure out actual numbers here since they don't fit into the formula nicely when they are under 2. Also, none of the counts seem right for the 1170R
   return {
     "1770R": {
       description:
@@ -306,14 +309,16 @@ export function camioBoxes() {
       link: "/box/#1770R",
       price: 1320200,
       counts: {
-        "480": 146 * 3,
-        "720": 71 * 3,
-        "1080": 42 * 3,
-        "1536": 32 * 3,
-        "1520": 26 * 3,
-        "1960": 22 * 3,
-        "2048": 20 * 3,
-        "2160": 16 * 3
+        "0.3 MP": 146 * 3,
+        "0.9 MP": 71 * 3,
+        "1.3 MP": 126,
+        "2 MP": 42 * 3,
+        "3 MP": 32 * 3,
+        "4 MP": 26 * 3,
+        "5 MP": 22 * 3,
+        "6 MP": 20 * 3,
+        "8 MP": 16 * 3,
+        "12 MP": 21
       }
     },
     "1730R": {
@@ -323,14 +328,16 @@ export function camioBoxes() {
       link: "/box/#1730R",
       price: 572000,
       counts: {
-        "480": 146,
-        "720": 71,
-        "1080": 42,
-        "1536": 32,
-        "1520": 26,
-        "1960": 22,
-        "2048": 20,
-        "2160": 16
+        "0.3 MP": 146,
+        "0.9 MP": 71,
+        "1.3 MP": 42,
+        "2 MP": 42,
+        "3 MP": 32,
+        "4 MP": 26,
+        "5 MP": 22,
+        "6 MP": 20,
+        "8 MP": 16,
+        "12 MP": 7
       }
     },
     "1510A": {
@@ -340,14 +347,16 @@ export function camioBoxes() {
       link: "/box/#1510A",
       price: 199200,
       counts: {
-        "480": 48,
-        "720": 23,
-        "1080": 14,
-        "1536": 10,
-        "1520": 8,
-        "1960": 7,
-        "2048": 6,
-        "2160": 5
+        "0.3 MP": 48,
+        "0.9 MP": 23,
+        "1.3 MP": 14,
+        "2 MP": 14,
+        "3 MP": 10,
+        "4 MP": 8,
+        "5 MP": 7,
+        "6 MP": 6,
+        "8 MP": 5,
+        "12 MP": 2
       }
     },
     "1110A": {
@@ -357,14 +366,16 @@ export function camioBoxes() {
       link: "/box/#1110A",
       price: 19900,
       counts: {
-        "480": 6,
-        "720": 3,
-        "1080": 2,
-        "1536": 1,
-        "1520": 1,
-        "1960": 1,
-        "2048": 0,
-        "2160": 0
+        "0.3 MP": 6,
+        "0.9 MP": 3,
+        "1.3 MP": 2,
+        "2 MP": 2,
+        "3 MP": 1,
+        "4 MP": 1,
+        "5 MP": 1,
+        "6 MP": 0,
+        "8 MP": 0,
+        "12 MP": 0
       }
     },
     BoxVM: {
@@ -373,30 +384,33 @@ export function camioBoxes() {
       link: "/box/#VM",
       price: 0,
       counts: {
-        "480": 146,
-        "720": 71,
-        "1080": 42,
-        "1536": 32,
-        "1520": 26,
-        "1960": 22,
-        "2048": 20,
-        "2160": 16
+        "0.3 MP": 146,
+        "0.9 MP": 71,
+        "1.3 MP": 42,
+        "2 MP": 42,
+        "3 MP": 32,
+        "4 MP": 26,
+        "5 MP": 22,
+        "6 MP": 20,
+        "8 MP": 16,
+        "12 MP": 7
       }
     }
   };
 }
 
 export function megapixelMappings() {
-  // TODO: what does 1.3 map to?? also anything bigger than 8MP?
   return {
     "0.3 MP": { resolution: "640×480", p: "480", bitrate: 512 },
     "0.9 MP": { resolution: "1280×720", p: "720", bitrate: 1024 },
+    "1.3 MP": { resolution: "1280×1024", p: "1024", bitrate: 1280 },
     "2 MP": { resolution: "1920x1080", p: "1080", bitrate: 1536 },
     "3 MP": { resolution: "2048x1536", p: "1536", bitrate: 2048 },
     "4 MP": { resolution: "2592x1520", p: "1520", bitrate: 2048 },
     "5 MP": { resolution: "2560x1960", p: "1960", bitrate: 2048 + 512 },
     "6 MP": { resolution: "3072x2048", p: "2048", bitrate: 1024 * 3 },
-    "8 MP": { resolution: "3840x2160", p: "2160", bitrate: 2048 * 2 }
+    "8 MP": { resolution: "3840x2160", p: "2160", bitrate: 2048 * 2 },
+    "12 MP": { resolution: "4290x2800", p: "2800", bitrate: 2048 * 4 }
   };
 }
 
