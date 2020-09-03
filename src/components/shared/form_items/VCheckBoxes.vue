@@ -11,7 +11,7 @@ export default class VCheckBoxes extends Vue {
 
   @Prop() shouldHide!: boolean;
 
-  @Prop() defaults: Array<string>;
+  @Prop() defaults!: Array<string>;
 
   // ------- Local Vars --------
   selectedBoxes: Array<string> = [];
@@ -22,7 +22,7 @@ export default class VCheckBoxes extends Vue {
 
   @Watch("selectedBoxes")
   selectedChanged() {
-    let arrayToEmit = [];
+    let arrayToEmit: string[] | AddOn[] = [];
     if (this.shouldHide) {
       //return with rate
       arrayToEmit = this.selectedBoxes.map((checkbox, index) => {

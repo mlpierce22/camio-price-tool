@@ -9,9 +9,9 @@ import VPromptedNumberInput from "@/components/shared/VPromptedNumberInput.vue";
 })
 export default class TheQuoteIntroPage extends Vue {
   // ---------- Props ----------
-  @Prop() formItems: Array<QuoteIntroForm>;
+  @Prop() formItems!: Array<QuoteIntroForm>;
 
-  @Prop() overall: OverallData;
+  @Prop() overall!: OverallData;
   // ------- Local Vars --------
 
   // --------- Watchers --------

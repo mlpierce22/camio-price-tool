@@ -307,7 +307,7 @@ export function camioBoxes() {
         "Box 2U, 2 x Intel Xeon Gold 5220 2.2G, 18C/36T, 10.4GT/s, 24.75M Cache, 96GB RAM, 2 x NVIDIA Quadro RTX 5000, 480GB SSD, 2 x 8TB SATA HDD",
       bom: { cores: 36, ram: 96 },
       link: "/box/#1770R",
-      price: 1320200,
+      price: 1428500,
       counts: {
         "0.3 MP": 146 * 3,
         "0.9 MP": 71 * 3,

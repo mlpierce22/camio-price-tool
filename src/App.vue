@@ -1,11 +1,11 @@
 <template>
   <v-app>
     <v-main>
-      <v-dialog v-model="showEditPlanModal" max-width="290">
+      <!-- <v-dialog v-model="showEditPlanModal" max-width="290">
         <v-card>
-          TEst!
+          <TheEditPlanModal />
         </v-card>
-      </v-dialog>
+      </v-dialog> -->
       <template v-if="progressionState.onStep != progressionState.maxStep">
         <v-stepper
           :alt-labels="true"
@@ -37,27 +37,14 @@
                 :key="`${index}-content`"
                 :step="step.stepNumber"
               >
-                <div class="REMOVE!" v-if="step.props">
-                  <keep-alive>
-                    <component
-                      :is="step.instance"
-                      :isVertical="isVertical"
-                      v-bind="buildInputObject(step.props)"
-                      v-on="step.events"
-                    ></component>
-                  </keep-alive>
-                </div>
-                <div class="REMOVE!" v-else>
-                  <keep-alive>
-                    <!-- TODO: remove this else -->
-                    <component
-                      :is="step.instance"
-                      :isVertical="isVertical"
-                      v-bind="computeProps(pagesData[step.propName])"
-                      v-on="step.events"
-                    ></component>
-                  </keep-alive>
-                </div>
+                <keep-alive>
+                  <component
+                    :is="step.instance"
+                    :isVertical="isVertical"
+                    v-bind="buildInputObject(step.props)"
+                    v-on="step.events"
+                  ></component>
+                </keep-alive>
 
                 <VBackNextButton
                   v-if="step['navButtons']"
@@ -103,7 +90,7 @@
                 <component
                   :is="step.instance"
                   :isVertical="isVertical"
-                  v-bind="computeProps(pagesData[step.propName])"
+                  v-bind="buildInputObject(step.props)"
                   v-on="step.events"
                 ></component>
               </keep-alive>
@@ -135,6 +122,7 @@ import TheAddLocationsPage from "@/components/TheAddLocationsPage.vue";
 import TheEstimatePage from "@/components/TheEstimatePage.vue";
 import VBackNextButton from "@/components/shared/VBackNextButton.vue";
 import TheDonePage from "@/components/TheDonePage.vue";
+import TheEditPlanModal from "@/components/TheEditPlanModal.vue";
 import {
   QuoteIntroForm,
   FormSteps,
@@ -415,7 +403,8 @@ export default Vue.extend({
     TheAddLocationsPage,
     TheEstimatePage,
     TheDonePage,
-    VBackNextButton
+    VBackNextButton,
+    TheEditPlanModal
   },
   data: function() {
     return initialState(this);
@@ -428,15 +417,14 @@ export default Vue.extend({
         if (field.fieldName == "addOns") {
           if (this.defaults[field.fieldName]) {
             const filteredSelected = ((field as AccountForm)
-              .selectionOpts as AddOnOpts[]).filter(
-              selected =>
-                !this.defaults[field.fieldName].includes(selected.name)
-            );
+              .selectionOpts as AddOnOpts[]).filter(selected => {
+              !this.defaults[field.fieldName].includes(selected.name);
+            });
             return filteredSelected.length !== 0;
           }
           return true;
         }
-        return this.defaults[field.fieldName] ||
+        return this["defaults"][field.fieldName] ||
           field.fieldName == "advancedOptions"
           ? false
           : true;
@@ -489,17 +477,17 @@ export default Vue.extend({
       return form;
     },
     getLocations: function() {
-      return this.finalYAMLObject.locations;
+      return this["finalYAMLObject"].locations;
     },
 
     getPlans: function() {
-      return this.finalYAMLObject.plans;
+      return this["finalYAMLObject"].plans;
     },
 
     getOverall: function() {
-      return this.finalYAMLObject.overall;
+      return this["finalYAMLObject"].overall;
     },
-    dynamicSlides: function(): (FormSteps | FormPlaceHolder)[] {
+    dynamicSlides: function(): FormSteps[] {
       if (this.progressionState.showLocations === false) {
         const firstSteps: {}[] = this.steps.slice(
           0,

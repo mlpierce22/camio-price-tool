@@ -54,7 +54,7 @@ export default class TheCreatePlansPage extends Vue {
       this.createPlans();
     }
     this.dialogOpen = false;
-    this.currentPlanData = undefined;
+    this.currentPlanData = [];
   }
 
   updateFormType(formType: string): string {
