@@ -32,7 +32,7 @@ export interface PlanHashes {
 
 export interface PlanAttributes {
   cloudRetention: string;
-  cameraActivity: string;
+  cameraMotion: string;
   indexing: IndexingTypes;
   overages: string;
   cameraResolution: string;

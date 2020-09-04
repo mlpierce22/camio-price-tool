@@ -69,7 +69,16 @@ export default class VCheckBoxes extends Vue {
    */
   constructor() {
     super();
-
+    (this.data.selected as AddOn[]).map(selection =>
+      this.selectedBoxes.push(selection.name)
+    );
+    if (this.defaults) {
+      this.defaults.forEach(defaultVal => {
+        if (!this.selectedBoxes.includes(defaultVal)) {
+          this.selectedBoxes.push(defaultVal);
+        }
+      });
+    }
     // if (this.shouldHide && this.data.isDefault) {
     //   // create an object that is the selection options
     //   const selectedNames = (this.data.selected as AddOn[]).map(
