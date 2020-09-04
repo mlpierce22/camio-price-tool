@@ -149,7 +149,9 @@ import {
 import {
   possibleOptions,
   planTemplates,
-  accountFormData
+  accountFormData,
+  pricingObject,
+  megapixelMappings
 } from "@/form-data-templates";
 
 /** Set the initial state of the function - allows us to reset everything. */
@@ -169,7 +171,7 @@ function initialState(componentInstance) {
     showEditPlanModal: false,
     finalYAMLObject: {
       overall: {
-        totalCameras: 10,
+        totalCameras: 10, // TODO: should this be updatable or final??
         totalLocations: 1,
         socTools: possibleOptions().socTools[0], // None
         directoryIntegration: possibleOptions().directoryIntegration[0], // None
@@ -335,63 +337,25 @@ function initialState(componentInstance) {
           nextText: "Next",
           backText: "Back"
         },
-        events: {}
+        events: {},
+        props: {
+          get: [
+            {
+              field: "finalYAMLObject",
+              getterFunction: "",
+              importedFunction: null
+            }
+          ],
+          pricing: pricingObject(),
+          mpMapping: megapixelMappings()
+        }
       },
       {
         stepNumber: 6,
         stepIndex: 5,
         stepName: "Done"
       }
-    ] as Array<FormSteps | FormPlaceHolder>,
-    pagesData: {
-      // quoteIntroPageFormData: {
-      //   formData: {
-      //     numCameras: {
-      //       prompt: "How many cameras do you have?",
-      //       units: "Cameras",
-      //       value: 10
-      //     },
-      //     numLANLocations: {
-      //       prompt: "Across how many LAN locations are your cameras located?",
-      //       units: "Location",
-      //       value: 1
-      //     }
-      //   } as QuoteIntroForm
-      // },
-      // accountPageFormData: {
-      //   formData: accountFormData()
-      // },
-      // createPlansPageFormData: {
-      //   planTemplates: planTemplates(),
-      //   createdPlans: {},
-      //   include: [
-      //     {
-      //       data: "accountPageFormData",
-      //       propName: "accountData",
-      //       field: "formData"
-      //     }
-      //   ]
-      // },
-      // addLocationsPageFormData: {
-      //   plans: {},
-      //   locations: {},
-      //   include: [
-      //     {
-      //       data: "createPlansPageFormData",
-      //       propName: "plans",
-      //       field: "createdPlans"
-      //     },
-      //     {
-      //       data: "quoteIntroPageFormData",
-      //       propName: "initialFormData",
-      //       field: "formData"
-      //     }
-      //   ]
-      // },
-      estimatePageData: {
-        temp: {}
-      }
-    } as PagesData
+    ] as Array<FormSteps | FormPlaceHolder>
   };
 }
 
@@ -418,7 +382,7 @@ export default Vue.extend({
           if (this.defaults[field.fieldName]) {
             const filteredSelected = ((field as AccountForm)
               .selectionOpts as AddOnOpts[]).filter(selected => {
-              !this.defaults[field.fieldName].includes(selected.name);
+              return !this["defaults"][field.fieldName].includes(selected.name);
             });
             return filteredSelected.length !== 0;
           }
@@ -618,6 +582,16 @@ export default Vue.extend({
                 purePlanObj[key] = [].concat(
                   purePlanObj[key],
                   this.defaults[key]
+                    .map(value => {
+                      if (
+                        !purePlanObj[key].map(obj => obj.name).includes(value)
+                      ) {
+                        return { name: value, rate: 100 };
+                      } else {
+                        return undefined;
+                      }
+                    })
+                    .filter(val => val)
                 );
               }
             } else {
@@ -693,45 +667,6 @@ export default Vue.extend({
       // Done case
       return;
     },
-    computeProps(propObj: PropsList) {
-      console.log(propObj);
-      // Make sure the object exists
-      if (propObj) {
-        return propObj;
-      } else {
-        // This is for the done case.
-        return;
-      }
-    },
-    updateLocation(locations) {
-      this.$set(
-        this.pagesData["addLocationsPageFormData"],
-        "locations",
-        locations
-      );
-    },
-    updateLocationCount(count: number) {
-      this.updateQuotePageVals({ key: "numLANLocations", newVal: count });
-    },
-    updateAssignedPlansCount(
-      planIds: { planId: number; sumAssigned: number }[]
-    ) {
-      planIds.forEach(plan => {
-        console.log(
-          "this is it",
-          this.pagesData["addLocationsPageFormData"]["plans"],
-          plan
-        );
-        // if (this.pagesData["addLocationsPageFormData"]["plans"][plan.planId]) {
-        console.log("is this ever true");
-        this.$set(
-          this.pagesData["addLocationsPageFormData"]["plans"][plan.planId],
-          "camerasAssigned",
-          plan.sumAssigned
-        );
-        // }
-      });
-    },
     // TODO: does this need this.$set?
     resetToDefaults: function() {
       const data = initialState(this);
@@ -750,24 +685,9 @@ export default Vue.extend({
     checkOrientation: function() {
       this.isVertical = window.innerWidth <= this.orientationThreshold;
     },
-    updateAccountPageVals: function(newValObj) {
-      this.$set(
-        this.pagesData.accountPageFormData.formData[newValObj.index],
-        newValObj.fieldChanged,
-        newValObj.payload
-      );
-    },
-    updateQuotePageVals: function(newValObj) {
-      const castVal = parseInt(newValObj.newVal, 10);
-      console.log("this runs?");
-      this.$set(
-        this.pagesData.quoteIntroPageFormData.formData[newValObj.key],
-        "value",
-        castVal
-      );
-      console.log("yep?");
-    },
     // TODO: Determine hashing function
+    // TODO: let a user know if they have already generated a plan with that plan id... probably means that
+    // we need to get rid of the title and only check the "options" when hashing
     generatePlanCode(plan) {
       // Courtesy of https://stackoverflow.com/a/33647870
       let hash = 0;
@@ -780,19 +700,6 @@ export default Vue.extend({
       }
 
       return hash;
-    },
-    addNewPlans: function(plans) {
-      // TODO: bug fixes = check for all resetting of data and make sure to use this.$set()
-      console.log("creating new plans, ", plans);
-      plans.forEach(plan => {
-        const planCode = this.generatePlanCode(plan);
-        this.$set(this.plans, planCode, plan);
-        this.$set(
-          this.pagesData.createPlansPageFormData.createdPlans,
-          planCode,
-          plan
-        );
-      });
     },
     nextStep: function() {
       // If we are on the first step, we need to decide whether or not to show locations

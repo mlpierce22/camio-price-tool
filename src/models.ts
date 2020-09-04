@@ -106,14 +106,6 @@ export interface AddOnOpts {
   rate: number[];
 }
 
-export interface PagesData {
-  [pageName: string]: PropsList;
-}
-
-export interface PropsList {
-  [prop: string]: any; // TODO: Type for each option of prop
-}
-
 export interface PropBuilderOptions {
   fromFinal: boolean;
   field: string;
