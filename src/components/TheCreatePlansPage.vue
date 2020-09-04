@@ -94,7 +94,9 @@ export default class TheCreatePlansPage extends Vue {
             prompt: "",
             subPrompt: planField.label,
             selectionOpts: account.selectionOpts,
-            selected: account.selected,
+            selected: Array.isArray(account.selected)
+              ? planField.selected
+              : account.selected,
             subSubPrompts: account.subSubPrompts ? account.subSubPrompts : []
           }) as FullFilteredPlan;
         }
@@ -159,9 +161,12 @@ export default class TheCreatePlansPage extends Vue {
         @create-plan="openCreatePlanModal($event)"
       />
     </div>
+    <!-- Note: DialogOpen has to be here or the modal will not rebuild everytime
+    and you end up with a bug where the user can't generate a plan if they click on the
+    same plan template twice -->
     <TheCreatePlansModal
       v-if="currentPlanData"
-      :key="`${selectedPlanTemplate}-${randomKey}`"
+      :key="`${selectedPlanTemplate}-${randomKey}-${dialogOpen}`"
       :dialog="dialogOpen"
       :planData="currentPlanData"
       :isVertical="isVertical"
