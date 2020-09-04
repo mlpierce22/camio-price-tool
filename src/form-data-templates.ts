@@ -84,7 +84,7 @@ export function planTemplates(): PlanTemplates {
       {
         fieldName: "resolution",
         label: "Resolution",
-        selected: [possibleOptions().resolution[1]] // 2MP cameras
+        selected: [possibleOptions().resolution[3]] // 2MP cameras
       }
     ],
     "Social Distancing": [
@@ -119,7 +119,7 @@ export function planTemplates(): PlanTemplates {
       {
         fieldName: "resolution",
         label: "Resolution",
-        selected: [possibleOptions().resolution[1]] // 2MP cameras
+        selected: [possibleOptions().resolution[3]] // 2MP cameras
       }
     ],
     Tailgating: [
@@ -154,7 +154,7 @@ export function planTemplates(): PlanTemplates {
       {
         fieldName: "resolution",
         label: "Resolution",
-        selected: [possibleOptions().resolution[1]] // 2MP cameras
+        selected: [possibleOptions().resolution[3]] // 2MP cameras
       }
     ],
     Counting: [
@@ -189,7 +189,7 @@ export function planTemplates(): PlanTemplates {
       {
         fieldName: "resolution",
         label: "Resolution",
-        selected: [possibleOptions().resolution[1]] // 2MP cameras
+        selected: [possibleOptions().resolution[3]] // 2MP cameras
       }
     ]
   };
@@ -205,7 +205,7 @@ export function accountFormData(): Array<AccountForm | AccountSubForm> {
       prompt: "Are your cameras all the same resolution?",
       subPrompt: "Resolution",
       selectionOpts: possibleOptions().resolution,
-      selected: possibleOptions().resolution[1] // 2MP cameras
+      selected: possibleOptions().resolution[3] // 2MP cameras
     },
     {
       fieldName: "cloudRetention",
@@ -399,6 +399,7 @@ export function camioBoxes() {
   };
 }
 
+// Mappings from megapixels to other things
 export function megapixelMappings() {
   return {
     "0.3 MP": { resolution: "640×480", p: "480", bitrate: 512 },
@@ -424,5 +425,38 @@ export function cloudData() {
     PRICE_GCS_PER_GIGABYTE_PER_MONTH_CENTS: 100 * 0.026,
     PRICE_GCS_PER_BYTE_PER_MONTH_CENTS: (100 * 0.026) / 1073741824,
     EVENT_DURATION_SECONDS: 24
+  };
+}
+
+export function pricingObject() {
+  // Note: all prices in cents
+  return {
+    // multiplied by total number of streams
+    "account wide": {
+      socTools: {
+        None: 0,
+        "Basic (Event Streaming, Concurrent Review": 100,
+        "Plus (Basic + Camera Groups)": 300,
+        "Pro (Plus + Domain Hooks, Webhook Retries)": 400
+      },
+      directoryIntegration: {
+        None: 0,
+        "G Suite Directory": 4
+      },
+      reporting: {
+        "Basic (Health Monitoring)": 0,
+        "Plus (+ User Access Logs)": 8
+      }
+    },
+    location: {
+      plan: {
+        "Social Distancing": 1000,
+        Tailgating: 1000,
+        Counting: 1000,
+        cloudData: cloudData()
+        // price per stream has to be dynamically determined
+      },
+      hardware: camioBoxes()
+    }
   };
 }

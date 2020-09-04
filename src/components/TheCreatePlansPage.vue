@@ -75,6 +75,7 @@ export default class TheCreatePlansPage extends Vue {
     (this.currentPlanData as FullFilteredPlan[])[updateInfo.index].selected =
       updateInfo.payload;
   }
+
   get resolutionIsDefault() {
     return this.defaults["resolution"];
   }

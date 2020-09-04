@@ -31,12 +31,16 @@ export interface PlanHashes {
 }
 
 export interface PlanAttributes {
+  // These could all be numbers pretty much
+  title: string;
   cloudRetention: string;
   cameraMotion: string;
-  indexing: IndexingTypes;
-  overages: string;
-  cameraResolution: string;
-  addOnFeatures: Array<AddOn>;
+  indexing: { type: string; queries: string };
+  overageHandling: string;
+  resolution: string;
+  numCameras: number;
+  camerasAssigned: number;
+  addOns: AddOn[];
 }
 
 export interface IndexingTypes {

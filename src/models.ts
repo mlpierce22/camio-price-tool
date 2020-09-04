@@ -125,14 +125,14 @@ export interface Plan {
 export interface PlanAttributes {
   // These could all be numbers pretty much
   title: string;
-  storage: string;
-  cameraActivity: string;
+  cloudRetention: string;
+  cameraMotion: string;
   indexing: { type: string; queries: string };
-  overages: string;
-  cameraSpec: string;
+  overageHandling: string;
+  resolution: string;
   numCameras: number;
   camerasAssigned: number;
-  features: AddOn[];
+  addOns: AddOn[];
 }
 
 // export interface LocationAttrib {
