@@ -66,3 +66,9 @@ export interface LocationAttributes {
 export interface PlanIdCounts {
   [planHash: string]: number;
 }
+
+export interface MPCounts {
+  xMPCount: number;
+  xMP: string;
+  twoMPCount?: number;
+}

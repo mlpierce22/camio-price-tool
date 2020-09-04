@@ -1,6 +1,6 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
-import { FinalYAMLObject, LocationAttributes } from "@/new-models";
+import { FinalYAMLObject, LocationAttributes, MPCounts } from "@/new-models";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 @Component({
   components: {},
@@ -169,49 +169,55 @@ export default class TheEstimatePage extends Vue {
           }
         });
 
-        // I want to grab every plan and find it's equivilant 2 MP count, then sort by
-        // MP rating such that all plans with the same rating are grouped together, then, sort
-        // by largest to smallest MP rating
-
         // with that info, I want to loop through every box configuration and fill up each
         // box with biggest resolution on down.
         // when we run out of streams, check to see if all the streams in this box would fit in a smaller
         // box. if so, then continue trying until it fails
 
-        //
+        const helper = {};
         const streamCounts = Object.keys(thisLocation.planIds)
           .map(planKey => {
             const plan = this.finalYAMLObject.plans[planKey];
             // if the plan is at that location and exists
             if (plan && thisLocation.planIds[planKey]) {
-              const amt2MPStreams = this.normalizeStreams(
-                thisLocation.planIds[planKey],
-                this.toNumberWithUnits(plan.resolution).number
-              );
               return {
-                xMPCount: plan.camerasAssigned,
-                xMP: plan.resolution,
-                TwoMPCount: amt2MPStreams
-              };
+                xMPCount: thisLocation.planIds[planKey],
+                xMP: plan.resolution
+                // TwoMPCount: amt2MPStreams
+              } as MPCounts;
             }
           })
-          .filter(val => val) as Array<any>;
+          .filter(val => val)
+          .reduce((prevVal: MPCounts[], currVal) => {
+            // thanks to: https://stackoverflow.com/a/46794337
+            if (currVal) {
+              // if the helper object does not have this MP rating listed, then add it to the object and add it to the array
+              if (!helper[currVal.xMP]) {
+                helper[currVal.xMP] = Object.assign({}, currVal); // create a copy of o
+                prevVal.push(helper[currVal.xMP]);
+                // otherwise, it's already in the helper object so add it to the count for that type
+              } else {
+                helper[currVal.xMP].xMPCount += currVal.xMPCount;
+              }
+            }
+            return prevVal;
+          }, [])
+          .sort((a, b) => {
+            return (
+              Number(this.toNumberWithUnits(b.xMP).number) -
+              Number(this.toNumberWithUnits(a.xMP).number)
+            );
+          })
+          .map(counts => {
+            const newObj = { ...counts };
+            newObj.twoMPCount = this.normalizeStreams(
+              newObj.xMPCount,
+              this.toNumberWithUnits(newObj.xMP).number
+            );
+            return newObj;
+          });
 
-        // thanks to: https://stackoverflow.com/a/46794337
-        const helper = {};
-        const result = streamCounts.reduce((prevVal, currVal) => {
-          const key = currVal.xMP;
-
-          if (!helper[key]) {
-            helper[key] = Object.assign({}, currVal); // create a copy of o
-            prevVal.push(helper[key]);
-          } else {
-            helper[key].xMPCount += currVal.xMPCount;
-          }
-
-          return prevVal;
-        }, []);
-        console.log("result", result);
+        console.log("result", streamCounts);
 
         return {
           title: thisLocation.title,
