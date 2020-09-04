@@ -127,8 +127,6 @@ import {
   QuoteIntroForm,
   FormSteps,
   FormPlaceHolder,
-  PagesData,
-  PropsList,
   PropBuilderOptions,
   ComponentProps,
   PromptedNumberInputObject,
@@ -182,7 +180,7 @@ function initialState(componentInstance) {
         1: {
           title: "Location 1",
           numCameras: 1,
-          planIds: { 1: 1 }, // set some default
+          planIds: { 1: 1 }, // set some default // TODO: Shoudl this be a MAP so its ordered??? like so: new Map([["1", 1]]), would need to update everywhere that uses this
           useVM: false
         }
       }
@@ -235,7 +233,6 @@ function initialState(componentInstance) {
           backText: "Back"
         },
         events: {
-          "changed-form-item": componentInstance.updateAccountPageVals,
           "change-overall": componentInstance.changeOverall,
           "add-default": componentInstance.addDefault,
           "remove-default": componentInstance.removeDefault,
