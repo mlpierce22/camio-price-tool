@@ -70,5 +70,19 @@ export interface PlanIdCounts {
 export interface MPCounts {
   xMPCount: number;
   xMP: string;
-  twoMPCount?: number;
+  twoMPCount: number;
+}
+
+export interface BoxCounts {
+  model: string;
+  description: string;
+  priceCents: number;
+  link: string;
+  bom?: Bom;
+  count: number;
+}
+
+export interface Bom {
+  cores: number;
+  ram: number;
 }
