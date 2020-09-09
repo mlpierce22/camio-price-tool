@@ -4,7 +4,8 @@ import {
   BoxCounts,
   FinalYAMLObject,
   LocationAttributes,
-  MPCounts
+  MPCounts,
+  UsedBox
 } from "@/new-models";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 @Component({
@@ -214,6 +215,12 @@ export default class TheEstimatePage extends Vue {
       .reduce((p, c) => p + c);
   }
 
+  getChunkSize(mpRating: string) {
+    const mp = this.toNumberWithUnits(mpRating).number;
+    const as2Mp = this.normalizeStreams(1, mp);
+    return as2Mp < 1 ? 1 : as2Mp;
+  }
+
   get prices() {
     const overall = this.finalYAMLObject.overall;
     const overallPricing = Object.keys(overall)
@@ -236,9 +243,121 @@ export default class TheEstimatePage extends Vue {
         // note: this seperates them into each stream count.. maybe in the future we can have a more
         // complicated algorithm
         const streamCounts = this.calculateStreamCounts(thisLocation);
-        //const boxTypes =
-        const boxesUsed = {};
+        const boxTypes = Object.keys(this.pricing["location"]["hardware"])
+          .filter(key => key !== "BoxVM")
+          .sort((a, b) => {
+            return (
+              this.pricing["location"]["hardware"][a]["counts"]["2 MP"] -
+              this.pricing["location"]["hardware"][b]["counts"]["2 MP"]
+            );
+          })
+          .map(key => {
+            return {
+              twoMpCount: this.pricing["location"]["hardware"][key]["counts"][
+                "2 MP"
+              ],
+              boxKey: key,
+              boxInfo: this.pricing["location"]["hardware"][key]
+            };
+          });
+        const boxesUsed: UsedBox[] = [];
         if (streamCounts.length > 0) {
+          streamCounts.every((streamType, index, allTypesArr) => {
+            const minimum2MpChunkSize = this.getChunkSize(streamType.xMP);
+
+            boxesUsed.every((box, index, usedBoxArr) => {
+              let count = 0;
+              let canAdd = box.remainingSpace();
+
+              while (
+                canAdd >= 0 &&
+                minimum2MpChunkSize * count < streamType.twoMPCount
+              ) {
+                canAdd = box.remainingSpace() - minimum2MpChunkSize * count;
+                count++;
+              }
+              // make sure to update the counts before adding it to the box
+              streamType.twoMPCount =
+                streamType.twoMPCount - minimum2MpChunkSize * count;
+              streamType.xMPCount = this.deNormalizeStreams(
+                streamType.twoMPCount,
+                this.toNumberWithUnits(streamType.xMP).number
+              );
+              box.streamsAdded[streamType.xMP] = { ...streamType };
+            });
+
+            while (streamType.twoMPCount > 0) {
+              boxTypes.every((boxType, index, allBoxTypesArr) => {
+                // if the last one or if the two counts match
+                if (
+                  index == allBoxTypesArr.length - 1 ||
+                  streamType.twoMPCount == boxType.twoMpCount
+                ) {
+                  // add it in before we update the iteration variable (so remaining works)
+                  const helper = {};
+                  helper[streamType.xMP] = { ...streamType };
+                  boxesUsed.push({
+                    twoMpCount: boxType.twoMpCount,
+                    boxInfo: boxType,
+                    streamsAdded: helper,
+                    remainingSpace: function() {
+                      return (
+                        this.twoMpCount -
+                        Object.keys(this.streamsAdded)
+                          .map(key => {
+                            return this.streamsAdded[key].twoMPCount;
+                          })
+                          .reduce((p, c) => p + c)
+                      );
+                    }
+                  });
+                  streamType.twoMPCount -= boxType.twoMpCount;
+                  // Don't take negatives
+                  streamType.twoMPCount =
+                    streamType.twoMPCount < 0 ? 0 : streamType.twoMPCount;
+                  return false; // i.e. break
+                }
+                const nextBox = allBoxTypesArr[index + 1];
+                // check if the count is between the next and current box, if it is use the current box
+                if (
+                  streamType.twoMPCount > boxType.twoMpCount &&
+                  streamType.twoMPCount < nextBox.twoMpCount
+                ) {
+                  const helper = {};
+                  helper[streamType.xMP] = { ...streamType };
+                  boxesUsed.push({
+                    twoMpCount: nextBox.twoMpCount,
+                    boxInfo: nextBox,
+                    streamsAdded: helper,
+                    remainingSpace: function() {
+                      return (
+                        this.twoMpCount -
+                        Object.keys(this.streamsAdded)
+                          .map(key => {
+                            return this.streamsAdded[key].twoMPCount;
+                          })
+                          .reduce((p, c) => p + c)
+                      );
+                    }
+                  });
+                  streamType.twoMPCount -= nextBox.twoMpCount;
+                  // Don't take negatives
+                  streamType.twoMPCount =
+                    streamType.twoMPCount < 0 ? 0 : streamType.twoMPCount;
+                  streamType.xMPCount = this.deNormalizeStreams(
+                    streamType.twoMPCount,
+                    this.toNumberWithUnits(streamType.xMP).number
+                  );
+
+                  return false; // i.e. break
+                }
+                return true; // i.e. continue, loop stops if you don't have this
+              });
+            }
+            return true; // i.e. continue, loop stops if you don't have this
+          });
+
+          // TODO: do I need to handle upgrades? probably....
           // -------------------------- PREVIOUS SEMI_WORKING VERSION --------------------------
           // let streamCountsAs2MP = streamCounts
           //   .map(count => count.twoMPCount)
@@ -340,7 +459,12 @@ export default class TheEstimatePage extends Vue {
           // -------------------------- END PREVIOUS SEMI_WORKING VERSION --------------------------
           // Adjust for many lower level boxes
 
-          console.log("these are the boxes used", boxesUsed);
+          console.log(
+            "these are the boxes used",
+            boxesUsed,
+            "this is the space remaining on each: ",
+            boxesUsed.map(box => box.remainingSpace())
+          );
           console.log("ordered stream counts", streamCounts);
           const maxCount = 100; // to prevent infinite loop
           const count = 0;

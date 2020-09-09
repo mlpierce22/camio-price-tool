@@ -86,3 +86,10 @@ export interface Bom {
   cores: number;
   ram: number;
 }
+
+export interface UsedBox {
+  readonly twoMpCount: number;
+  readonly boxInfo: any;
+  streamsAdded: { [streamMprating: string]: MPCounts };
+  remainingSpace(): number;
+}
