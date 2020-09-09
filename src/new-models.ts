@@ -89,7 +89,14 @@ export interface Bom {
 
 export interface UsedBox {
   readonly twoMpCount: number;
-  readonly boxInfo: any;
+  readonly boxInfo: BoxType;
+  readonly boxKey: string;
   streamsAdded: { [streamMprating: string]: MPCounts };
   remainingSpace(): number;
+}
+
+export interface BoxType {
+  readonly twoMpCount: number;
+  readonly boxKey: string;
+  readonly boxInfo: {};
 }

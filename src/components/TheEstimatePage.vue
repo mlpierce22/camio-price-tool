@@ -267,23 +267,32 @@ export default class TheEstimatePage extends Vue {
 
             boxesUsed.every((box, index, usedBoxArr) => {
               let count = 0;
-              let canAdd = box.remainingSpace();
-
+              let spaceUsed = minimum2MpChunkSize * count;
               while (
-                canAdd >= 0 &&
-                minimum2MpChunkSize * count < streamType.twoMPCount
+                box.remainingSpace() - spaceUsed > 0 &&
+                spaceUsed < streamType.twoMPCount
               ) {
-                canAdd = box.remainingSpace() - minimum2MpChunkSize * count;
                 count++;
+                spaceUsed = minimum2MpChunkSize * count;
               }
-              // make sure to update the counts before adding it to the box
+
+              const streamToAdd = {
+                xMPCount: this.deNormalizeStreams(
+                  minimum2MpChunkSize * count,
+                  this.toNumberWithUnits(streamType.xMP).number
+                ),
+                xMP: streamType.xMP,
+                twoMPCount: minimum2MpChunkSize * count
+              };
+
+              box.streamsAdded[streamType.xMP] = { ...streamToAdd };
+
               streamType.twoMPCount =
                 streamType.twoMPCount - minimum2MpChunkSize * count;
               streamType.xMPCount = this.deNormalizeStreams(
                 streamType.twoMPCount,
                 this.toNumberWithUnits(streamType.xMP).number
               );
-              box.streamsAdded[streamType.xMP] = { ...streamType };
             });
 
             while (streamType.twoMPCount > 0) {
@@ -297,6 +306,7 @@ export default class TheEstimatePage extends Vue {
                   const helper = {};
                   helper[streamType.xMP] = { ...streamType };
                   boxesUsed.push({
+                    boxKey: boxType.boxKey,
                     twoMpCount: boxType.twoMpCount,
                     boxInfo: boxType,
                     streamsAdded: helper,
@@ -326,6 +336,7 @@ export default class TheEstimatePage extends Vue {
                   const helper = {};
                   helper[streamType.xMP] = { ...streamType };
                   boxesUsed.push({
+                    boxKey: nextBox.boxKey,
                     twoMpCount: nextBox.twoMpCount,
                     boxInfo: nextBox,
                     streamsAdded: helper,
@@ -358,6 +369,10 @@ export default class TheEstimatePage extends Vue {
           });
 
           // TODO: do I need to handle upgrades? probably....
+
+          // const boxCounts = boxesUsed;
+          // console.log("these are the box counts", boxCounts);
+
           // -------------------------- PREVIOUS SEMI_WORKING VERSION --------------------------
           // let streamCountsAs2MP = streamCounts
           //   .map(count => count.twoMPCount)
