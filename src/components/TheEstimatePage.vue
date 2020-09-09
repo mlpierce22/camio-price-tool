@@ -1,11 +1,17 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
-import { FinalYAMLObject, LocationAttributes, MPCounts } from "@/new-models";
+import {
+  BoxCounts,
+  FinalYAMLObject,
+  LocationAttributes,
+  MPCounts
+} from "@/new-models";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 @Component({
   components: {},
   filters: {
     formatMoney(amountCents) {
+      console.log("this is the money put in:", amountCents);
       const formatter = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
@@ -23,6 +29,8 @@ export default class TheEstimatePage extends Vue {
   @Prop() pricing!: {};
 
   @Prop() mpMapping!: {};
+
+  @Prop() titles!: { [key: string]: string };
   // ------- Local Vars --------
 
   // --------- Watchers --------
@@ -198,6 +206,14 @@ export default class TheEstimatePage extends Vue {
       });
   }
 
+  get overallPrice() {
+    return this.prices.overallPricing
+      .map(priceObject => {
+        return priceObject.price;
+      })
+      .reduce((p, c) => p + c);
+  }
+
   get prices() {
     const overall = this.finalYAMLObject.overall;
     const overallPricing = Object.keys(overall)
@@ -220,103 +236,108 @@ export default class TheEstimatePage extends Vue {
         // note: this seperates them into each stream count.. maybe in the future we can have a more
         // complicated algorithm
         const streamCounts = this.calculateStreamCounts(thisLocation);
+        //const boxTypes =
+        const boxesUsed = {};
         if (streamCounts.length > 0) {
-          let streamCountsAs2MP = streamCounts
-            .map(count => count.twoMPCount)
-            .reduce((prevVal, currVal) => {
-              return prevVal + currVal;
-            });
-          let remainingRoom = streamCountsAs2MP;
-          console.log("stream counts as 2MP", streamCountsAs2MP);
-          const boxesUsed: {
-            [key: string]: number;
-          } = {};
-          // sort the keys so that we have an order from biggest to smallest option (exclude the boxVM)
-          const sortedKeys = Object.keys(this.pricing["location"]["hardware"])
-            .sort((a, b) => {
-              return (
-                this.pricing["location"]["hardware"][b]["counts"]["2 MP"] -
-                this.pricing["location"]["hardware"][a]["counts"]["2 MP"]
-              );
-            })
-            .filter(key => key !== "BoxVM");
+          // -------------------------- PREVIOUS SEMI_WORKING VERSION --------------------------
+          // let streamCountsAs2MP = streamCounts
+          //   .map(count => count.twoMPCount)
+          //   .reduce((prevVal, currVal) => {
+          //     return prevVal + currVal;
+          //   });
+          // let remainingRoom = streamCountsAs2MP;
+          // console.log("stream counts as 2MP", streamCountsAs2MP);
+          // const boxesUsed: {
+          //   [key: string]: number;
+          // } = {};
+          // // sort the keys so that we have an order from biggest to smallest option (exclude the boxVM)
+          // const sortedKeys = Object.keys(this.pricing["location"]["hardware"])
+          //   .sort((a, b) => {
+          //     return (
+          //       this.pricing["location"]["hardware"][b]["counts"]["2 MP"] -
+          //       this.pricing["location"]["hardware"][a]["counts"]["2 MP"]
+          //     );
+          //   })
+          //   .filter(key => key !== "BoxVM");
 
-          let remainder = 0;
-          // the threshold to determine if we should just move up a box instead of replicating low level ones
-          const threshold = this.pricing["location"]["plan"]["cloudData"]
-            .UPGRADE_BOX_THRESHOLD_PERCENT;
+          // let remainder = 0;
+          // // the threshold to determine if we should just move up a box instead of replicating low level ones
+          // const threshold = this.pricing["location"]["plan"]["cloudData"]
+          //   .UPGRADE_BOX_THRESHOLD_PERCENT;
 
-          // TODO: make work for < 2MP case and > 2MP case, currently just works for exact
-          sortedKeys.every((key, index, allKeysArr) => {
-            console.log("on this box: " + key);
-            const currentBox = {
-              ...this.pricing["location"]["hardware"][key]
-            };
-            const numBoxesOfThisModel = Math.round(
-              streamCountsAs2MP / currentBox["counts"]["2 MP"]
-            );
-            console.log("number of boxes of this model", numBoxesOfThisModel);
-            console.log("counts for this model", currentBox["counts"]["2 MP"]);
-            console.log("no Math floor", currentBox["counts"]["2 MP"]);
-            // const leftoverStreams =
-            //   streamCountsAs2MP % currentBox["counts"]["2 MP"];
-            remainingRoom =
-              remainingRoom -
-              numBoxesOfThisModel * currentBox["counts"]["2 MP"];
+          // // instead of looping through each box and trying to assign it, maybe index by count
+          // // TODO: make work for < 2MP case and > 2MP case, currently just works for exact
+          // sortedKeys.every((key, index, allKeysArr) => {
+          //   console.log("on this box: " + key);
+          //   const currentBox = {
+          //     ...this.pricing["location"]["hardware"][key]
+          //   };
+          //   const numBoxesOfThisModel = Math.round(
+          //     streamCountsAs2MP / currentBox["counts"]["2 MP"]
+          //   );
+          //   console.log("number of boxes of this model", numBoxesOfThisModel);
+          //   console.log("counts for this model", currentBox["counts"]["2 MP"]);
+          //   console.log("no Math floor", currentBox["counts"]["2 MP"]);
+          //   // const leftoverStreams =
+          //   //   streamCountsAs2MP % currentBox["counts"]["2 MP"];
+          //   remainingRoom =
+          //     remainingRoom -
+          //     numBoxesOfThisModel * currentBox["counts"]["2 MP"];
 
-            console.log("remaining room", remainingRoom);
-            if (numBoxesOfThisModel >= 1) {
-              // aggressively check for an upgrade (we don't want to give them like 5 1100A's)
-              if (index - 1 >= 0 && numBoxesOfThisModel > 1) {
-                const nextKey = allKeysArr[index - 1];
-                const smallerBoxMP = streamCountsAs2MP;
-                const nextBoxMP = this.pricing["location"]["hardware"][nextKey][
-                  "counts"
-                ]["2 MP"];
-                if (Math.floor(nextBoxMP * threshold) <= smallerBoxMP) {
-                  console.log("upgrading model");
-                  // then upgrade to nextBox
-                  if (boxesUsed[nextKey]) {
-                    boxesUsed[nextKey]++;
-                  } else {
-                    boxesUsed[nextKey] = 1;
-                  }
-                } else {
-                  console.log("not upgrading");
-                  boxesUsed[key] = numBoxesOfThisModel;
-                }
-              } else {
-                console.log(
-                  `adding (${numBoxesOfThisModel})boxes of this type`
-                );
-                boxesUsed[key] = numBoxesOfThisModel;
-              }
-            }
+          //   console.log("remaining room", remainingRoom);
+          //   if (numBoxesOfThisModel >= 1) {
+          //     // aggressively check for an upgrade (we don't want to give them like 5 1100A's)
+          //     if (index - 1 >= 0 && numBoxesOfThisModel > 1) {
+          //       const nextKey = allKeysArr[index - 1];
+          //       const smallerBoxMP = streamCountsAs2MP;
+          //       const nextBoxMP = this.pricing["location"]["hardware"][nextKey][
+          //         "counts"
+          //       ]["2 MP"];
+          //       if (Math.floor(nextBoxMP * threshold) <= smallerBoxMP) {
+          //         console.log("upgrading model");
+          //         // then upgrade to nextBox
+          //         if (boxesUsed[nextKey]) {
+          //           boxesUsed[nextKey]++;
+          //         } else {
+          //           boxesUsed[nextKey] = 1;
+          //         }
+          //       } else {
+          //         console.log("not upgrading");
+          //         boxesUsed[key] = numBoxesOfThisModel;
+          //       }
+          //     } else {
+          //       console.log(
+          //         `adding (${numBoxesOfThisModel})boxes of this type`
+          //       );
+          //       boxesUsed[key] = numBoxesOfThisModel;
+          //     }
+          //   }
 
-            // if we have streams left, continue to next box type, but update amount of streamsAs2mp
-            if (remainingRoom > 1) {
-              streamCountsAs2MP = remainingRoom;
-              return true; // i.e. continue
-            } else {
-              // 1 or 0 left
-              remainder = 0;
-              return false; // i.e. break
-            }
-          });
-          if (remainder > 0) {
-            // add the lowest powered box to handle stragglers
-            // TODO: handle min chunk here?? maybe by getting 2 mp ratings then checking if chunk is smaller
+          //   // if we have streams left, continue to next box type, but update amount of streamsAs2mp
+          //   if (remainingRoom > 1) {
+          //     streamCountsAs2MP = remainingRoom;
+          //     return true; // i.e. continue
+          //   } else {
+          //     // 1 or 0 left
+          //     remainder = 0;
+          //     return false; // i.e. break
+          //   }
+          // });
+          // if (remainder > 0) {
+          //   // add the lowest powered box to handle stragglers
+          //   // TODO: handle min chunk here?? maybe by getting 2 mp ratings then checking if chunk is smaller
 
-            // if all of the boxes are totally full, then we have to add this last one
-            if (remainingRoom <= 0) {
-              const smallestBoxKey = sortedKeys[sortedKeys.length - 1];
-              if (boxesUsed[smallestBoxKey]) {
-                boxesUsed[smallestBoxKey]++;
-              } else {
-                boxesUsed[smallestBoxKey] = 1;
-              }
-            }
-          }
+          //   // if all of the boxes are totally full, then we have to add this last one
+          //   if (remainingRoom <= 0) {
+          //     const smallestBoxKey = sortedKeys[sortedKeys.length - 1];
+          //     if (boxesUsed[smallestBoxKey]) {
+          //       boxesUsed[smallestBoxKey]++;
+          //     } else {
+          //       boxesUsed[smallestBoxKey] = 1;
+          //     }
+          //   }
+          // }
+          // -------------------------- END PREVIOUS SEMI_WORKING VERSION --------------------------
           // Adjust for many lower level boxes
 
           console.log("these are the boxes used", boxesUsed);
@@ -469,7 +490,7 @@ export default class TheEstimatePage extends Vue {
           //     // TODO: calculate bom if they useVM is true (basically just add up all the cores of the available boxes)
           //   }
           // );
-          let VM = null;
+          let VM: BoxCounts | null = null;
           if (thisLocation.useVM) {
             VM = Object.keys(boxesUsed)
               .map(key => this.pricing["location"]["hardware"][key]["bom"])
@@ -545,13 +566,137 @@ export default class TheEstimatePage extends Vue {
 
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
-  <div class="the-estimate-page"></div>
+  <div class="the-estimate-page">
+    <div class="totals-container">
+      <div class="total-title">
+        Totals
+      </div>
+      <div class="pricing-container">
+        <div class="sub-titles">
+          <div class="sub-title">
+            One-Time
+          </div>
+          <div class="sub-title">
+            Recurring
+          </div>
+        </div>
+        <div class="prices">
+          <div class="overall">
+            <div class="overall-title">
+              Account-Wide Expenses
+            </div>
+            <div
+              class="item"
+              v-for="(overallField, index) in prices.overallPricing"
+              :key="`${index}-overall-price`"
+            >
+              <div class="overall-count">
+                1x
+              </div>
+              <div class="field-title">
+                {{ titles[overallField.key] }}:
+                {{ finalYAMLObject.overall[overallField.key] }}
+              </div>
+              <div class="one-time"></div>
+              <div class="recurring">
+                {{ overallField.price | formatMoney }}
+              </div>
+            </div>
+            <div class="totals-one-time"></div>
+            <div class="totals">
+              {{ overallPrice | formatMoney }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 <!----------------- END HTML ---------------------->
 
 <!----------------- BEGIN CSS/SCSS ---------------->
 <style scoped lang="scss">
 .the-estimate-page {
+  display: flex;
+  flex-direction: column;
+
+  .totals-container {
+    display: flex;
+    flex-direction: column;
+    border: 3px solid #f7931e;
+    border-radius: 10px;
+
+    .total-title {
+      color: #ffffff;
+      background: #f7931e;
+      border-radius: 10px;
+      line-height: 54px;
+      font-weight: bold;
+      font-size: 30px;
+      padding-left: 20px;
+      margin: -3px -3px 0px -3px;
+    }
+
+    .pricing-container {
+      display: flex;
+      flex-direction: column;
+
+      .sub-titles {
+        display: flex;
+        justify-content: flex-end;
+
+        .sub-title {
+          font-weight: bold;
+          font-size: 30px;
+          color: #222222;
+        }
+      }
+
+      .prices {
+        display: flex;
+        flex-direction: column;
+
+        .overall {
+          display: flex;
+          flex-direction: column;
+          padding-left: 5px;
+
+          .overall-title {
+            color: #ffffff;
+            background: #50b536;
+            width: fit-content;
+            border-radius: 10px;
+            line-height: 54px;
+            font-weight: bold;
+            font-size: 30px;
+            padding: 0px 20px;
+          }
+
+          .item {
+            display: flex;
+
+            .overall-count {
+              max-width: 30px;
+            }
+
+            .field-title {
+              color: #222222;
+              font-size: 20px;
+              flex-grow: 3;
+            }
+
+            .one-time {
+              flex-grow: 1;
+            }
+
+            .recurring {
+              flex-grow: 1;
+            }
+          }
+        }
+      }
+    }
+  }
 }
 </style>
 <!----------------- END CSS/SCSS ------------------>
