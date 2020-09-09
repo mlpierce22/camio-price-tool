@@ -341,6 +341,11 @@ function initialState(componentInstance) {
               field: "finalYAMLObject",
               getterFunction: "",
               importedFunction: null
+            },
+            {
+              field: "titles",
+              getterFunction: "getFieldTitles",
+              importedFunction: null
             }
           ],
           pricing: pricingObject(),
@@ -447,6 +452,20 @@ export default Vue.extend({
 
     getOverall: function() {
       return this["finalYAMLObject"].overall;
+    },
+    getFieldTitles: function() {
+      const tempObj = {};
+      planTemplates()[Object.keys(planTemplates())[0]].map(planField => {
+        tempObj[planField.fieldName] = planField.label;
+      });
+      accountFormData()
+        .filter(field => field.fieldName == "advancedOptions")
+        .map(field => {
+          (field as AccountSubForm).subForm.map(subField => {
+            tempObj[subField.fieldName] = subField.prompt;
+          });
+        });
+      return tempObj;
     },
     dynamicSlides: function(): FormSteps[] {
       if (this.progressionState.showLocations === false) {
@@ -625,7 +644,6 @@ export default Vue.extend({
           );
         });
       } else {
-        // TODO: is this ever true? how to we reset from the initial 1: in locations object
         this.$set(
           this.finalYAMLObject.plans[payload.planId],
           payload.field,
@@ -698,6 +716,26 @@ export default Vue.extend({
 
       return hash;
     },
+    handleOneLocationCase() {
+      const planIds = {};
+      const locationKey = Number(
+        Object.keys(this.finalYAMLObject.locations)[0]
+      );
+      Object.keys(this.getPlans).map(key => {
+        planIds[key] = this.getPlans[key].numCameras;
+        this.modifyPlan({
+          planId: Number(key),
+          field: "camerasAssigned",
+          payload: this.getPlans[key].numCameras
+        });
+      });
+
+      this.modifyLocation({
+        index: locationKey,
+        field: "planIds",
+        payload: planIds
+      });
+    },
     nextStep: function() {
       // If we are on the first step, we need to decide whether or not to show locations
       if (
@@ -712,6 +750,15 @@ export default Vue.extend({
         this.progressionState.showLocations = true;
       }
 
+      // If the next step is the location step and we are not showing locations
+      if (
+        this.progressionState.locationStep ==
+          this.progressionState.onStep + 1 &&
+        !this.progressionState.showLocations
+      ) {
+        // then assign all plans to one and only location and go to estimate page
+        this.handleOneLocationCase();
+      }
       // Change the max steps to match
       this.progressionState.maxStep = this.dynamicSlides.length;
 
