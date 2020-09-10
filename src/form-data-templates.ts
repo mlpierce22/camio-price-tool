@@ -29,7 +29,7 @@ export function possibleOptions() {
     indexing: {
       // eslint-disable-next-line prettier/prettier
       "Lazy": ["3 days", "7 days", "14 days", "30 days"],
-      "Query Match": ["10%", "25%", "50%", "90%"],
+      "Query Match": ["10 %", "25 %", "50 %", "90 %"],
       // eslint-disable-next-line prettier/prettier
       "Full": [] // Edit: these shouldn't display a button. Note that these match camera motion "3 hrs", "6 hrs", "12 hrs", "24 hrs"
     } as TwoTierSelectionOpts,
