@@ -56,11 +56,7 @@ export default class TheEstimatePage extends Vue {
     };
   }
 
-  estimateVideoBytesMonthly(
-    estimatedEventsUploaded: number,
-    hoursOfMotion: number,
-    bitrate: number
-  ) {
+  estimateVideoBytesMonthly(estimatedEventsUploaded: number, bitrate: number) {
     // the percent motion as decimal times 1 day (24 hrs) = number hours active per day
     // events uploaded is the number of hours active (converted to seconds)/(length of an event in seconds)
     // (events uploaded * the duration of an event in seconds * the bitrate * size of a kilobit (why?))
@@ -90,11 +86,8 @@ export default class TheEstimatePage extends Vue {
     const eventWriteCost = this.pricing["location"]["plan"]["cloudData"]
       .PRICE_PER_EVENT_WRITTEN_STORED_PER_MONTH_CENTS;
     const videoPriceCents =
-      this.estimateVideoBytesMonthly(
-        estimatedEventsUploaded,
-        hoursOfMotion,
-        bitrate
-      ) * cloudStorageCost;
+      this.estimateVideoBytesMonthly(estimatedEventsUploaded, bitrate) *
+      cloudStorageCost;
     const eventPriceCents = estimatedEventsUploaded * 30.5 * eventWriteCost;
     const storageAsMonth = cloudStorage / 30;
     return storageAsMonth * (videoPriceCents + eventPriceCents);
@@ -139,6 +132,8 @@ export default class TheEstimatePage extends Vue {
         const eventSeconds = this.pricing["location"]["plan"]["cloudData"]
           .EVENT_DURATION_SECONDS;
 
+        // TODO: we should handle indexing here because it should affect the amount of motion per month (maybe motion should be per month)? I think make it always months as the units so we don't end up with conditionals
+
         const estimatedEventsUploaded = Math.round(
           (hoursOfMotion * 60 * 60) / eventSeconds
         );
@@ -153,7 +148,8 @@ export default class TheEstimatePage extends Vue {
         return {
           saasPricePerStream,
           numPlans,
-          flatAddons
+          flatAddons,
+          planName: plan.title
         };
       }
     });
@@ -260,7 +256,7 @@ export default class TheEstimatePage extends Vue {
               boxInfo: this.pricing["location"]["hardware"][key]
             };
           });
-        const boxesUsed: UsedBox[] = [];
+        let boxesUsed: UsedBox[] = [];
         if (streamCounts.length > 0) {
           streamCounts.every((streamType, index, allTypesArr) => {
             const minimum2MpChunkSize = this.getChunkSize(streamType.xMP);
@@ -369,11 +365,33 @@ export default class TheEstimatePage extends Vue {
           });
 
           // TODO: do I need to handle upgrades? probably....
+          // merge all the like boxes into one and handle upgrades (currently just merge)
+          const helper = {};
+          boxesUsed.map(box => {
+            if (!helper[box.boxKey]) {
+              helper[box.boxKey] = Object.assign(box, { count: 1 });
+            } else {
+              helper[box.boxKey]["count"]++;
+              Object.keys(box.streamsAdded).forEach(key => {
+                if (helper[box.boxKey].streamsAdded[key]) {
+                  helper[box.boxKey].streamsAdded[key].twoMPCount +=
+                    box.streamsAdded[key].twoMPCount;
+                  helper[box.boxKey].streamsAdded[key].xMPCount +=
+                    box.streamsAdded[key].xMPCount;
+                } else {
+                  helper[box.boxKey].streamsAdded[key] = box.streamsAdded[key];
+                }
+              });
+            }
+          });
+          boxesUsed = Object.keys(helper).map(key => helper[key]);
 
           let VM: BoxCounts | null = null;
           if (thisLocation.useVM) {
-            VM = Object.keys(boxesUsed)
-              .map(key => this.pricing["location"]["hardware"][key]["bom"])
+            VM = boxesUsed
+              .map(
+                box => this.pricing["location"]["hardware"][box.boxKey]["bom"]
+              )
               .reduce((prev, curr) => {
                 return {
                   cores: prev.cores + curr.cores,
@@ -381,8 +399,6 @@ export default class TheEstimatePage extends Vue {
                 };
               });
           }
-          //console.log("result", boxCounts);
-          console.log("result2", streamCounts);
 
           return {
             title: thisLocation.title,
@@ -402,37 +418,97 @@ export default class TheEstimatePage extends Vue {
     };
   }
 
-  // These are important:
-  /**
+  getTotalSaas(plan) {
+    let addOnsCombined = 0;
+    if (Object.keys(plan.flatAddons).length > 0) {
+      addOnsCombined = Object.keys(plan.flatAddons)
+        .map(key => {
+          return plan.flatAddons[key] * plan.numPlans;
+        })
+        .reduce((p, c) => {
+          return p + c;
+        });
+    }
+    const saas = plan.saasPricePerStream * plan.numPlans;
+    return addOnsCombined + saas;
+  }
 
-    estimatedPrice: function() {
-        var videoPriceCents = widget.app.estimatedVideoBytesMonthly() * CONFIG.PRICE_GCS_PER_BYTE_PER_MONTH_CENTS;
-        var eventPriceCents = Number(widget.app.events_uploaded_count) * 30.5 * CONFIG.PRICE_PER_EVENT_WRITTEN_STORED_PER_MONTH_CENTS;
-        var m = Math.max(Number(widget.app.storage_duration_days), 30) / 30;
-        return m * (videoPriceCents + eventPriceCents);
-    },
-    estimateBitrate: function() {
-        var m;
-        switch(widget.app.scene_activity) {
-        case "high":
-            m = 1.0;
-            break;
-        case "medium":
-            m = 0.7;
-            break;
-        case "low":
-            m = 0.5;
-            break;
-        default:
-            m = 1.0;
-            break;
-        }
-        var b = CONFIG.resolutions[widget.app.resolution]["bitrate"] || 2048;
-        var br = Math.round(b*m);
-        // console.log("b*m is "+b+"*"+m);
-        if (widget.app) widget.app.bitrate = br;
-        return br;
-    },
+  getTotalHardware(box: UsedBox & { count: number }) {
+    return box.boxInfo.boxInfo["price"] * box.count;
+  }
+
+  getTotalBoxStreams(box: UsedBox) {
+    return box.twoMpCount;
+  }
+
+  getAddOns(plan) {
+    let totalStreams = 0;
+    Object.keys(plan.flatAddons).forEach(key => {
+      totalStreams += plan.flatAddons[key];
+    });
+    return totalStreams;
+  }
+
+  getBoxText(location, box) {
+    if (location.useVM) {
+      return `BoxVM (${location.VM.cores} cores, ${location.VM.ram} GB of RAM)`;
+    } else {
+      return `${box.boxKey} Camio Box`;
+    }
+  }
+
+  getLocationTotalSaas(location) {
+    let grandTotal = 0;
+    location.saasPrice.forEach(saasPrice => {
+      if (saasPrice) {
+        grandTotal += this.getTotalSaas(saasPrice);
+      }
+    });
+    return grandTotal;
+  }
+
+  getLocationTotalHardware(location) {
+    let grandTotal = 0;
+    location.boxesUsed.forEach(box => {
+      if (location.useVM) {
+        return;
+      }
+      grandTotal += this.getTotalHardware(box);
+    });
+    return grandTotal;
+  }
+
+  getOverallSaas(prices) {
+    let total = 0;
+    prices.forEach(price => {
+      total += price.price;
+    });
+    return total;
+  }
+
+  get grandTotalSaas() {
+    const overallSaasPrice = this.getOverallSaas(this.prices.overallPricing);
+    let locationPrices = 0;
+    this.prices.pricingPerLocation.forEach(location => {
+      if (location) {
+        locationPrices += this.getLocationTotalSaas(location);
+      }
+    });
+    return overallSaasPrice + locationPrices;
+  }
+
+  get grandTotalHardware() {
+    let hardwarePrices = 0;
+    this.prices.pricingPerLocation.forEach(location => {
+      if (location) {
+        hardwarePrices += this.getLocationTotalHardware(location);
+      }
+    });
+    return hardwarePrices;
+  }
+
+  // These are important: (what is this?)
+  /**
     estimatedMaxStreamCount: function(model) {
         var maxStreams = CONFIG.models[model]["counts"][widget.app.resolution];
         var fpsFactor = Number(widget.app.fps) > CONFIG.FPS_RATED ? 0.80 : 1.0;
@@ -451,40 +527,146 @@ export default class TheEstimatePage extends Vue {
       <div class="total-title">
         Totals
       </div>
-      <div class="pricing-container">
-        <div class="sub-titles">
-          <div class="sub-title">
-            One-Time
-          </div>
-          <div class="sub-title">
-            Recurring
+      <div class="responsive-pricing-container">
+        <div class="table-row">
+          <div class="three-col"></div>
+          <div class="one-col cost-header">One-Time</div>
+          <div class="one-col cost-header">Recurring</div>
+        </div>
+        <div class="table-row new-table">
+          <div class="five-col section-title account">
+            Account-Wide Expenses
           </div>
         </div>
-        <div class="prices">
-          <div class="overall">
-            <div class="overall-title">
-              Account-Wide Expenses
+        <div
+          class="table-row entry green-background"
+          v-for="(overallField, index) in prices.overallPricing"
+          :key="`${index}-overall-price`"
+        >
+          <div class="one-col count">1x</div>
+          <div class="two-col item-title">
+            {{ titles[overallField.key] }}:
+            {{ finalYAMLObject.overall[overallField.key] }}
+          </div>
+          <div class="one-col"></div>
+          <div class="one-col">
+            <div class="table-row main-price">
+              {{ overallField.price | formatMoney }}
+            </div>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="three-col"></div>
+          <div class="one-col location-total account"></div>
+          <div class="one-col location-total account">
+            {{ getOverallSaas(prices.overallPricing) | formatMoney }}
+          </div>
+        </div>
+        <div
+          class="table-row with-sub-tables new-table"
+          v-for="(location, index) in prices.pricingPerLocation"
+          :key="`${index}-location-pricing-breakdown`"
+        >
+          <div class="table-row with-sub-tables" v-if="location">
+            <div class="table-row">
+              <div class="five-col section-title">{{ location.title }}</div>
             </div>
             <div
-              class="item"
-              v-for="(overallField, index) in prices.overallPricing"
-              :key="`${index}-overall-price`"
+              class="table-row with-sub-tables entry orange-background"
+              v-for="(plan, index) in location.saasPrice"
+              :key="`${index}-location-saas-price-field`"
             >
-              <div class="overall-count">
-                1x
-              </div>
-              <div class="field-title">
-                {{ titles[overallField.key] }}:
-                {{ finalYAMLObject.overall[overallField.key] }}
-              </div>
-              <div class="one-time"></div>
-              <div class="recurring">
-                {{ overallField.price | formatMoney }}
+              <div class="table-row" v-if="plan">
+                <div class="one-col count">{{ plan.numPlans }}x</div>
+                <div class="two-col">
+                  <div class="table-row with-sub-tables">
+                    <div class="table-row item-title">{{ plan.planName }}</div>
+                    <div
+                      class="table-row sub-price add-on"
+                      v-for="(addon, key) in plan.flatAddons"
+                      :key="`${key}-location-addon-price-field`"
+                    >
+                      {{ key }} @ {{ addon | formatMoney }} / stream
+                    </div>
+                  </div>
+                </div>
+                <div class="one-col"></div>
+                <div class="one-col">
+                  <div class="table-row with-sub-tables">
+                    <div class="table-row main-price">
+                      {{ getTotalSaas(plan) | formatMoney }} / mo
+                    </div>
+                    <div class="table-row sub-price">
+                      {{
+                        (plan.saasPricePerStream + getAddOns(plan))
+                          | formatMoney
+                      }}
+                      per stream
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="totals-one-time"></div>
-            <div class="totals">
-              {{ overallPrice | formatMoney }}
+            <div
+              class="table-row with-sub-tables entry orange-background"
+              v-for="(box, index) in location.boxesUsed"
+              :key="`${index}-location-box-price-field`"
+            >
+              <div class="table-row" v-if="box">
+                <div class="one-col count">
+                  {{ location.useVM ? 1 : box.count }}x
+                </div>
+                <div class="two-col item-title">
+                  {{ getBoxText(location, box) }}
+                </div>
+                <div class="one-col">
+                  <div class="table-row with-sub-tables">
+                    <div class="table-row main-price">
+                      {{
+                        location.useVM ? 0 : getTotalHardware(box) | formatMoney
+                      }}
+                    </div>
+                    <div class="table-row sub-price">
+                      {{ getTotalBoxStreams(box) }} streams each
+                    </div>
+                  </div>
+                </div>
+                <div class="one-col"></div>
+              </div>
+            </div>
+          </div>
+          <div class="table-row" v-if="location">
+            <div class="three-col"></div>
+            <div class="one-col location-total">
+              {{ getLocationTotalHardware(location) | formatMoney }}
+            </div>
+            <div class="one-col location-total">
+              {{ getLocationTotalSaas(location) | formatMoney }}
+            </div>
+          </div>
+        </div>
+        <div class="table-row grand-total">
+          <div class="two-col big-orange">
+            Grand Total
+          </div>
+          <div class="three-col make-full">
+            <div class="table-row with-sub-tables">
+              <div class="table-row">
+                <div class="two-col sub-orange">
+                  One-Time:
+                </div>
+                <div class="three-col total-price">
+                  {{ grandTotalHardware | formatMoney }}
+                </div>
+              </div>
+              <div class="table-row">
+                <div class="two-col sub-orange">
+                  Recurring:
+                </div>
+                <div class="three-col total-price">
+                  {{ grandTotalSaas | formatMoney }} / mo
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -517,62 +699,187 @@ export default class TheEstimatePage extends Vue {
       margin: -3px -3px 0px -3px;
     }
 
-    .pricing-container {
+    .responsive-pricing-container {
       display: flex;
       flex-direction: column;
+      padding: 10px;
 
-      .sub-titles {
+      .table-row {
         display: flex;
-        justify-content: flex-end;
+        width: 100%;
 
-        .sub-title {
-          font-weight: bold;
-          font-size: 30px;
-          color: #222222;
-        }
-      }
-
-      .prices {
-        display: flex;
-        flex-direction: column;
-
-        .overall {
-          display: flex;
+        &.with-sub-tables {
           flex-direction: column;
-          padding-left: 5px;
+        }
 
-          .overall-title {
-            color: #ffffff;
-            background: #50b536;
-            width: fit-content;
-            border-radius: 10px;
-            line-height: 54px;
+        &.entry {
+          padding: 7px 0px;
+        }
+
+        &.green-background {
+          background: rgba(203, 227, 196, 0.22);
+        }
+
+        &.orange-background {
+          background-color: #fcf8e3;
+        }
+
+        &.new-table {
+          margin-top: 20px;
+        }
+
+        &.grand-total {
+          margin: 15px -13px -13px -13px;
+          padding: 15px 0px;
+          background: #faebcc;
+          border: 3px solid #f7931e;
+          width: calc(100% + 26px);
+          align-items: center;
+
+          .big-orange {
+            font-weight: bold;
+            font-size: 40px;
+            color: #f7931e;
+            justify-content: center;
+            align-items: center;
+          }
+
+          .sub-orange {
             font-weight: bold;
             font-size: 30px;
-            padding: 0px 20px;
+            color: #f7931e;
+            align-items: center;
           }
 
-          .item {
-            display: flex;
+          .total-price {
+            font-weight: bold;
+            font-size: 30px;
+            line-height: 35px;
+            color: #222222;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 5%;
+          }
 
-            .overall-count {
-              max-width: 30px;
+          @media only screen and (max-width: 925px) {
+            flex-direction: column;
+
+            .big-orange {
+              width: 100%;
             }
 
-            .field-title {
-              color: #222222;
-              font-size: 20px;
-              flex-grow: 3;
+            .sub-orange {
+              width: 50%;
+              justify-content: center;
             }
 
-            .one-time {
-              flex-grow: 1;
+            .total-price {
+              width: 50%;
             }
 
-            .recurring {
-              flex-grow: 1;
+            .make-full {
+              width: 100%;
             }
           }
+        }
+
+        .one-col {
+          width: 20%;
+          display: flex;
+        }
+        .two-col {
+          width: 40%;
+          display: flex;
+        }
+        .three-col {
+          width: 60%;
+          display: flex;
+        }
+        .four-col {
+          width: 80%;
+          display: flex;
+        }
+        .five-col {
+          width: 100%;
+          display: flex;
+        }
+
+        .cost-header {
+          font-weight: bold;
+          font-size: 25px;
+          color: #222222;
+          text-decoration: underline;
+          justify-content: flex-end;
+          align-self: center;
+          padding-right: 1.5%;
+        }
+
+        .location-total {
+          border-top: 4px solid #f7931e;
+          font-size: 25px;
+          justify-content: flex-end;
+          font-weight: bold;
+          padding-top: 10px;
+          margin-left: 10px;
+          padding-right: 1.5%;
+          color: #f7931e;
+
+          &.account {
+            border-top: 4px solid #50b536;
+            color: #50b536;
+          }
+        }
+
+        .section-title {
+          font-weight: bold;
+          font-size: 20px;
+          color: white;
+          background-color: #f7931e;
+          opacity: 0.9;
+          padding: 5px 3%;
+          border-top-right-radius: 10px;
+          border-top-left-radius: 10px;
+
+          &.account {
+            color: white;
+            background-color: #50b536;
+          }
+        }
+
+        .count {
+          font-weight: bold;
+          font-size: 25px;
+          text-align: center;
+          align-items: center;
+          color: #50b536;
+          justify-content: center;
+          padding-right: 8%;
+        }
+
+        .item-title {
+          font-size: 17px;
+          color: #222222;
+          align-items: center;
+        }
+
+        .main-price {
+          font-weight: bold;
+          font-size: 20px;
+          justify-content: flex-end;
+          color: #222222;
+          padding-right: 8%;
+        }
+
+        .sub-price {
+          font-style: italic;
+          font-size: 15px;
+          color: #222222;
+          justify-content: flex-end;
+          padding-right: 8%;
+        }
+
+        .add-on {
+          justify-content: flex-start;
         }
       }
     }
