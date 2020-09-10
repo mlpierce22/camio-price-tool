@@ -35,7 +35,7 @@ export interface PlanAttributes {
   title: string;
   cloudRetention: string;
   cameraMotion: string;
-  indexing: { type: string; queries: string };
+  indexing: { type: string; option: string };
   overageHandling: string;
   resolution: string;
   numCameras: number;
