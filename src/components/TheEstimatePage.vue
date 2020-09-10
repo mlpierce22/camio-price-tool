@@ -274,6 +274,13 @@ export default class TheEstimatePage extends Vue {
           });
         let boxesUsed: UsedBox[] = [];
         if (streamCounts.length > 0) {
+          /** This function handles the box allocations based on the streamcounts from before. It basically works as follows:
+           * Iterate through streamCounts,
+           * for each type (from biggest to smallest), get the minimum chunk (i.e if we have 12mp, we can only split into 3 2mp streams at a minimum),
+           * check for extra space in used boxes object (if empty, go to next part),
+           * If we can fill up space in another box, do that.
+           * If there is still space after filling up some box, iterate through boxes and try to assign the streams to a box
+           */
           streamCounts.every((streamType, index, allTypesArr) => {
             const minimum2MpChunkSize = this.getChunkSize(streamType.xMP);
 

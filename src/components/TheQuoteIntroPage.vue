@@ -4,8 +4,10 @@ import { Component, Vue, Prop } from "vue-property-decorator";
 import { OverallData } from "@/new-models";
 import { PromptedNumberInputObject, QuoteIntroForm } from "@/models";
 import VPromptedNumberInput from "@/components/shared/VPromptedNumberInput.vue";
+import VPageHeader from "@/components/shared/VPageHeader.vue";
+
 @Component({
-  components: { VPromptedNumberInput }
+  components: { VPromptedNumberInput, VPageHeader }
 })
 export default class TheQuoteIntroPage extends Vue {
   // ---------- Props ----------
@@ -46,6 +48,14 @@ export default class TheQuoteIntroPage extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="the-quote-intro-page" v-if="combined">
+    <VPageHeader>
+      <template v-slot:icon><v-icon></v-icon></template>
+      <template v-slot:text><div>Intro Questions</div></template>
+      <template v-slot:description>
+        <!-- I have no clue why this is showing an error -->
+        <div>Answer a couple of quick questions to get started!</div>
+      </template>
+    </VPageHeader>
     <div
       class="number-inputs"
       v-for="(value, index) in combined"
