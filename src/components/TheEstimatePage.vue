@@ -56,15 +56,17 @@ export default class TheEstimatePage extends Vue {
     };
   }
 
-  estimateVideoBytesMonthly(estimatedEventsUploaded: number, bitrate: number) {
-    // the percent motion as decimal times 1 day (24 hrs) = number hours active per day
-    // events uploaded is the number of hours active (converted to seconds)/(length of an event in seconds)
+  estimateVideoBytesMonthly(
+    estimatedEventsUploadedDays: number,
+    bitrate: number
+  ) {
     // (events uploaded * the duration of an event in seconds * the bitrate * size of a kilobit (why?))
     const eventSeconds = this.pricing["location"]["plan"]["cloudData"]
       .EVENT_DURATION_SECONDS;
     const kilobits = this.pricing["location"]["plan"]["cloudData"].KILOBITS;
     return (
-      ((estimatedEventsUploaded * eventSeconds * bitrate * kilobits) / 8) * 30.5
+      ((estimatedEventsUploadedDays * eventSeconds * bitrate * kilobits) / 8) *
+      30.5
     );
   }
 
@@ -75,7 +77,7 @@ export default class TheEstimatePage extends Vue {
   }
 
   getEstimatedSaasPrice(
-    estimatedEventsUploaded: number,
+    estimatedEventsUploadedDays: number,
     hoursOfMotion: number,
     percentMotion: number,
     bitrate: number,
@@ -86,9 +88,9 @@ export default class TheEstimatePage extends Vue {
     const eventWriteCost = this.pricing["location"]["plan"]["cloudData"]
       .PRICE_PER_EVENT_WRITTEN_STORED_PER_MONTH_CENTS;
     const videoPriceCents =
-      this.estimateVideoBytesMonthly(estimatedEventsUploaded, bitrate) *
+      this.estimateVideoBytesMonthly(estimatedEventsUploadedDays, bitrate) *
       cloudStorageCost;
-    const eventPriceCents = estimatedEventsUploaded * 30.5 * eventWriteCost;
+    const eventPriceCents = estimatedEventsUploadedDays * 30.5 * eventWriteCost;
     const storageAsMonth = cloudStorage / 30;
     return storageAsMonth * (videoPriceCents + eventPriceCents);
   }
@@ -131,15 +133,29 @@ export default class TheEstimatePage extends Vue {
         console.log("this is the bitrate", bitrate);
         const eventSeconds = this.pricing["location"]["plan"]["cloudData"]
           .EVENT_DURATION_SECONDS;
+        const eventsPerDay = (60 * 60 * 24) / eventSeconds;
 
-        // TODO: we should handle indexing here because it should affect the amount of motion per month (maybe motion should be per month)? I think make it always months as the units so we don't end up with conditionals
+        let estimatedEventsUploadedDays = 0;
+        if (plan.indexing.type == "Lazy") {
+          // then units are days
+          // percentage of month (to get a ratio)
+          const lazyPercent =
+            this.toNumberWithUnits(plan.indexing.option).number / 30.5;
+          estimatedEventsUploadedDays = lazyPercent * eventsPerDay;
+        } else if (plan.indexing.type == "Query Match") {
+          // units are percentage of month
+          // use ratio directly on events per day
+          const matchingQueriesPercent =
+            this.toNumberWithUnits(plan.indexing.option).number / 100;
+          estimatedEventsUploadedDays = matchingQueriesPercent * eventsPerDay;
+        } else {
+          // use the hours of motion per day
+          estimatedEventsUploadedDays = percentMotion * eventsPerDay;
+        }
 
-        const estimatedEventsUploaded = Math.round(
-          (hoursOfMotion * 60 * 60) / eventSeconds
-        );
         // calculate stream pricing ((which is the price of video + price of events) * storage duration
         const saasPricePerStream = this.getEstimatedSaasPrice(
-          estimatedEventsUploaded,
+          estimatedEventsUploadedDays,
           hoursOfMotion,
           percentMotion,
           bitrate,
