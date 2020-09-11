@@ -57,6 +57,27 @@ export default class VPageHeader extends Vue {
       font-style: italic;
     }
   }
+  @media only screen and (max-width: 600px) {
+    flex-direction: column;
+
+    ::v-deep .v-icon {
+      font-size: 70px !important;
+      margin-bottom: 10px;
+    }
+
+    .text-container {
+      align-items: center;
+
+      .text {
+        font-size: 27px;
+      }
+
+      .description {
+        font-size: 13px;
+        text-align: center;
+      }
+    }
+  }
 }
 </style>
 <!----------------- END CSS/SCSS ------------------>

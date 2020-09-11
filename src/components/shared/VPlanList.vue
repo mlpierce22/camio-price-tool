@@ -79,9 +79,8 @@ export default class VPlanList extends Vue {
           v-for="(plan, index) in plans"
           :key="`${index}-plan`"
         >
-          <!-- TODO: Should this be a button with no border? -->
           <v-hover v-slot:default="{ hover }">
-            <div class="hover-container">
+            <div v-ripple color="primary" class="hover-container">
               <div class="plan-count" :class="`${getColor(plan)}--text`">
                 {{ camerasRemaining(plan) }}
               </div>
@@ -121,6 +120,10 @@ export default class VPlanList extends Vue {
     font-size: 30px;
     text-decoration-line: underline;
     color: #f7931e;
+
+    @media only screen and (max-width: 430px) {
+      font-size: 25px;
+    }
   }
 
   .plan-container {
@@ -175,7 +178,7 @@ export default class VPlanList extends Vue {
 
       .plans {
         display: flex;
-        font-size: 30px;
+        font-size: 20px;
         text-decoration: none;
         color: #f7931e;
         margin-top: 5px;
@@ -191,20 +194,27 @@ export default class VPlanList extends Vue {
           .plan-count {
             font-weight: bold;
             margin-left: 40px;
-            max-width: 20%;
-            flex-grow: 1;
+            width: 20%;
           }
 
           .plan-sub-title {
             font-weight: normal;
-            max-width: 30%;
-            flex-grow: 1;
+            width: 60%;
           }
 
           .pencil {
-            // margin-left: 50px;
-            max-width: 50%;
-            flex-grow: 1;
+            width: 20%;
+          }
+        }
+      }
+
+      @media only screen and (max-width: 500px) {
+        padding: 10px;
+        font-size: 12px;
+
+        .plans .hover-container {
+          .plan-count {
+            margin-left: 0px;
           }
         }
       }

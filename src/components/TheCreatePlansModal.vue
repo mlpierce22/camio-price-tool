@@ -117,7 +117,7 @@ export default class TheCreatePlansModal extends Vue {
   }
 
   get resolutionIsDefault() {
-    return this.defaults["resolution"];
+    return this.defaults["resolution"] ? true : false;
   }
 
   removeResolution(indexToRemove) {
@@ -286,6 +286,10 @@ export default class TheCreatePlansModal extends Vue {
         .form-item {
           margin-top: 41px;
           max-width: 80%;
+
+          @media only screen and (max-width: 785px) {
+            max-width: 100%;
+          }
         }
 
         .bottom-form {
@@ -299,6 +303,7 @@ export default class TheCreatePlansModal extends Vue {
             .icon {
             }
             .form-title {
+              align-self: center;
               font-size: 50px;
               font-weight: bold;
               color: #f7931e;
@@ -344,6 +349,15 @@ export default class TheCreatePlansModal extends Vue {
                 margin-top: 5px;
                 margin-bottom: 5px;
                 width: 100%;
+              }
+            }
+          }
+          @media only screen and (max-width: 780px) {
+            .title-container {
+              margin-left: 10px;
+
+              .form-title {
+                font-size: 30px;
               }
             }
           }

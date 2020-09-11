@@ -151,10 +151,13 @@ import {
   pricingObject,
   megapixelMappings
 } from "@/form-data-templates";
+import SimpleCrypto from "simple-crypto-js";
 
 /** Set the initial state of the function - allows us to reset everything. */
 function initialState(componentInstance) {
   return {
+    planEncryptionKey: "plan-encryption-key",
+    stateEncryptionKey: "state-encryption-key",
     isVertical: false,
     orientationThreshold: 600,
     progressionState: {
@@ -682,7 +685,6 @@ export default Vue.extend({
       // Done case
       return;
     },
-    // TODO: does this need this.$set?
     resetToDefaults: function() {
       const data = initialState(this);
       Object.keys(data).forEach(key => (this[key] = data[key]));
@@ -787,6 +789,10 @@ export default Vue.extend({
   border: 3px solid #f7931e;
   border-radius: 20px;
   margin: 30px 10.3%;
+
+  @media only screen and (max-width: 502px) {
+    margin: 10px;
+  }
 
   .v-stepper__step {
     flex-basis: 0;

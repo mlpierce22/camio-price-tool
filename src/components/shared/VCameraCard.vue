@@ -74,38 +74,50 @@ export default class VCameraCard extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="v-camera-card">
-    <v-icon class="icon" color="secondary" size="60">mdi-video-outline</v-icon>
-    <div class="resolution">
-      <v-select
-        :items="usableResolutions"
-        v-model="cameraTitle"
-        label="Resolution"
-        hide-details
-        outlined
-        :disabled="disabled"
-      ></v-select>
-    </div>
-    <div class="num-streams">
-      <div class="title">
-        # of Streams
+    <div class="dropdown-icon">
+      <v-icon class="icon" color="secondary" size="60"
+        >mdi-video-outline</v-icon
+      >
+      <div class="resolution">
+        <v-select
+          :items="usableResolutions"
+          v-model="cameraTitle"
+          label="Resolution"
+          hide-details
+          outlined
+          :disabled="disabled"
+        ></v-select>
       </div>
-      <v-text-field
-        class="text-box"
-        v-model="camCount"
-        type="number"
-        background-color="#CBE3C4"
-        color="#50B536"
-        min="1"
-        step="1"
-        outlined
-        :hide-details="true"
-        :validate-on-blur="true"
-        :rules="[rules.empty, rules.min]"
-      ></v-text-field>
     </div>
-    <v-btn icon color="error" :disabled="!isDeletable" @click="$emit('delete')">
-      <v-icon>mdi-trash-can</v-icon>
-    </v-btn>
+    <div class="streams-icon">
+      <div class="num-streams">
+        <div class="title">
+          # of Streams
+        </div>
+        <v-text-field
+          class="text-box"
+          v-model="camCount"
+          type="number"
+          background-color="#CBE3C4"
+          color="#50B536"
+          min="1"
+          step="1"
+          outlined
+          :hide-details="true"
+          :validate-on-blur="true"
+          :rules="[rules.empty, rules.min]"
+        ></v-text-field>
+      </div>
+      <v-btn
+        icon
+        color="error"
+        :disabled="!isDeletable"
+        @click="$emit('delete')"
+        class="delete"
+      >
+        <v-icon>mdi-trash-can</v-icon>
+      </v-btn>
+    </div>
   </div>
 </template>
 <!----------------- END HTML ---------------------->
@@ -127,48 +139,53 @@ export default class VCameraCard extends Vue {
       display: none;
     }
   }
-  .resolution {
-    padding: 0px 10px;
-  }
-
-  .num-streams {
+  .dropdown-icon {
     display: flex;
-    flex-direction: column;
-    max-width: 119px;
 
-    @media only screen and (max-width: 450px) {
-      .title {
-        font-size: 1.1rem !important;
-      }
+    .resolution {
+      padding: 0px 10px;
     }
+  }
+  .streams-icon {
+    display: flex;
+    align-items: center;
 
-    ::v-deep.text-box {
-      .v-input__slot {
-        border-radius: 10px;
-        min-height: 0px;
+    .num-streams {
+      display: flex;
+      flex-direction: column;
+      width: 150px;
 
-        input {
-          text-align: center;
-          padding: 8px 0px 8px 13px;
+      @media only screen and (max-width: 450px) {
+        .title {
+          font-size: 1.1rem !important;
+        }
+      }
 
-          @media only screen and (max-width: 450px) {
-            padding: 8px 0px 8px 0px;
+      ::v-deep.text-box {
+        .v-input__slot {
+          border-radius: 10px;
+          min-height: 0px;
+
+          input {
+            text-align: center;
+            padding: 8px 0px 8px 13px;
+
+            @media only screen and (max-width: 450px) {
+              padding: 8px 0px 8px 0px;
+            }
           }
         }
       }
     }
+  }
+  @media only screen and (max-width: 630px) {
+    flex-direction: column;
 
-    // ::v-deep .text-box input {
-    //   text-align: center;
-    // }
-    // ::v-deep .v-text-field input {
-    //   padding: 8px 0px 8px 13px;
-    // }
-
-    // ::v-deep .text-box .v-input__slot {
-    //   border-top-right-radius: 10px;
-    //   border-top-left-radius: 10px;
-    // }
+    .streams-icon {
+      .delete {
+        margin-left: 10px;
+      }
+    }
   }
 }
 </style>
