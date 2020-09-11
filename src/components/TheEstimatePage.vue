@@ -8,8 +8,12 @@ import {
   UsedBox
 } from "@/new-models";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import VPageHeader from "@/components/shared/VPageHeader.vue";
+
 @Component({
-  components: {},
+  components: {
+    VPageHeader
+  },
   filters: {
     formatMoney(amountCents) {
       console.log("this is the money put in:", amountCents);
@@ -546,6 +550,12 @@ export default class TheEstimatePage extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="the-estimate-page">
+    <VPageHeader>
+      <template v-slot:icon
+        ><v-icon color="primary" size="90">mdi-clipboard-text</v-icon></template
+      >
+      <template v-slot:text><div class="text">Estimate</div></template>
+    </VPageHeader>
     <div class="totals-container">
       <div class="total-title">
         Totals

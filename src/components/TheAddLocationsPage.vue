@@ -4,11 +4,14 @@ import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { Plan, DeconstructedHashPlan, QuoteIntroForm } from "@/models";
 import VPlanList from "@/components/shared/VPlanList.vue";
 import VLocationCameraDropdown from "@/components/shared/VLocationCameraDropdown.vue";
+import VPageHeader from "@/components/shared/VPageHeader.vue";
+
 import { LocationHashes } from "@/new-models";
 @Component({
   components: {
     VPlanList,
-    VLocationCameraDropdown
+    VLocationCameraDropdown,
+    VPageHeader
   }
 })
 export default class TheAddLocationsPage extends Vue {
@@ -99,6 +102,19 @@ export default class TheAddLocationsPage extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="the-add-locations-page">
+    <VPageHeader>
+      <template v-slot:icon
+        ><v-icon color="primary" size="90">mdi-store </v-icon></template
+      >
+      <template v-slot:text><div class="text">Add Locations</div></template>
+      <template v-slot:description>
+        <div class="description">
+          Add your plans to each of your LAN locations. Plans can be split
+          between multiple locations and you must assign all cameras to at least
+          one location before you can move on.
+        </div>
+      </template>
+    </VPageHeader>
     <VPlanList :plans="dehashPlans" title="Plans Left To Assign" />
     <div class="locations">
       <VLocationCameraDropdown

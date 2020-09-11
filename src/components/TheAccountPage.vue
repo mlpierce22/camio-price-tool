@@ -2,9 +2,11 @@
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { AccountForm, PlanTemplates, AccountSubForm } from "@/models";
+import VPageHeader from "@/components/shared/VPageHeader.vue";
 import VFormItemPicker from "@/components/shared/VFormItemPicker.vue";
+
 @Component({
-  components: { VFormItemPicker }
+  components: { VFormItemPicker, VPageHeader }
 })
 export default class TheAccountPage extends Vue {
   // ---------- Props ----------
@@ -48,6 +50,19 @@ export default class TheAccountPage extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="the-account-page">
+    <VPageHeader>
+      <template v-slot:icon
+        ><v-icon color="primary" size="90"
+          >mdi-account-multiple
+        </v-icon></template
+      >
+      <template v-slot:text><div class="text">Account-Wide</div></template>
+      <template v-slot:description>
+        <div class="description">
+          Apply these options across all cameras.
+        </div>
+      </template>
+    </VPageHeader>
     <div
       v-for="(formItem, index) in formData"
       :key="`${index}-form-item`"
@@ -67,6 +82,8 @@ export default class TheAccountPage extends Vue {
 <!----------------- BEGIN CSS/SCSS ---------------->
 <style scoped lang="scss">
 .the-account-page {
+  display: flex;
+  flex-direction: column;
 }
 </style>
 <!----------------- END CSS/SCSS ------------------>

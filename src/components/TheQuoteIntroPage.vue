@@ -49,11 +49,16 @@ export default class TheQuoteIntroPage extends Vue {
 <template lang="html">
   <div class="the-quote-intro-page" v-if="combined">
     <VPageHeader>
-      <template v-slot:icon><v-icon></v-icon></template>
-      <template v-slot:text><div>Intro Questions</div></template>
+      <template v-slot:icon
+        ><v-icon color="primary" size="90"
+          >mdi-information-outline
+        </v-icon></template
+      >
+      <template v-slot:text><div class="text">Intro Questions</div></template>
       <template v-slot:description>
-        <!-- I have no clue why this is showing an error -->
-        <div>Answer a couple of quick questions to get started!</div>
+        <div class="description">
+          Answer a couple of quick questions to get started!
+        </div>
       </template>
     </VPageHeader>
     <div

@@ -3,6 +3,7 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { PlanTemplates, AccountForm, Plan, FullFilteredPlan } from "@/models";
 import VPlanList from "@/components/shared/VPlanList.vue";
+import VPageHeader from "@/components/shared/VPageHeader.vue";
 import VPlanCard from "@/components/shared/VPlanCard.vue";
 import TheCreatePlansModal from "@/components/TheCreatePlansModal.vue";
 import { DefaultMap } from "@/new-models";
@@ -11,7 +12,8 @@ import { DefaultMap } from "@/new-models";
   components: {
     VPlanList,
     VPlanCard,
-    TheCreatePlansModal
+    TheCreatePlansModal,
+    VPageHeader
   }
 })
 export default class TheCreatePlansPage extends Vue {
@@ -150,6 +152,19 @@ export default class TheCreatePlansPage extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="the-create-plans-page">
+    <VPageHeader>
+      <template v-slot:icon
+        ><v-icon color="primary" size="90">mdi-wrench </v-icon></template
+      >
+      <template v-slot:text><div class="text">Create Plans</div></template>
+      <template v-slot:description>
+        <div class="description">
+          Every camera you own is subscribed to a Camio plan. We do this to
+          ensure that you always get the best possible price. Select one of our
+          premade plans or choose “Basic” to customize your own.
+        </div>
+      </template>
+    </VPageHeader>
     <VPlanList :plans="dehashPlans" title="My Plans" />
     <div class="plan-cards">
       <VPlanCard
