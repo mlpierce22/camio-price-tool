@@ -82,29 +82,33 @@ export default class VCameraAssignmentDropdownCard extends Vue {
       :rules="[rules.min]"
     ></v-text-field>
     <div class="card" @click="showMore = !showMore">
-      <v-icon class="list" color="white">mdi-format-list-bulleted</v-icon>
-      <v-select
-        class="select"
-        :items="planTitles"
-        v-model="selected"
-        label="Plan"
-        hide-details
-        outlined
-        dense
-        dark
-      ></v-select>
-      <v-btn icon color="white" class="pencil" @click="$emit('edit')">
-        <v-icon>mdi-pencil</v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        class="trash"
-        color="white"
-        :disabled="!canDelete"
-        @click="$emit('delete')"
-      >
-        <v-icon>mdi-delete</v-icon>
-      </v-btn>
+      <div class="dropdown-icon">
+        <v-icon class="list" color="white">mdi-format-list-bulleted</v-icon>
+        <v-select
+          class="select"
+          :items="planTitles"
+          v-model="selected"
+          label="Plan"
+          hide-details
+          outlined
+          dense
+          dark
+        ></v-select>
+      </div>
+      <div class="icons">
+        <v-btn icon color="white" class="pencil" @click="$emit('edit')">
+          <v-icon>mdi-pencil</v-icon>
+        </v-btn>
+        <v-btn
+          icon
+          class="trash"
+          color="white"
+          :disabled="!canDelete"
+          @click="$emit('delete')"
+        >
+          <v-icon>mdi-delete</v-icon>
+        </v-btn>
+      </div>
     </div>
     <v-expand-transition>
       <div v-show="showMore" class="additional-details"></div>
@@ -119,13 +123,19 @@ export default class VCameraAssignmentDropdownCard extends Vue {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+  margin-bottom: 10px;
 
   ::v-deep .text-box {
     max-width: 70px;
     margin-top: 5px;
 
+    .v-input__slot {
+      margin: 0px;
+    }
+
     .v-text-field__details {
       padding: 0px;
+      margin: 0px;
     }
     input {
       text-align: center;
@@ -140,20 +150,47 @@ export default class VCameraAssignmentDropdownCard extends Vue {
     margin-left: 10px;
     flex-grow: 1;
 
-    // ::v-deep .v-text-field--outlined fieldset {
-    //   border-color: white !important;
-    //   color:
-    // }
-    .select {
-      max-width: 240px;
-      margin-left: 5px;
+    .dropdown-icon {
+      display: flex;
+      flex-direction: row;
+
+      .select {
+        max-width: 240px;
+        margin-left: 5px;
+      }
     }
 
-    .pencil {
-      margin-left: auto;
+    .icons {
+      display: flex;
+      flex-direction: row;
+
+      .pencil {
+        margin-left: auto;
+      }
+      .trash {
+        margin: 0px 5px;
+      }
     }
-    .trash {
-      margin: 0px 5px;
+  }
+
+  @media only screen and (max-width: 450px) {
+    flex-direction: column;
+    ::v-deep .text-box {
+      align-self: center;
+    }
+    .card {
+      align-self: center;
+      flex-direction: column;
+      margin-left: 0px;
+      padding: 5px;
+
+      .icons {
+        align-self: center;
+
+        .pencil {
+          margin-left: 0px;
+        }
+      }
     }
   }
 }

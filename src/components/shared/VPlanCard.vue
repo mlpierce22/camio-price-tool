@@ -136,11 +136,11 @@ export default class VPlanCard extends Vue {
 
     @media only screen and (max-width: 500px) {
       padding: 10px;
-      min-width: 220px;
+      min-width: 206px;
       min-height: 240px;
 
       @media only screen and (max-width: 390px) {
-        min-width: 110px;
+        min-width: 206px;
         max-width: 160px;
       }
     }
@@ -180,11 +180,7 @@ export default class VPlanCard extends Vue {
     }
     ::v-deep .v-btn__content {
       @media only screen and (max-width: 500px) {
-        font-size: 0.675rem;
-      }
-
-      @media only screen and (max-width: 390px) {
-        font-size: 0.58rem;
+        font-size: 0.75rem;
       }
     }
   }
