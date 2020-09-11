@@ -151,7 +151,6 @@ import {
   pricingObject,
   megapixelMappings
 } from "@/form-data-templates";
-import SimpleCrypto from "simple-crypto-js";
 
 /** Set the initial state of the function - allows us to reset everything. */
 function initialState(componentInstance) {
