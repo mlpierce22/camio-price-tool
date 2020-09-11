@@ -163,6 +163,7 @@ export default class VCameraAssignmentDropdownCard extends Vue {
     .icons {
       display: flex;
       flex-direction: row;
+      margin-left: auto;
 
       .pencil {
         margin-left: auto;
