@@ -155,8 +155,6 @@ import {
 /** Set the initial state of the function - allows us to reset everything. */
 function initialState(componentInstance) {
   return {
-    planEncryptionKey: "plan-encryption-key",
-    stateEncryptionKey: "state-encryption-key",
     isVertical: false,
     orientationThreshold: 600,
     progressionState: {
@@ -169,6 +167,7 @@ function initialState(componentInstance) {
       locationStep: 4
     },
     showEditPlanModal: false,
+    // Include in Compression
     finalYAMLObject: {
       overall: {
         totalCameras: 10, // TODO: should this be updatable or final??
@@ -187,9 +186,7 @@ function initialState(componentInstance) {
         }
       }
     } as FinalYAMLObject,
-    defaults: {},
-    plans: {},
-    locations: {},
+    defaults: {}, // Include in Compression
     steps: [
       {
         stepNumber: 1,
@@ -197,8 +194,7 @@ function initialState(componentInstance) {
         stepName: "Introduction",
         instance: TheQuoteIntroPage,
         navButtons: {
-          nextText: "Next",
-          backText: "Back"
+          nextText: "Choose Defaults"
         },
         events: {
           "change-overall": componentInstance.changeOverall
@@ -231,7 +227,7 @@ function initialState(componentInstance) {
         stepName: "Account",
         instance: TheAccountPage,
         navButtons: {
-          nextText: "Next",
+          nextText: "Create",
           backText: "Back"
         },
         events: {
@@ -256,7 +252,7 @@ function initialState(componentInstance) {
         stepName: "Plans",
         instance: TheCreatePlansPage,
         navButtons: {
-          nextText: "Next",
+          nextText: "Assign",
           backText: "Back"
         },
         events: {
@@ -298,7 +294,7 @@ function initialState(componentInstance) {
         stepName: "Locations",
         instance: TheAddLocationsPage,
         navButtons: {
-          nextText: "Next",
+          nextText: "Estimate",
           backText: "Back"
         },
         events: {
@@ -333,7 +329,7 @@ function initialState(componentInstance) {
         stepName: "Review",
         instance: TheEstimatePage,
         navButtons: {
-          nextText: "Next",
+          nextText: "Finish",
           backText: "Back"
         },
         events: {},
