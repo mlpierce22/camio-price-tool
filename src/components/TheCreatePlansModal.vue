@@ -45,6 +45,8 @@ export default class TheCreatePlansModal extends Vue {
 
   selectionOps!: string[];
 
+  expandDelete = false;
+
   // --------- Watchers --------
   @Watch("dialogOpen")
   dialogClosed($event) {
@@ -141,6 +143,11 @@ export default class TheCreatePlansModal extends Vue {
     this.multiResolution = false;
     this.selectedResolutions = [];
     this.$emit("dialog-closed", true);
+  }
+
+  deletePlan() {
+    this.$emit("delete-plan");
+    this.$emit("dialog-closed");
   }
 }
 </script>
@@ -244,6 +251,44 @@ export default class TheCreatePlansModal extends Vue {
               </div>
             </div>
           </div>
+          <v-alert
+            dense
+            outlined
+            color="error"
+            :class="{ delete: true, clickable: expandDelete == false }"
+            @click="expandDelete = true"
+            v-if="isEditing"
+          >
+            <div class="top">
+              <div class="delete-text">Delete Plan</div>
+              <v-scroll-x-transition>
+                <v-btn
+                  icon
+                  class="close"
+                  v-if="expandDelete"
+                  color="error"
+                  @click.stop="expandDelete = false"
+                >
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </v-scroll-x-transition>
+            </div>
+
+            <v-expand-transition>
+              <div class="transition-container" v-show="expandDelete">
+                <div class="delete-text">Are you sure?</div>
+                <v-btn
+                  outlined
+                  color="error"
+                  class="delete"
+                  @click.stop="deletePlan()"
+                  >Yes, delete</v-btn
+                >
+              </div>
+            </v-expand-transition>
+          </v-alert>
+          <!-- <v-btn outlined color="error" class="delete" >
+          </v-btn> -->
 
           <VBackNextButton
             @next-click="submit()"
@@ -354,12 +399,53 @@ export default class TheCreatePlansModal extends Vue {
               }
             }
           }
+
           @media only screen and (max-width: 780px) {
             .title-container {
               margin-left: 10px;
 
               .form-title {
                 font-size: 30px;
+              }
+            }
+          }
+        }
+
+        .delete {
+          margin: 20px auto;
+          width: fit-content;
+          cursor: default;
+
+          &.clickable {
+            cursor: pointer;
+          }
+
+          .v-alert__wrapper .v-alert__content {
+            display: flex;
+            flex-direction: column;
+
+            .top {
+              display: flex;
+
+              .delete-text {
+                font-weight: bold;
+                align-self: center;
+              }
+
+              .close {
+                margin-left: 30px;
+              }
+            }
+
+            .transition-container {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              margin-top: 5px;
+
+              .delete {
+                margin: 0px;
+                cursor: pointer;
               }
             }
           }

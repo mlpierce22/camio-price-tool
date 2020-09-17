@@ -87,6 +87,7 @@ export default class TheEditPlanModal extends Vue {
       :title="title"
       :defaults="defaults"
       :isEditing="true"
+      @delete-plan="$emit('delete-plan', planId)"
       @dialog-closed="dialogClosed($event)"
       @changed-form-item="updatePlan($event)"
       @resolution-change="cameraResolutionList = $event"
