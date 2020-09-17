@@ -95,7 +95,7 @@ export default class TheCreatePlansPage extends Vue {
             isDefault: account.isDefault,
             formType: this.updateFormType(account.formType),
             prompt: "",
-            subPrompt: planField.label,
+            subPrompt: planField.prompt,
             selectionOpts: account.selectionOpts,
             selected: Array.isArray(account.selected)
               ? planField.selected

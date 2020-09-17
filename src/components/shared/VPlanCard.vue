@@ -29,17 +29,17 @@ export default class VPlanCard extends Vue {
       .flatMap(field => {
         if (!this.defaults[field.fieldName]) {
           if (typeof field.selected == "string") {
-            return field.label + ": " + field.selected;
+            return field.prompt + ": " + field.selected;
           } else if (Array.isArray(field.selected)) {
             return field.selected.length == 0
               ? undefined
-              : field.label +
+              : field.prompt +
                   ": " +
                   (field.selected as []).map(opts =>
                     opts["name"] ? opts["name"] : opts
                   );
           } else if (typeof field.selected == "object") {
-            return field.label + ": " + field.selected["type"];
+            return field.prompt + ": " + field.selected["type"];
           }
         } else {
           if (Array.isArray(field.selected)) {
@@ -48,7 +48,7 @@ export default class VPlanCard extends Vue {
             );
             return filtered.length == 0
               ? undefined
-              : field.label +
+              : field.prompt +
                   ": " +
                   (field.selected as []).map(opts =>
                     opts["name"] ? opts["name"] : opts
@@ -58,7 +58,7 @@ export default class VPlanCard extends Vue {
           }
         }
       })
-      .filter(label => label);
+      .filter(prompt => prompt);
   }
 }
 </script>

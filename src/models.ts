@@ -93,7 +93,7 @@ export interface PlanTemplateWithDefaults extends BasePlanOpts {
 export interface BasePlanOpts {
   fieldName: string;
   selected: string | TwoTierSelection | string[] | Array<AddOn>;
-  label: string;
+  prompt: string;
 }
 
 export interface AddOn {
