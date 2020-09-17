@@ -339,10 +339,12 @@ function initialState(componentInstance) {
         stepName: "Review",
         instance: TheEstimatePage,
         navButtons: {
-          nextText: "Finish",
+          nextText: "Email Quote",
           backText: "Back"
         },
-        events: {},
+        events: {
+          "save-state": componentInstance.saveState
+        },
         props: {
           get: [
             {
@@ -512,8 +514,47 @@ export default Vue.extend({
     this.$vuetify.theme.themes.light.primary = "#f7931e";
     this.$vuetify.theme.themes.light.secondary = "#50B536";
     this.$vuetify.theme.themes.light.error = "#FF0000";
+    this.retrieveStateFromUrl();
   },
   methods: {
+    retrieveStateFromUrl() {
+      const currentUrl = window.location.href;
+      if (currentUrl.includes("quote_id")) {
+        const varNameIndex = currentUrl.indexOf("quote_id");
+        const end = currentUrl.indexOf(";", varNameIndex);
+        const stateId = currentUrl.slice(varNameIndex, end).split("=")[1];
+        // TODO: finish this!
+        fetch("/api/blobs/" + stateId, {
+          method: "GET"
+        })
+          .then(jsonObject => {
+            console.log("got the Json!", jsonObject);
+          })
+          .catch(err => {
+            console.log("Couldn't fetch from api", err);
+          });
+      }
+    },
+    saveState() {
+      const saveObject = {
+        finalYAMLObject: this.finalYAMLObject,
+        defaults: this.defaults
+      };
+      // TODO: finish this!
+      fetch("/api/blobs", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(saveObject)
+      })
+        .then(id => {
+          console.log("got the id!", id);
+        })
+        .catch(err => {
+          console.log("Couldn't fetch from api", err);
+        });
+    },
     // BEGIN FUNCTIONS TO MODIFY FINAL YAML OBJECT
     changeOverall(change: OverallChange) {
       const totalLocations = this.finalYAMLObject.overall.totalLocations;
