@@ -45,8 +45,6 @@ export default class TheCreatePlansPage extends Vue {
   // TODO: Replace the constructor with created everywhere
   constructor() {
     super();
-    console.log("the form data:", this.accountData);
-    console.log("the plan templates:", this.planTemplates);
   }
   // --------- Methods ---------
 

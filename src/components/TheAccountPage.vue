@@ -4,6 +4,7 @@ import { Component, Vue, Prop } from "vue-property-decorator";
 import { AccountForm, PlanTemplates, AccountSubForm } from "@/models";
 import VPageHeader from "@/components/shared/VPageHeader.vue";
 import VFormItemPicker from "@/components/shared/VFormItemPicker.vue";
+import { DefaultMap } from "@/new-models";
 
 @Component({
   components: { VFormItemPicker, VPageHeader }
@@ -11,6 +12,8 @@ import VFormItemPicker from "@/components/shared/VFormItemPicker.vue";
 export default class TheAccountPage extends Vue {
   // ---------- Props ----------
   @Prop() formData!: Array<AccountForm | AccountSubForm>;
+
+  @Prop() defaults!: DefaultMap;
 
   // ------- Local Vars --------
 
@@ -20,6 +23,15 @@ export default class TheAccountPage extends Vue {
   // ------- Lifecycle ---------
   constructor() {
     super();
+    // Automatically set all defaults to true.
+    this.formData
+      .filter(formField => formField.fieldName !== "advancedOptions")
+      .forEach(field => {
+        this.$emit("add-default", {
+          field: field.fieldName,
+          value: (field as AccountForm).selected
+        });
+      });
   }
   // --------- Methods ---------
   changedForm(index, payload) {
@@ -70,6 +82,7 @@ export default class TheAccountPage extends Vue {
     >
       <VFormItemPicker
         :data="formItem"
+        :defaults="defaults"
         @changed-default="toggleDefault(index, $event)"
         @selected-changed="changedForm(index, $event)"
         @advanced-changed="changeOverall($event)"

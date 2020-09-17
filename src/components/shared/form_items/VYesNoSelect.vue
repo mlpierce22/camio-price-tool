@@ -8,8 +8,10 @@ import { AccountForm, AccountSubForm } from "@/models";
 export default class VYesNoSelect extends Vue {
   // ---------- Props ----------
   @Prop() data!: AccountForm;
+
+  @Prop() dataInDefault!: boolean;
   // ------- Local Vars --------
-  // TODO: Just initialize this to false and change it locally, no need for isDefault on object
+
   isDefault: boolean;
   // --------- Watchers --------
 
@@ -20,7 +22,7 @@ export default class VYesNoSelect extends Vue {
   // ------- Lifecycle ---------
   constructor() {
     super();
-    this.isDefault = this.data.isDefault;
+    this.isDefault = this.dataInDefault;
   }
   // --------- Methods ---------
 }

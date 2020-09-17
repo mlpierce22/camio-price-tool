@@ -14,6 +14,7 @@ import VButtonGroupWithSubOpts from "@/components/shared/form_items/VButtonGroup
 import VCheckBoxes from "@/components/shared/form_items/VCheckBoxes.vue";
 import VAdvancedOptions from "@/components/shared/form_items/VAdvancedOptions.vue";
 import VTextInput from "@/components/shared/form_items/VTextInput.vue";
+import { DefaultMap } from "@/new-models";
 
 @Component({
   components: {
@@ -29,7 +30,7 @@ export default class VFormItemPicker extends Vue {
   // ---------- Props ----------
   @Prop() public data!: AccountForm;
 
-  @Prop() defaults!: Array<string>;
+  @Prop() defaults!: DefaultMap;
 
   // ------- Local Vars --------
 
@@ -68,6 +69,14 @@ export default class VFormItemPicker extends Vue {
   advancedChanged(payload) {
     this.$emit("advanced-changed", payload);
   }
+
+  get checkIfDefault() {
+    if (this.defaults[this.data.fieldName]) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -78,6 +87,7 @@ export default class VFormItemPicker extends Vue {
     <div class="form-item-option" v-if="checkFormType('yes-no-select')">
       <VYesNoSelect
         :data="data"
+        :dataInDefault="checkIfDefault"
         @changed-default="$emit('changed-default', $event)"
       >
         <template v-slot:item>

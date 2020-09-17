@@ -250,6 +250,11 @@ function initialState(componentInstance) {
               field: "formData",
               getterFunction: "getDefaultsForm",
               importedFunction: null
+            },
+            {
+              field: "defaults",
+              getterFunction: "",
+              importedFunction: null
             }
           ]
         }
@@ -787,7 +792,6 @@ export default Vue.extend({
           }
         });
 
-        console.log(propObject);
         return propObject;
       }
       // Done case
