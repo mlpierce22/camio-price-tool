@@ -10,6 +10,8 @@ export default class VPlanList extends Vue {
   @Prop() plans!: Array<DeconstructedHashPlan>;
 
   @Prop() title!: string;
+
+  @Prop() showPlanCount!: boolean;
   // ------- Local Vars --------
 
   // --------- Watchers --------
@@ -26,7 +28,9 @@ export default class VPlanList extends Vue {
     return plan.planData.numCameras - plan.planData.camerasAssigned;
   }
   getColor(plan: DeconstructedHashPlan) {
-    const cameraCount = this.camerasRemaining(plan);
+    const cameraCount = this.showPlanCount
+      ? plan.planData.numCameras
+      : this.camerasRemaining(plan);
     if (cameraCount > 0) {
       return "primary";
     } else if (cameraCount == 0) {
@@ -40,7 +44,9 @@ export default class VPlanList extends Vue {
     if (this.plans.length > 0) {
       return this.plans
         .map(plan => {
-          return this.camerasRemaining(plan);
+          return this.showPlanCount
+            ? plan.planData.numCameras
+            : this.camerasRemaining(plan);
         })
         .reduce((prevPlan, currPlan) => {
           return prevPlan + currPlan;
@@ -86,7 +92,11 @@ export default class VPlanList extends Vue {
               @click="$emit('edit-plan', plan.planKey)"
             >
               <div class="plan-count" :class="`${getColor(plan)}--text`">
-                {{ camerasRemaining(plan) }}
+                {{
+                  showPlanCount
+                    ? plan.planData.numCameras
+                    : camerasRemaining(plan)
+                }}
               </div>
               <div class="plan-sub-title" :class="`${getColor(plan)}--text`">
                 {{ plan.planData.title }}
