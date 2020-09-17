@@ -167,6 +167,7 @@ export default class TheCreatePlansPage extends Vue {
     </VPageHeader>
     <VPlanList
       :plans="dehashPlans"
+      :showPlanCount="true"
       title="My Plans"
       @edit-plan="$emit('edit-plan', $event)"
     />
