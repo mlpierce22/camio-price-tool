@@ -592,7 +592,7 @@ export default class TheEstimatePage extends Vue {
           <div class="three-col"></div>
           <div class="one-col location-total account"></div>
           <div class="one-col location-total account">
-            {{ getOverallSaas(prices.overallPricing) | formatMoney }}
+            {{ getOverallSaas(prices.overallPricing) | formatMoney }}/mo
           </div>
         </div>
         <div
@@ -612,8 +612,8 @@ export default class TheEstimatePage extends Vue {
               <div class="table-row" v-if="plan">
                 <div class="one-col count">{{ plan.numPlans }}x</div>
                 <div class="two-col">
-                  <div class="table-row with-sub-tables">
-                    <div class="table-row item-title">{{ plan.planName }}</div>
+                  <div class="table-row with-sub-tables item-title-centered">
+                    <div class="table-row">{{ plan.planName }}</div>
                     <div
                       class="table-row sub-price add-on"
                       v-for="(addon, key) in plan.flatAddons"
@@ -627,7 +627,7 @@ export default class TheEstimatePage extends Vue {
                 <div class="one-col">
                   <div class="table-row with-sub-tables">
                     <div class="table-row main-price">
-                      {{ getTotalSaas(plan) | formatMoney }} / mo
+                      {{ getTotalSaas(plan) | formatMoney }}/mo
                     </div>
                     <div class="table-row sub-price">
                       {{
@@ -674,7 +674,7 @@ export default class TheEstimatePage extends Vue {
               {{ getLocationTotalHardware(location) | formatMoney }}
             </div>
             <div class="one-col location-total">
-              {{ getLocationTotalSaas(location) | formatMoney }}
+              {{ getLocationTotalSaas(location) | formatMoney }}/mo
             </div>
           </div>
         </div>
@@ -697,7 +697,7 @@ export default class TheEstimatePage extends Vue {
                   Recurring:
                 </div>
                 <div class="three-col total-price">
-                  {{ grandTotalSaas | formatMoney }} / mo
+                  {{ grandTotalSaas | formatMoney }}/mo
                 </div>
               </div>
             </div>
@@ -893,6 +893,12 @@ export default class TheEstimatePage extends Vue {
           font-size: 17px;
           color: #222222;
           align-items: center;
+        }
+
+        .item-title-centered {
+          align-self: center;
+          font-size: 17px;
+          color: #222222;
         }
 
         .main-price {
