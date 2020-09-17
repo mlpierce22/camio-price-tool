@@ -9,7 +9,7 @@ export default class VYesNoSelect extends Vue {
   // ---------- Props ----------
   @Prop() data!: AccountForm;
   // ------- Local Vars --------
-
+  // TODO: Just initialize this to false and change it locally, no need for isDefault on object
   isDefault: boolean;
   // --------- Watchers --------
 

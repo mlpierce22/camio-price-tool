@@ -91,10 +91,6 @@ export default class TheAddLocationsPage extends Vue {
       payload: payload.payload
     });
   }
-
-  openEditModal() {
-    console.log("editing!"); // TODO: what should happen here?
-  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -115,7 +111,11 @@ export default class TheAddLocationsPage extends Vue {
         </div>
       </template>
     </VPageHeader>
-    <VPlanList :plans="dehashPlans" title="Plans Left To Assign" />
+    <VPlanList
+      :plans="dehashPlans"
+      title="Plans Left To Assign"
+      @edit-plan="$emit('edit-plan', $event)"
+    />
     <div class="locations">
       <VLocationCameraDropdown
         v-for="(location, index) in locations"
@@ -125,7 +125,7 @@ export default class TheAddLocationsPage extends Vue {
         :location="location"
         :canDelete="index > 1"
         @update-location="updateLocation(index, $event)"
-        @edit-plan="openEditModal"
+        @edit-plan="$emit('edit-plan', $event)"
         @delete-location="deleteLocation(index)"
         @create-location="createLocation()"
         @update-counts="updatePlanCamCounts()"

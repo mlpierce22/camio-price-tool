@@ -80,7 +80,11 @@ export default class VPlanList extends Vue {
           :key="`${index}-plan`"
         >
           <v-hover v-slot:default="{ hover }">
-            <div v-ripple color="primary" class="hover-container">
+            <div
+              v-ripple
+              class="hover-container"
+              @click="$emit('edit-plan', plan.planKey)"
+            >
               <div class="plan-count" :class="`${getColor(plan)}--text`">
                 {{ camerasRemaining(plan) }}
               </div>

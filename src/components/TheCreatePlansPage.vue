@@ -165,7 +165,11 @@ export default class TheCreatePlansPage extends Vue {
         </div>
       </template>
     </VPageHeader>
-    <VPlanList :plans="dehashPlans" title="My Plans" />
+    <VPlanList
+      :plans="dehashPlans"
+      title="My Plans"
+      @edit-plan="$emit('edit-plan', $event)"
+    />
     <div class="plan-cards">
       <VPlanCard
         v-for="(plan, key) in planTemplates"
@@ -188,6 +192,7 @@ export default class TheCreatePlansPage extends Vue {
       :isVertical="isVertical"
       :title="selectedPlanTemplate"
       :defaults="defaults"
+      :isEditing="false"
       @dialog-closed="dialogClosed($event)"
       @changed-form-item="updatePlan($event)"
       @resolution-change="cameraResolutionList = $event"

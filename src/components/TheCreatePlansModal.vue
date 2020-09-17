@@ -31,6 +31,8 @@ export default class TheCreatePlansModal extends Vue {
   @Prop() title!: string;
 
   @Prop() defaults!: DefaultMap;
+
+  @Prop() isEditing!: boolean;
   // ------- Local Vars --------
 
   dialogOpen = false;
@@ -68,7 +70,7 @@ export default class TheCreatePlansModal extends Vue {
     }
   }
 
-  @Watch("cameraResolutions")
+  @Watch("cameraResolutions", { deep: true })
   resolutionListChange() {
     this.$emit("resolution-change", this.cameraResolutions);
   }
@@ -159,7 +161,7 @@ export default class TheCreatePlansModal extends Vue {
         <div class="wrapper">
           <div class="plan-title">
             <v-icon color="primary" size="60">mdi-wrench</v-icon>
-            Creating Plan from:
+            {{ isEditing ? "Editing" : "Creating" }} Plan from:
             {{ title }}
           </div>
           <div
@@ -190,7 +192,7 @@ export default class TheCreatePlansModal extends Vue {
                   >mdi-video-outline</v-icon
                 >
                 <div class="form-title" color="primary">
-                  Subscribe Cameras
+                  {{ isEditing ? "Change Camera Count" : "Subscribe Cameras" }}
                 </div>
               </div>
               <div class="camera-card-container">
@@ -199,11 +201,11 @@ export default class TheCreatePlansModal extends Vue {
                   :camera="resolutions(planItem)[0]"
                   :selected="selectedResolutions"
                   :isDeletable="false"
-                  :disabled="resolutionIsDefault"
+                  :disabled="resolutionIsDefault || isEditing"
                   @update="updateResolution(0, $event)"
                 />
                 <v-checkbox
-                  v-if="!resolutionIsDefault"
+                  v-if="!resolutionIsDefault && !isEditing"
                   class="checkbox"
                   v-model="multiResolution"
                   :hide-details="true"
@@ -246,7 +248,7 @@ export default class TheCreatePlansModal extends Vue {
           <VBackNextButton
             @next-click="submit()"
             @back-click="dialogOpen = false"
-            next="Create Plan"
+            :next="isEditing ? 'Save Changes' : 'Create Plan'"
             back="Cancel"
           />
         </div>

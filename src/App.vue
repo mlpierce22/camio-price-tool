@@ -1,11 +1,16 @@
 <template>
   <v-app>
     <v-main>
-      <!-- <v-dialog v-model="showEditPlanModal" max-width="290">
-        <v-card>
-          <TheEditPlanModal />
-        </v-card>
-      </v-dialog> -->
+      <TheEditPlanModal
+        v-if="showEditPlanModal"
+        :dialogOpen="showEditPlanModal"
+        :planData="editModalFormData"
+        :defaults="defaults"
+        :planId="planEditingId"
+        @delete-plan="deletePlan"
+        @add-plan="addPlan"
+        @close-edit="showEditPlanModal = false"
+      />
       <template v-if="progressionState.onStep != progressionState.maxStep">
         <v-stepper
           :alt-labels="true"
@@ -136,7 +141,8 @@ import {
   Plan,
   FullFilteredPlan,
   AddOn,
-  AddOnOpts
+  AddOnOpts,
+  PlanTemplates
 } from "@/models";
 import {
   FinalYAMLObject,
@@ -167,6 +173,8 @@ function initialState(componentInstance) {
       locationStep: 4
     },
     showEditPlanModal: false,
+    editModalFormData: new Array<AccountForm>(),
+    planEditingId: 0,
     // Include in Compression
     finalYAMLObject: {
       overall: {
@@ -256,7 +264,8 @@ function initialState(componentInstance) {
           backText: "Back"
         },
         events: {
-          "add-plan": componentInstance.addPlan
+          "add-plan": componentInstance.addPlan,
+          "edit-plan": componentInstance.openEditPlanModal
         },
         props: {
           get: [
@@ -301,7 +310,8 @@ function initialState(componentInstance) {
           "add-location": componentInstance.addLocation,
           "modify-location": componentInstance.modifyLocation,
           "delete-location": componentInstance.deleteLocation,
-          "modify-plan": componentInstance.modifyPlan
+          "modify-plan": componentInstance.modifyPlan,
+          "edit-plan": componentInstance.openEditPlanModal
         },
         props: {
           get: [
@@ -454,7 +464,7 @@ export default Vue.extend({
     getFieldTitles: function() {
       const tempObj = {};
       planTemplates()[Object.keys(planTemplates())[0]].map(planField => {
-        tempObj[planField.fieldName] = planField.label;
+        tempObj[planField.fieldName] = planField.prompt;
       });
       accountFormData()
         .filter(field => field.fieldName == "advancedOptions")
@@ -628,8 +638,34 @@ export default Vue.extend({
     },
 
     deletePlan(planId: string) {
-      // TODO: delete plan from plans and delete from locations
-      console.log("deleting plan!");
+      // delete plans from locations
+      Object.keys(this.finalYAMLObject.locations).map(locKey => {
+        const planIdsCopy = {
+          ...this.finalYAMLObject.locations[locKey].planIds
+        };
+        const planCount = planIdsCopy[planId];
+        // if the plan exists at this location
+        if (planCount) {
+          delete planIdsCopy[planId];
+          // update planids, then update number of locations
+          this.modifyLocation({
+            index: Number(locKey),
+            field: "planIds",
+            payload: planIdsCopy
+          });
+          this.modifyLocation({
+            index: Number(locKey),
+            field: "numCameras",
+            payload:
+              this.finalYAMLObject.locations[locKey].numCameras - planCount
+          });
+        }
+      });
+
+      // delete plan from plans
+      if (this.finalYAMLObject.plans[planId]) {
+        this.$delete(this.finalYAMLObject.plans, planId);
+      }
     },
 
     modifyPlan(payload: { planId: number; field: string; payload: any }) {
@@ -650,10 +686,46 @@ export default Vue.extend({
       }
     },
 
-    // END FUNCTIONS TO MODIFY FINAL YAML OBJECT
-
     openEditPlanModal(planId: number) {
-      console.log("opening the edit plan modal!"); // TODO: handle this
+      const plan = this.getPlans[planId];
+      const accountData = this.getFilteredAccountData.filter(
+        field => field.fieldName !== "advanced-options"
+      ) as AccountForm[];
+      const planTemplates = this.getFilteredPlanTemplates["Basic"].map(
+        planField => {
+          const matchingData = accountData.find(
+            item => item.fieldName == planField.fieldName
+          );
+          return { ...matchingData, ...planField };
+        }
+      );
+
+      const accountWithPlan = planTemplates.map(field => {
+        if (plan[field.fieldName]) {
+          field.selected = plan[field.fieldName];
+          field.formType = field.formType.replace(
+            "yes-no-select",
+            "pure-component"
+          );
+        }
+        return field;
+      });
+
+      // add title at the beginning
+      accountWithPlan.unshift({
+        fieldName: "title",
+        formType: "pure-component-textbox",
+        isDefault: false,
+        prompt: "Plan Name",
+        subPrompt: "",
+        selectionOpts: [""],
+        selected: plan["title"]
+      });
+
+      // Then, open the modal
+      this.editModalFormData = accountWithPlan;
+      this.showEditPlanModal = true;
+      this.planEditingId = planId;
     },
     buildInputObject(props: ComponentProps) {
       if (props) {
