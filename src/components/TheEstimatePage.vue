@@ -13,17 +13,6 @@ import VPageHeader from "@/components/shared/VPageHeader.vue";
 @Component({
   components: {
     VPageHeader
-  },
-  filters: {
-    formatMoney(amountCents) {
-      console.log("this is the money put in:", amountCents);
-      const formatter = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        minimumFractionDigits: 2
-      });
-      return formatter.format(amountCents / 100);
-    }
   }
 })
 export default class TheEstimatePage extends Vue {
@@ -276,7 +265,7 @@ export default class TheEstimatePage extends Vue {
               boxInfo: this.pricing["location"]["hardware"][key]
             };
           });
-        let boxesUsed: UsedBox[] = [];
+        const boxesUsed: UsedBox[] = [];
         if (streamCounts.length > 0) {
           /** This function handles the box allocations based on the streamcounts from before. It basically works as follows:
            * Iterate through streamCounts,
@@ -411,11 +400,13 @@ export default class TheEstimatePage extends Vue {
               });
             }
           });
-          boxesUsed = Object.keys(helper).map(key => helper[key]);
+          const boxesWithCounts: (UsedBox & { count: number })[] = Object.keys(
+            helper
+          ).map(key => helper[key]);
 
           let VM: BoxCounts | null = null;
           if (thisLocation.useVM) {
-            VM = boxesUsed
+            VM = boxesWithCounts
               .map(
                 box => this.pricing["location"]["hardware"][box.boxKey]["bom"]
               )
@@ -433,7 +424,7 @@ export default class TheEstimatePage extends Vue {
             useVM: thisLocation.useVM,
             saasPrice: planPrices,
             VM,
-            boxesUsed
+            boxesUsed: boxesWithCounts
           };
         }
       }
@@ -534,6 +525,88 @@ export default class TheEstimatePage extends Vue {
     return hardwarePrices;
   }
 
+  formatMoney(amountCents) {
+    const formatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2
+    });
+    return formatter.format(amountCents / 100);
+  }
+
+  copyToClipboard() {
+    if (navigator && navigator.clipboard) {
+      const priceHeaders = ["Quantity", "Description", "Location", "Price"];
+
+      const overall = this.prices.overallPricing.map(price => {
+        return [
+          "1",
+          this.titles[price.key] +
+            ": " +
+            this.finalYAMLObject.overall[price.key],
+          "N/A",
+          this.formatMoney(price.price)
+        ].join("\t");
+      });
+      const software = this.prices.pricingPerLocation.map(location => {
+        if (location) {
+          return location.saasPrice
+            .map(saas => {
+              if (saas) {
+                return [
+                  saas.numPlans,
+                  "Plan: " + saas.planName,
+                  location.title,
+                  this.formatMoney(saas.saasPricePerStream * saas.numPlans)
+                ].join("\t");
+              }
+            })
+            .join("\n");
+        }
+      });
+
+      const hardware = this.prices.pricingPerLocation.map(location => {
+        if (location) {
+          return location.boxesUsed
+            .map(box => {
+              return [
+                location.useVM ? 1 : box.count,
+                this.getBoxText(location, box),
+                location.title,
+                this.formatMoney(
+                  location.useVM ? 0 : this.getTotalHardware(box)
+                )
+              ].join("\t");
+            })
+            .join("\n");
+        }
+      });
+
+      const asTable = [
+        priceHeaders.join("\t"),
+        ["SaaS Prices"].join("\n"),
+        overall.join("\n"),
+        software.join("\n"),
+        ["", "", "", this.formatMoney(this.grandTotalSaas)].join("\t"),
+        [],
+        ["Hardware Prices"].join("\n"),
+        hardware.join("\n"),
+        ["", "", "", this.formatMoney(this.grandTotalHardware)].join("\t")
+      ];
+      console.log(hardware, software, overall);
+
+      const asString = asTable.join("\n");
+      navigator.clipboard.writeText(asString).then(
+        function() {
+          console.log(asString);
+        },
+        function() {
+          console.log("clipboard copy failed");
+        }
+      );
+    }
+  }
+
   // These are important: (what is this?)
   /**
     estimatedMaxStreamCount: function(model) {
@@ -584,7 +657,7 @@ export default class TheEstimatePage extends Vue {
           <div class="one-col"></div>
           <div class="one-col">
             <div class="table-row main-price">
-              {{ overallField.price | formatMoney }}
+              {{ formatMoney(overallField.price) }}
             </div>
           </div>
         </div>
@@ -592,7 +665,7 @@ export default class TheEstimatePage extends Vue {
           <div class="three-col"></div>
           <div class="one-col location-total account"></div>
           <div class="one-col location-total account">
-            {{ getOverallSaas(prices.overallPricing) | formatMoney }}/mo
+            {{ formatMoney(getOverallSaas(prices.overallPricing)) }}/mo
           </div>
         </div>
         <div
@@ -619,7 +692,7 @@ export default class TheEstimatePage extends Vue {
                       v-for="(addon, key) in plan.flatAddons"
                       :key="`${key}-location-addon-price-field`"
                     >
-                      {{ key }} @ {{ addon | formatMoney }} / stream
+                      {{ key }} @ {{ formatMoney(addon) }} / stream
                     </div>
                   </div>
                 </div>
@@ -627,12 +700,11 @@ export default class TheEstimatePage extends Vue {
                 <div class="one-col">
                   <div class="table-row with-sub-tables">
                     <div class="table-row main-price">
-                      {{ getTotalSaas(plan) | formatMoney }}/mo
+                      {{ formatMoney(getTotalSaas(plan)) }}/mo
                     </div>
                     <div class="table-row sub-price">
                       {{
-                        (plan.saasPricePerStream + getAddOns(plan))
-                          | formatMoney
+                        formatMoney(plan.saasPricePerStream + getAddOns(plan))
                       }}
                       per stream
                     </div>
@@ -656,7 +728,7 @@ export default class TheEstimatePage extends Vue {
                   <div class="table-row with-sub-tables">
                     <div class="table-row main-price">
                       {{
-                        location.useVM ? 0 : getTotalHardware(box) | formatMoney
+                        formatMoney(location.useVM ? 0 : getTotalHardware(box))
                       }}
                     </div>
                     <div class="table-row sub-price">
@@ -671,10 +743,10 @@ export default class TheEstimatePage extends Vue {
           <div class="table-row" v-if="location">
             <div class="three-col"></div>
             <div class="one-col location-total">
-              {{ getLocationTotalHardware(location) | formatMoney }}
+              {{ formatMoney(getLocationTotalHardware(location)) }}
             </div>
             <div class="one-col location-total">
-              {{ getLocationTotalSaas(location) | formatMoney }}/mo
+              {{ formatMoney(getLocationTotalSaas(location)) }}/mo
             </div>
           </div>
         </div>
@@ -689,7 +761,7 @@ export default class TheEstimatePage extends Vue {
                   One-Time:
                 </div>
                 <div class="three-col total-price">
-                  {{ grandTotalHardware | formatMoney }}
+                  {{ formatMoney(grandTotalHardware) }}
                 </div>
               </div>
               <div class="table-row">
@@ -697,7 +769,7 @@ export default class TheEstimatePage extends Vue {
                   Recurring:
                 </div>
                 <div class="three-col total-price">
-                  {{ grandTotalSaas | formatMoney }}/mo
+                  {{ formatMoney(grandTotalSaas) }}/mo
                 </div>
               </div>
             </div>
@@ -705,6 +777,22 @@ export default class TheEstimatePage extends Vue {
         </div>
       </div>
     </div>
+    <div class="warning-box">
+      Based on the information above, your support team will create a SaaS plan
+      for you. Until then, the table above approximates the price. The exact
+      features and service levels you choose in consultation with your support
+      team may increase or decrease the price. For example, both lazy indexing
+      and schedule-based recording can reduce the price, while advanced object
+      classification and OCR increase the price.
+    </div>
+    <v-btn text color="secondary" class="link" @click="$emit('save-state')">
+      <v-icon>mdi-link</v-icon>
+      <div class="link-text">Copy link to this estimate</div>
+    </v-btn>
+    <v-btn text color="secondary" class="link" @click="copyToClipboard()">
+      <v-icon>mdi-clipboard-outline</v-icon>
+      <div class="link-text">Copy to clipboard</div>
+    </v-btn>
   </div>
 </template>
 <!----------------- END HTML ---------------------->
@@ -921,6 +1009,31 @@ export default class TheEstimatePage extends Vue {
           justify-content: flex-start;
         }
       }
+    }
+  }
+
+  .warning-box {
+    background: #fcf8e3;
+    border: 1px solid #f7931e;
+    border-radius: 10px;
+    width: 80%;
+    color: #71592f;
+    padding: 5px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    align-self: center;
+    margin: 30px 0px;
+  }
+
+  .link {
+    display: flex;
+    margin-left: auto;
+    font-size: 16px;
+    margin-bottom: 10px;
+
+    .link-text {
+      text-decoration: underline;
+      margin-left: 7px;
     }
   }
 }
