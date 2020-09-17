@@ -35,13 +35,15 @@ export default class VYesNoSelect extends Vue {
     <div class="prompt">
       {{ data.prompt }}
     </div>
-    <v-radio-group v-model="isDefault" :hide-details="true">
+    <v-radio-group v-model="isDefault" :hide-details="true" row>
       <v-radio label="Yes" :value="true"></v-radio>
       <v-radio label="No" :value="false"></v-radio>
     </v-radio-group>
-    <div class="sub-container" v-if="isDefault">
-      <slot name="item"></slot>
-    </div>
+    <v-expand-transition>
+      <div class="sub-container" v-if="isDefault">
+        <slot name="item"></slot>
+      </div>
+    </v-expand-transition>
   </div>
 </template>
 <!----------------- END HTML ---------------------->
@@ -52,20 +54,30 @@ export default class VYesNoSelect extends Vue {
   display: flex;
   flex-direction: column;
   padding-left: 10px;
-  margin-bottom: 30px;
+  //margin-bottom: 30px;
 
   .v-input--selection-controls {
     margin-top: 0px;
   }
 
+  .v-input {
+    width: fit-content;
+    background: white;
+    z-index: 1;
+  }
+
+  .prompt {
+    font-weight: bold;
+  }
+
   .sub-container {
-    border: 3px solid #50b536;
     border-radius: 10px;
-    padding: 20px;
     display: flex;
     flex-direction: column;
-    margin: 10px 0px 0px 10px;
+    padding: 16px 20px 10px 25px;
+    margin: -12px 0px 0px 10px;
     max-width: 600px;
+    border: 2px solid orange;
 
     @media only screen and (max-width: 665px) {
       margin: 10px 0px 0px -10px;

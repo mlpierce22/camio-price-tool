@@ -196,7 +196,8 @@ export default class VCheckBoxes extends Vue {
 .v-check-boxes {
   .prompt {
     font-weight: bold;
-    text-decoration: underline;
+    color: #f7931e;
+    font-size: 20px;
   }
   ::v-deep .v-label {
     color: black;

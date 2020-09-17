@@ -97,6 +97,15 @@ export default class TheAccountPage extends Vue {
 .the-account-page {
   display: flex;
   flex-direction: column;
+  max-width: fit-content;
+
+  .form-item {
+    //background-color: #fcf8e3;
+    padding: 10px;
+    //border: 3px solid #f7931e;
+    border-radius: 10px;
+    margin-bottom: 30px;
+  }
 }
 </style>
 <!----------------- END CSS/SCSS ------------------>

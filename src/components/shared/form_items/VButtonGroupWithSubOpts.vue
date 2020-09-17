@@ -127,11 +127,17 @@ export default class VButtonGroupWithSubOpts extends Vue {
 
   .sub-container {
     display: flex;
-    border: 3px solid #50b536;
+    border: 2px solid #f7931e;
+    padding: 33px 20px 10px 25px;
+    margin: -24px 0px 0px 17px;
     border-radius: 10px;
-    padding: 10px;
-    margin-top: 14px;
-    margin-left: 10px;
+
+    @media only screen and (max-width: 780px) {
+      border: none;
+      padding: 0;
+      margin: 0px;
+      margin-top: 14px;
+    }
   }
 }
 </style>

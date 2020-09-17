@@ -60,10 +60,18 @@ export default class VButtonGroup extends Vue {
   display: flex;
   flex-direction: column;
 
+  @media only screen and (max-width: 780px) {
+    align-items: center;
+  }
+
   .sub-prompt {
     margin-bottom: 10px;
+    font-style: italic;
   }
+
   ::v-deep .v-btn-toggle {
+    background: none !important;
+
     .v-btn.v-btn {
       opacity: 1;
 
@@ -84,7 +92,7 @@ export default class VButtonGroup extends Vue {
         }
       }
     }
-    @media only screen and (max-width: 665px) {
+    @media only screen and (max-width: 780px) {
       display: flex;
       flex-direction: column;
       max-width: 150px;
