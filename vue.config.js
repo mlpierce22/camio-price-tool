@@ -4,5 +4,6 @@ module.exports = {
   configureWebpack: {
     devtool: "source-map"
   },
-  publicPath: "/camio-price-tool/"
+  publicPath: "/camio-price-tool/",
+  outputDir: "docs"
 };
