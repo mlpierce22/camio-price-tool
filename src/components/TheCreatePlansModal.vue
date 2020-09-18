@@ -33,6 +33,9 @@ export default class TheCreatePlansModal extends Vue {
   @Prop() defaults!: DefaultMap;
 
   @Prop() isEditing!: boolean;
+
+  // Note: this only exists if is editing
+  @Prop() existingCameraCount!: number;
   // ------- Local Vars --------
 
   dialogOpen = false;
@@ -100,7 +103,7 @@ export default class TheCreatePlansModal extends Vue {
       this.selectedResolutions.push(defaultCamera);
       this.cameraResolutions.push({
         title: defaultCamera,
-        numCameras: 1,
+        numCameras: this.existingCameraCount ? this.existingCameraCount : 1,
         cameraOpts: this.selectionOps
       });
     }

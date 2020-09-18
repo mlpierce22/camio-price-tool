@@ -1,7 +1,7 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
 import { AccountForm, FullFilteredPlan } from "@/models";
-import { DefaultMap } from "@/new-models";
+import { DefaultMap, PlanHashes } from "@/new-models";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import TheCreatePlansModal from "@/components/TheCreatePlansModal.vue";
 
@@ -21,6 +21,8 @@ export default class TheEditPlanModal extends Vue {
   @Prop() isVertical!: boolean;
 
   @Prop() planId!: number;
+
+  @Prop() plans!: PlanHashes;
   // ------- Local Vars --------
 
   currentPlanData: FullFilteredPlan[] = [];
@@ -71,6 +73,10 @@ export default class TheEditPlanModal extends Vue {
     const titleField = this.planData.find(data => data.fieldName == "title");
     return titleField ? (titleField.selected as string) : "";
   }
+
+  get cameraCount() {
+    return this.plans[this.planId].numCameras;
+  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -87,6 +93,7 @@ export default class TheEditPlanModal extends Vue {
       :title="title"
       :defaults="defaults"
       :isEditing="true"
+      :existingCameraCount="cameraCount"
       @delete-plan="$emit('delete-plan', planId)"
       @dialog-closed="dialogClosed($event)"
       @changed-form-item="updatePlan($event)"
@@ -99,6 +106,8 @@ export default class TheEditPlanModal extends Vue {
 <!----------------- BEGIN CSS/SCSS ---------------->
 <style scoped lang="scss">
 .the-edit-plan-modal {
+  display: flex;
+  flex-direction: column;
 }
 </style>
 <!----------------- END CSS/SCSS ------------------>

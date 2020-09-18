@@ -7,12 +7,12 @@
         :planData="editModalFormData"
         :defaults="defaults"
         :planId="planEditingId"
+        :plans="getPlans"
         :isVertical="isVertical"
         @delete-plan="deletePlan"
         @add-plan="addPlan"
         @close-edit="showEditPlanModal = false"
       />
-      <!-- <template v-if="progressionState.onStep != progressionState.maxStep"> -->
       <v-stepper
         :alt-labels="true"
         v-model="progressionState.onStep"
@@ -112,10 +112,6 @@
           </v-stepper-content>
         </template>
       </v-stepper>
-      <!-- <template v-else>
-        Show Done screen!
-        <TheDonePage @edit="prevStep" @start-over="resetToDefaults" />
-      </template> -->
     </v-main>
   </v-app>
 </template>
@@ -186,7 +182,7 @@ function initialState(componentInstance) {
     // Include in Compression
     finalYAMLObject: {
       overall: {
-        totalCameras: 10, // This is updated when they go to the estimate page.
+        totalCameras: 10, // This is updated every time a new plan is added.
         totalLocations: 1,
         socTools: possibleOptions().socTools[0], // None
         directoryIntegration: possibleOptions().directoryIntegration[0], // None
@@ -736,7 +732,16 @@ export default Vue.extend({
         const planCode = this.generatePlanCode(plan);
         this.$set(this.finalYAMLObject.plans, planCode, plan);
       });
-      console.log("added this plan!", plans);
+
+      // Then, update the total number of cameras
+      const newCameraCount = Object.keys(this.finalYAMLObject.plans)
+        .map(planKey => {
+          return this.finalYAMLObject.plans[planKey].numCameras;
+        })
+        .reduce((p, c) => p + c);
+      console.log(newCameraCount);
+
+      this.changeOverall({ key: "totalCameras", value: newCameraCount });
     },
 
     deletePlan(planId: string) {
