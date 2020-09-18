@@ -28,7 +28,7 @@ export interface ComponentEvents {
 
 export interface FormSteps {
   stepNumber: number;
-  stepIndex: number;
+  stepId: number;
   stepName: string;
   instance: Component;
   navButtons: BackNextButtonConfig;
@@ -38,7 +38,7 @@ export interface FormSteps {
 
 export interface FormPlaceHolder {
   stepNumber: number;
-  stepIndex: number;
+  stepId: number;
   stepName: string;
 }
 
@@ -107,10 +107,9 @@ export interface AddOnOpts {
 }
 
 export interface PropBuilderOptions {
-  fromFinal: boolean;
   field: string;
   getterFunction: string;
-  importedFunction: Function;
+  importedFunction: Function | null;
 }
 
 export interface ComponentProps {
@@ -159,4 +158,13 @@ export interface CamResolution {
 export interface DeconstructedHashPlan {
   planKey: string;
   planData: PlanAttributes;
+}
+
+export interface ProgressionState {
+  furthestStep: number;
+  onStep: number;
+  maxStep: number;
+  showLocations: boolean;
+  locationStepId: number;
+  planStepId: number;
 }
