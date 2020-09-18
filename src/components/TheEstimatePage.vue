@@ -5,6 +5,7 @@ import {
   FinalYAMLObject,
   LocationAttributes,
   MPCounts,
+  OverallData,
   UsedBox
 } from "@/new-models";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
@@ -25,6 +26,8 @@ export default class TheEstimatePage extends Vue {
   @Prop() mpMapping!: {};
 
   @Prop() titles!: { [key: string]: string };
+
+  @Prop() overall!: OverallData;
   // ------- Local Vars --------
 
   // --------- Watchers --------
@@ -675,7 +678,7 @@ export default class TheEstimatePage extends Vue {
           v-for="(overallField, index) in prices.overallPricing"
           :key="`${index}-overall-price`"
         >
-          <div class="one-col count">1x</div>
+          <div class="one-col count">{{ overall.totalCameras }}x</div>
           <div class="two-col item-title">
             {{ titles[overallField.key] }}:
             {{ finalYAMLObject.overall[overallField.key] }}

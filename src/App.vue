@@ -365,6 +365,11 @@ function initialState(componentInstance) {
               field: "titles",
               getterFunction: "getFieldTitles",
               importedFunction: null
+            },
+            {
+              field: "overall",
+              getterFunction: "getOverall",
+              importedFunction: null
             }
           ],
           pricing: pricingObject(),
@@ -413,17 +418,18 @@ export default Vue.extend({
     getFilteredAccountData: function() {
       const data = accountFormData();
       return data.filter(field => {
+        // this code combined with getFilteredPlanTemplates would make addons show no matter what
         // special case because we still want to show addons, if they exist
-        if (field.fieldName == "addOns") {
-          if (this.defaults[field.fieldName]) {
-            const filteredSelected = ((field as AccountForm)
-              .selectionOpts as AddOnOpts[]).filter(selected => {
-              return !this["defaults"][field.fieldName].includes(selected.name);
-            });
-            return filteredSelected.length !== 0;
-          }
-          return true;
-        }
+        // if (field.fieldName == "addOns") {
+        //   if (this.defaults[field.fieldName]) {
+        //     const filteredSelected = ((field as AccountForm)
+        //       .selectionOpts as AddOnOpts[]).filter(selected => {
+        //       return !this["defaults"][field.fieldName].includes(selected.name);
+        //     });
+        //     return filteredSelected.length !== 0;
+        //   }
+        //   return true;
+        // }
         return this["defaults"][field.fieldName] ||
           field.fieldName == "advancedOptions"
           ? false
@@ -432,26 +438,37 @@ export default Vue.extend({
     },
     getFilteredPlanTemplates: function() {
       const planTemplatesToFilter = planTemplates();
-      const filtered = Object.keys(planTemplatesToFilter).map(key => {
+      let filtered = Object.keys(planTemplatesToFilter).map(key => {
         return {
           title: key,
           templateOptions: planTemplatesToFilter[key].filter(planOption => {
+            // this code combined with getFilteredAccountData would make addons show no matter what
             // special case because we still want to show addons, if they exist
-            if (planOption.fieldName == "addOns") {
-              if (this.defaults[planOption.fieldName]) {
-                const filteredSelected = possibleOptions().addOns.filter(
-                  selected =>
-                    !this.defaults[planOption.fieldName].includes(selected.name)
-                );
-                return filteredSelected.length !== 0;
-              }
-              return true;
-            }
+            // if (planOption.fieldName == "addOns") {
+            //   if (this.defaults[planOption.fieldName]) {
+            //     const filteredSelected = possibleOptions().addOns.filter(
+            //       selected =>
+            //         !this.defaults[planOption.fieldName].includes(selected.name)
+            //     );
+            //     return filteredSelected.length !== 0;
+            //   }
+            //   return true;
+            // }
             // if it is in defaults, don't return it
             return this.defaults[planOption.fieldName] ? false : true;
           })
         };
       });
+
+      // If addons are part of the default, we don't want to have all the options, just the first one
+      if (this.defaults["addOns"]) {
+        console.log(filtered, Object.keys(planTemplatesToFilter)[0]);
+        filtered = filtered.filter(
+          planTemplate =>
+            planTemplate.title == Object.keys(planTemplatesToFilter)[0]
+        );
+        console.log(filtered);
+      }
       const reconstructed = {};
       filtered.map(planTemplates => {
         reconstructed[planTemplates.title] = planTemplates.templateOptions;

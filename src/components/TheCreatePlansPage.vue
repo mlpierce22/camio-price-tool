@@ -82,7 +82,6 @@ export default class TheCreatePlansPage extends Vue {
 
   openCreatePlanModal(planTitle) {
     this.selectedPlanTemplate = planTitle;
-    console.log("plan templates:", this.planTemplates);
     // combine account data and plan template data
     this.currentPlanData = this.planTemplates[planTitle].map(planField => {
       for (const i in this.accountData) {
