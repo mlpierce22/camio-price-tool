@@ -920,9 +920,23 @@ export default Vue.extend({
       });
     },
     handleDefaultPlanCase(nextStep) {
-      const plan = this.getDefaultsForm.filter(
+      const plan = (this.getDefaultsForm.filter(
         form => form.fieldName !== "advancedOptions"
-      ) as AccountForm[];
+      ) as AccountForm[]).map(defaultField => {
+        if (defaultField.fieldName == "addOns") {
+          defaultField.selected = (defaultField.selected as any[]).map(
+            (addonStrings: string) => {
+              return {
+                name: addonStrings,
+                rate: 100
+              } as AddOn;
+            }
+          );
+          return defaultField;
+        } else {
+          return defaultField;
+        }
+      });
 
       plan.unshift({
         fieldName: "title",
