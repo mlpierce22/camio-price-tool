@@ -1,12 +1,13 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { ProgressionState } from "@/models";
+import { Component, Prop, Vue } from "vue-property-decorator";
 @Component({
   components: {}
 })
 export default class TheDonePage extends Vue {
   // ---------- Props ----------
-
+  @Prop() progressionState!: ProgressionState;
   // ------- Local Vars --------
 
   // --------- Watchers --------
@@ -22,7 +23,7 @@ export default class TheDonePage extends Vue {
 
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
-  <div class="the-done-page elevation-1">
+  <div class="the-done-page">
     <v-icon class="big-icon" color="secondary">mdi-check-circle-outline</v-icon>
     <div class="secondary--text done-text">You're All Done!</div>
     <div class="text">Thank you for your interest in Camio!</div>
@@ -30,7 +31,12 @@ export default class TheDonePage extends Vue {
       Your official quote was sent to
       <span class="primary--text">mason@camio.com.</span>
     </div>
-    <v-btn class="edit" @click="$emit('edit')" depressed color="success">
+    <v-btn
+      class="edit"
+      @click="$emit('make-changes', progressionState.onStep - 1)"
+      depressed
+      color="success"
+    >
       <v-icon>mdi-pencil</v-icon>
       <div class="btn-text">Edit this quote</div>
     </v-btn>
@@ -52,9 +58,7 @@ export default class TheDonePage extends Vue {
 .the-done-page {
   display: flex;
   flex-direction: column;
-  border: 3px solid #f7931e;
   border-radius: 20px;
-  margin: 30px 10.3%;
   align-items: center;
 
   .big-icon {
@@ -95,7 +99,7 @@ export default class TheDonePage extends Vue {
     }
 
     .done-text {
-      font-size: 30px;
+      font-size: 28px;
     }
 
     .big-icon {
@@ -106,6 +110,7 @@ export default class TheDonePage extends Vue {
   @media only screen and (max-width: 650px) {
     .text {
       text-align: center;
+      font-size: 17px;
     }
   }
 }
