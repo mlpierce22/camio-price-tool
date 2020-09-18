@@ -374,6 +374,32 @@ export default class TheEstimatePage extends Vue {
 
                   return false; // i.e. break
                 }
+                // if it is smaller than the smallest box, we should put it in that one
+                if (index == 0 || streamType.twoMPCount < boxType.twoMpCount) {
+                  const helper = {};
+                  helper[streamType.xMP] = { ...streamType };
+                  boxesUsed.push({
+                    boxKey: boxType.boxKey,
+                    twoMpCount: boxType.twoMpCount,
+                    boxInfo: boxType,
+                    streamsAdded: helper,
+                    remainingSpace: function() {
+                      return (
+                        this.twoMpCount -
+                        Object.keys(this.streamsAdded)
+                          .map(key => {
+                            return this.streamsAdded[key].twoMPCount;
+                          })
+                          .reduce((p, c) => p + c)
+                      );
+                    }
+                  });
+                  streamType.twoMPCount -= boxType.twoMpCount;
+                  // Don't take negatives
+                  streamType.twoMPCount =
+                    streamType.twoMPCount < 0 ? 0 : streamType.twoMPCount;
+                  return false; // i.e. break
+                }
                 return true; // i.e. continue, loop stops if you don't have this
               });
             }
