@@ -7,89 +7,42 @@
         :planData="editModalFormData"
         :defaults="defaults"
         :planId="planEditingId"
+        :isVertical="isVertical"
         @delete-plan="deletePlan"
         @add-plan="addPlan"
         @close-edit="showEditPlanModal = false"
       />
-      <template v-if="progressionState.onStep != progressionState.maxStep">
-        <v-stepper
-          :alt-labels="true"
-          v-model="progressionState.onStep"
-          class="app-container"
-          v-resize="checkOrientation"
-          v-if="!isVertical"
-          key="horizontal-stepper"
-        >
-          <v-stepper-header v-show="progressionState.furthestStep != 1">
-            <template class="app-steps" v-for="(step, index) in dynamicSlides">
-              <v-divider v-if="index !== 0" :key="`${index}`"></v-divider>
-              <v-stepper-step
-                :key="`${index}-step`"
-                :step="step.stepNumber"
-                :complete="step.stepNumber < progressionState.furthestStep"
-                :editable="step.stepNumber < progressionState.furthestStep"
-                edit-icon="$complete"
-                class="stepper-step-horizontal"
-                :color="chooseColor(step.stepNumber)"
-              >
-                {{ step.stepName }}
-              </v-stepper-step>
-            </template>
-          </v-stepper-header>
-          <v-stepper-items class="app-content">
-            <template v-for="(step, index) in dynamicSlides">
-              <v-stepper-content
-                :key="`${index}-content`"
-                :step="step.stepNumber"
-              >
-                <keep-alive>
-                  <component
-                    :is="step.instance"
-                    :isVertical="isVertical"
-                    v-bind="buildInputObject(step.props)"
-                    v-on="step.events"
-                  ></component>
-                </keep-alive>
-
-                <VBackNextButton
-                  v-if="step['navButtons']"
-                  @next-click="nextStep()"
-                  @back-click="prevStep()"
-                  :next="step['navButtons']['nextText']"
-                  :back="step['navButtons']['backText']"
-                />
-              </v-stepper-content>
-            </template>
-          </v-stepper-items>
-        </v-stepper>
-
-        <v-stepper
-          v-model="progressionState.onStep"
-          class="app-container"
-          v-resize="checkOrientation"
-          vertical
-          v-else
-          key="vertical-stepper"
-        >
-          <template v-for="(step, index) in dynamicSlides">
+      <!-- <template v-if="progressionState.onStep != progressionState.maxStep"> -->
+      <v-stepper
+        :alt-labels="true"
+        v-model="progressionState.onStep"
+        class="app-container"
+        v-resize="checkOrientation"
+        v-if="!isVertical"
+        key="horizontal-stepper"
+        @change="goToStep(progressionState.onStep)"
+      >
+        <v-stepper-header v-show="showStepperHeader">
+          <template class="app-steps" v-for="(step, index) in dynamicSlides">
+            <v-divider v-if="index !== 0" :key="`${step.stepId}`"></v-divider>
             <v-stepper-step
-              class="vert-step"
+              class="stepper-step-horizontal"
+              :key="`${step.stepId}-step`"
+              :step="step.stepNumber"
               :complete="step.stepNumber < progressionState.furthestStep"
               :editable="step.stepNumber < progressionState.furthestStep"
-              :key="`${index}-step-vert`"
-              :step="step.stepNumber"
               :color="chooseColor(step.stepNumber)"
               edit-icon="$complete"
-              v-show="hideAllExceptFirst(step.stepNumber)"
             >
               {{ step.stepName }}
             </v-stepper-step>
+          </template>
+        </v-stepper-header>
+        <v-stepper-items class="app-content">
+          <template v-for="step in dynamicSlides">
             <v-stepper-content
-              :key="`${index}-content-vert`"
+              :key="`${step.stepId}-content`"
               :step="step.stepNumber"
-              :class="{
-                'hide-border': !hideAllExceptFirst(step.stepNumber)
-              }"
             >
               <keep-alive>
                 <component
@@ -99,21 +52,70 @@
                   v-on="step.events"
                 ></component>
               </keep-alive>
+
               <VBackNextButton
                 v-if="step['navButtons']"
-                @next-click="nextStep()"
-                @back-click="prevStep()"
+                @next-click="goToStep(progressionState.onStep + 1)"
+                @back-click="goToStep(progressionState.onStep - 1)"
                 :next="step['navButtons']['nextText']"
                 :back="step['navButtons']['backText']"
               />
             </v-stepper-content>
           </template>
-        </v-stepper>
-      </template>
-      <template v-else>
-        <!-- Show Done screen! -->
+        </v-stepper-items>
+      </v-stepper>
+
+      <v-stepper
+        v-model="progressionState.onStep"
+        class="app-container"
+        v-resize="checkOrientation"
+        vertical
+        v-else
+        key="vertical-stepper"
+        @change="goToStep(progressionState.onStep)"
+      >
+        <template v-for="step in dynamicSlides">
+          <v-stepper-step
+            class="vert-step"
+            :key="`${step.stepId}-step-vert`"
+            :step="step.stepNumber"
+            :complete="step.stepNumber < progressionState.furthestStep"
+            :editable="step.stepNumber < progressionState.furthestStep"
+            :color="chooseColor(step.stepNumber)"
+            edit-icon="$complete"
+            v-show="showStepperHeader"
+          >
+            {{ step.stepName }}
+          </v-stepper-step>
+          <v-stepper-content
+            :key="`${step.stepId}-content-vert`"
+            :step="step.stepNumber"
+            :class="{
+              'hide-border': !showStepperHeader
+            }"
+          >
+            <keep-alive>
+              <component
+                :is="step.instance"
+                :isVertical="isVertical"
+                v-bind="buildInputObject(step.props)"
+                v-on="step.events"
+              ></component>
+            </keep-alive>
+            <VBackNextButton
+              v-if="step['navButtons']"
+              @next-click="goToStep(progressionState.onStep + 1)"
+              @back-click="goToStep(progressionState.onStep - 1)"
+              :next="step['navButtons']['nextText']"
+              :back="step['navButtons']['backText']"
+            />
+          </v-stepper-content>
+        </template>
+      </v-stepper>
+      <!-- <template v-else>
+        Show Done screen!
         <TheDonePage @edit="prevStep" @start-over="resetToDefaults" />
-      </template>
+      </template> -->
     </v-main>
   </v-app>
 </template>
@@ -142,13 +144,16 @@ import {
   FullFilteredPlan,
   AddOn,
   AddOnOpts,
-  PlanTemplates
+  PlanTemplates,
+  ProgressionState
 } from "@/models";
 import {
   FinalYAMLObject,
   OverallData,
   OverallChange,
-  DefaultChange
+  DefaultChange,
+  LocationHashes,
+  PlanHashes
 } from "@/new-models";
 import {
   possibleOptions,
@@ -170,15 +175,18 @@ function initialState(componentInstance) {
       onStep: 1,
       maxStep: 6,
       showLocations: true,
-      locationStep: 4
-    },
+      locationStepId: 4,
+      planStepId: 3
+    } as ProgressionState,
+    hiddenSlideIds: [3, 4], // default to the locations and plans hidden
+    stepperHiddenSlideIds: [1, 6], // hide the stepper on the first step by default, second index will be updated on navigation
     showEditPlanModal: false,
     editModalFormData: new Array<AccountForm>(),
     planEditingId: 0,
     // Include in Compression
     finalYAMLObject: {
       overall: {
-        totalCameras: 10, // TODO: should this be updatable or final??
+        totalCameras: 10, // This is updated when they go to the estimate page.
         totalLocations: 1,
         socTools: possibleOptions().socTools[0], // None
         directoryIntegration: possibleOptions().directoryIntegration[0], // None
@@ -197,8 +205,8 @@ function initialState(componentInstance) {
     defaults: {}, // Include in Compression
     steps: [
       {
-        stepNumber: 1,
-        stepIndex: 0,
+        stepNumber: 1, // Note that this changes
+        stepId: 1,
         stepName: "Introduction",
         instance: TheQuoteIntroPage,
         navButtons: {
@@ -231,11 +239,11 @@ function initialState(componentInstance) {
       },
       {
         stepNumber: 2,
-        stepIndex: 1,
+        stepId: 2,
         stepName: "Account",
         instance: TheAccountPage,
         navButtons: {
-          nextText: "Create",
+          nextText: "Create Plans",
           backText: "Back"
         },
         events: {
@@ -261,11 +269,11 @@ function initialState(componentInstance) {
       },
       {
         stepNumber: 3,
-        stepIndex: 2,
+        stepId: 3,
         stepName: "Plans",
         instance: TheCreatePlansPage,
         navButtons: {
-          nextText: "Assign",
+          nextText: "Assign Locations",
           backText: "Back"
         },
         events: {
@@ -304,11 +312,11 @@ function initialState(componentInstance) {
       },
       {
         stepNumber: 4,
-        stepIndex: 3,
+        stepId: 4,
         stepName: "Locations",
         instance: TheAddLocationsPage,
         navButtons: {
-          nextText: "Estimate",
+          nextText: "See an Estimate",
           backText: "Back"
         },
         events: {
@@ -340,7 +348,7 @@ function initialState(componentInstance) {
       },
       {
         stepNumber: 5,
-        stepIndex: 4,
+        stepId: 5,
         stepName: "Review",
         instance: TheEstimatePage,
         navButtons: {
@@ -369,10 +377,25 @@ function initialState(componentInstance) {
       },
       {
         stepNumber: 6,
-        stepIndex: 5,
-        stepName: "Done"
+        stepId: 6,
+        stepName: "Done",
+        instance: TheDonePage,
+        navButtons: {},
+        events: {
+          "make-changes": componentInstance.goToStep,
+          "start-over": componentInstance.resetToDefaults
+        },
+        props: {
+          get: [
+            {
+              field: "progressionState",
+              getterFunction: "getProgressionState",
+              importedFunction: null
+            }
+          ]
+        }
       }
-    ] as Array<FormSteps | FormPlaceHolder>
+    ] as Array<FormSteps>
   };
 }
 
@@ -457,16 +480,18 @@ export default Vue.extend({
       });
       return form;
     },
-    getLocations: function() {
-      return this["finalYAMLObject"].locations;
+    getLocations: function(): LocationHashes {
+      return this.finalYAMLObject.locations;
+    },
+    getPlans: function(): PlanHashes {
+      return this.finalYAMLObject.plans;
     },
 
-    getPlans: function() {
-      return this["finalYAMLObject"].plans;
+    getOverall: function(): OverallData {
+      return this.finalYAMLObject.overall;
     },
-
-    getOverall: function() {
-      return this["finalYAMLObject"].overall;
+    getProgressionState: function(): ProgressionState {
+      return this.progressionState;
     },
     getFieldTitles: function() {
       const tempObj = {};
@@ -482,30 +507,29 @@ export default Vue.extend({
         });
       return tempObj;
     },
-    dynamicSlides: function(): FormSteps[] {
-      if (this.progressionState.showLocations === false) {
-        const firstSteps: {}[] = this.steps.slice(
-          0,
-          this.progressionState.locationStep - 1
-        );
-        const lastSteps = this.steps
-          .slice(this.progressionState.locationStep, this.steps.length)
-          .map((arrItem, indx) => {
-            arrItem.stepNumber = this.progressionState.locationStep + indx;
-            arrItem.stepIndex = this.progressionState.locationStep + indx - 1;
-
-            return arrItem;
-          });
-        return [].concat(firstSteps as [], lastSteps as []);
-      } else {
-        const renumbered = this.steps.map((step, index) => {
-          const newStep = step;
-          newStep.stepNumber = index + 1;
-          newStep.stepIndex = index;
-          return newStep;
+    allDefaultsSet() {
+      return accountFormData()
+        .filter(field => field.fieldName !== "advancedOptions")
+        .every(formField => {
+          // if the default does has that field, then continue
+          if (this.defaults[formField.fieldName]) {
+            return true;
+          } else {
+            return false;
+          }
         });
-        return [].concat(renumbered as []);
-      }
+    },
+    showStepperHeader(): boolean {
+      return !this.stepperHiddenSlideIds.includes(this.progressionState.onStep);
+    },
+    dynamicSlides: function(): FormSteps[] {
+      const newSteps = this.steps.filter((step: FormSteps) => {
+        return !this.hiddenSlideIds.includes(step.stepId);
+      });
+      newSteps.forEach((step, index) => {
+        step.stepNumber = index + 1;
+      });
+      return newSteps;
     }
   },
   watch: {
@@ -513,6 +537,38 @@ export default Vue.extend({
       const currStep = this.progressionState.onStep;
       this.progressionState.onStep = 1;
       requestAnimationFrame(() => (this.progressionState.onStep = currStep));
+    },
+    allDefaultsSet: function(areSet) {
+      // as long as we are not on the plans step, update header
+      if (this.progressionState.onStep !== this.progressionState.planStepId) {
+        if (!areSet) {
+          this.hiddenSlideIds = this.hiddenSlideIds.filter(
+            val => val !== this.progressionState.planStepId
+          );
+        } else if (
+          !this.hiddenSlideIds.includes(this.progressionState.planStepId)
+        ) {
+          this.hiddenSlideIds.push(this.progressionState.planStepId);
+        }
+      }
+    },
+    getLocations: function(locations) {
+      const numLocations = Object.keys(locations).length;
+      // as long as we are not on the location step, update header
+      if (
+        this.progressionState.onStep !== this.progressionState.locationStepId
+      ) {
+        if (numLocations > 1) {
+          this.hiddenSlideIds = this.hiddenSlideIds.filter(
+            val => val !== this.progressionState.locationStepId
+          );
+        } else if (
+          numLocations == 1 &&
+          !this.hiddenSlideIds.includes(this.progressionState.locationStepId)
+        ) {
+          this.hiddenSlideIds.push(this.progressionState.locationStepId);
+        }
+      }
     }
   },
   created() {
@@ -693,6 +749,10 @@ export default Vue.extend({
         // if the plan exists at this location
         if (planCount) {
           delete planIdsCopy[planId];
+          // if the location is now empty, fill it with our dummy object
+          if (Object.keys(planIdsCopy).length == 0) {
+            planIdsCopy[1] = 1;
+          }
           // update planids, then update number of locations
           this.modifyLocation({
             index: Number(locKey),
@@ -801,16 +861,20 @@ export default Vue.extend({
       const data = initialState(this);
       Object.keys(data).forEach(key => (this[key] = data[key]));
     },
-    chooseColor: function(stepNumber) {
-      if (stepNumber < this.progressionState.furthestStep) {
+    chooseColor: function(step) {
+      // turn green if the user has passed this step and this step is not one the user is currently on
+      if (
+        step < this.progressionState.furthestStep &&
+        step !== this.progressionState.onStep
+      ) {
         return "secondary";
       } else {
         return "primary";
       }
     },
-    hideAllExceptFirst: function(currentStep) {
-      return this.progressionState.furthestStep != 1 || currentStep == 1;
-    },
+    // hideAllExceptFirst: function(currentStep) {
+    //   return this.progressionState.furthestStep != 1 || currentStep == 1;
+    // },
     checkOrientation: function() {
       this.isVertical = window.innerWidth <= this.orientationThreshold;
     },
@@ -850,44 +914,69 @@ export default Vue.extend({
         payload: planIds
       });
     },
-    nextStep: function() {
-      // If we are on the first step, we need to decide whether or not to show locations
-      if (
-        this.finalYAMLObject.overall.totalLocations == 1 &&
-        this.progressionState.onStep == 1
-      ) {
-        this.progressionState.showLocations = false;
-      } else if (
-        this.finalYAMLObject.overall.totalLocations > 1 &&
-        this.progressionState.onStep == 1
-      ) {
-        this.progressionState.showLocations = true;
-      }
+    handleDefaultPlanCase(nextStep) {
+      const plan = this.getDefaultsForm.filter(
+        form => form.fieldName !== "advancedOptions"
+      ) as AccountForm[];
 
-      // If the next step is the location step and we are not showing locations
+      plan.unshift({
+        fieldName: "title",
+        formType: "pure-component-textbox",
+        isDefault: false,
+        prompt: "Plan Name",
+        subPrompt: "",
+        selectionOpts: [""],
+        selected: "Default Plan"
+      });
+
+      this.addPlan({
+        resolutionsToHandle: [
+          {
+            title: this.defaults["resolution"],
+            numCameras: this.finalYAMLObject.overall.totalCameras,
+            cameraOpts: possibleOptions().resolution
+          }
+        ],
+        plan
+      });
+
+      // check if we also need to add the plan to the location
       if (
-        this.progressionState.locationStep ==
-          this.progressionState.onStep + 1 &&
-        !this.progressionState.showLocations
+        nextStep + 1 == this.progressionState.locationStepId &&
+        this.finalYAMLObject.overall.totalLocations == 1
       ) {
-        // then assign all plans to one and only location and go to estimate page
         this.handleOneLocationCase();
       }
-      // Change the max steps to match
-      this.progressionState.maxStep = this.dynamicSlides.length;
-
-      // Update the current step as long as it is less than or equal to the maxStep
-      if (this.progressionState.onStep + 1 <= this.progressionState.maxStep) {
-        this.progressionState.onStep++;
-      }
-      this.progressionState.furthestStep = Math.max(
-        this.progressionState.onStep,
-        this.progressionState.furthestStep
-      );
     },
-    prevStep: function() {
-      if (this.progressionState.onStep - 1 >= 1) {
-        this.progressionState.onStep--;
+    goToStep(nextStep) {
+      // make sure step is in range
+      if (nextStep >= 1 && nextStep <= this.progressionState.maxStep) {
+        if (
+          nextStep == this.progressionState.planStepId &&
+          this.allDefaultsSet
+        ) {
+          this.handleDefaultPlanCase(nextStep);
+        } else if (
+          nextStep == this.progressionState.locationStepId &&
+          this.finalYAMLObject.overall.totalLocations == 1
+        ) {
+          this.handleOneLocationCase();
+        }
+
+        // Change the max steps to match
+        this.progressionState.maxStep = this.dynamicSlides.length;
+
+        // Adjust second index to new max step
+        this.stepperHiddenSlideIds[1] = this.progressionState.maxStep;
+
+        // update the step we are on
+        this.progressionState.onStep = nextStep;
+
+        // set the furthest step
+        this.progressionState.furthestStep = Math.max(
+          this.progressionState.onStep,
+          this.progressionState.furthestStep
+        );
       }
     }
   }
@@ -951,6 +1040,10 @@ export default Vue.extend({
 
   .hide-border {
     border-left: none !important;
+    margin-left: 0px !important;
+    padding-left: 10px;
+    padding-right: 10px;
+    width: 100%;
   }
 
   .app-content {
