@@ -183,7 +183,7 @@ export default class VCameraCard extends Vue {
 
     .streams-icon {
       .delete {
-        margin-left: 10px;
+        margin-left: 15px !important;
       }
     }
   }

@@ -95,7 +95,7 @@ export default class VButtonGroup extends Vue {
     @media only screen and (max-width: 780px) {
       display: flex;
       flex-direction: column;
-      max-width: 150px;
+      width: 150px;
 
       .v-btn.v-btn.v-btn {
         padding: 0px 40px;

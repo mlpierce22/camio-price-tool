@@ -64,6 +64,11 @@ export default class VTextInput extends Vue {
     max-width: 250px;
     margin-bottom: -20px;
   }
+
+  .prompt {
+    font-style: italic;
+    margin-bottom: 5px;
+  }
 }
 </style>
 <!----------------- END CSS/SCSS ------------------>

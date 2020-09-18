@@ -60,5 +60,25 @@ export default class VBackNextButton extends Vue {
       margin-left: 5px;
     }
   }
+
+  @media only screen and (max-width: 500px) {
+    flex-direction: column;
+    align-items: center;
+
+    .back-button {
+      margin-bottom: 5px;
+      .v-icon {
+        margin-right: 5px;
+      }
+    }
+
+    .next-button {
+      margin-left: 0px;
+
+      .v-icon {
+        margin-left: 5px;
+      }
+    }
+  }
 }
 </style>
