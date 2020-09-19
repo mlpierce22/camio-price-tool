@@ -46,6 +46,9 @@
             >
               <keep-alive>
                 <component
+                  :key="
+                    `${step.stepId}-horizontal-component-${baseComponentsKey}`
+                  "
                   :is="step.instance"
                   :isVertical="isVertical"
                   v-bind="buildInputObject(step.props)"
@@ -97,6 +100,7 @@
           >
             <keep-alive>
               <component
+                :key="`${step.stepId}-vertical-component-${baseComponentsKey}`"
                 :is="step.instance"
                 :isVertical="isVertical"
                 v-bind="buildInputObject(step.props)"
@@ -164,6 +168,7 @@ import {
 /** Set the initial state of the function - allows us to reset everything. */
 function initialState(componentInstance) {
   return {
+    baseComponentsKey: 1234567, // A random number generated so that the components are not reused on reset
     isVertical: false,
     orientationThreshold: 600,
     progressionState: {
@@ -548,6 +553,8 @@ export default Vue.extend({
           if (this.defaults[formField.fieldName]) {
             return true;
           } else {
+            console.log("false happened", formField);
+
             return false;
           }
         });
@@ -574,6 +581,7 @@ export default Vue.extend({
     allDefaultsSet: function(areSet) {
       // as long as we are not on the plans step, update header
       if (this.progressionState.onStep !== this.progressionState.planStepId) {
+        console.log("this runs???", areSet);
         if (!areSet) {
           this.hiddenSlideIds = this.hiddenSlideIds.filter(
             val => val !== this.progressionState.planStepId
@@ -701,6 +709,7 @@ export default Vue.extend({
       );
     },
     addDefault(payload: DefaultChange) {
+      console.log("adding defaults");
       this.$set(this.defaults, payload.field, payload.value);
     },
     removeDefault(fieldToRemove: string) {
@@ -902,6 +911,10 @@ export default Vue.extend({
     resetToDefaults: function() {
       const data = initialState(this);
       Object.keys(data).forEach(key => (this[key] = data[key]));
+      this.reloadComponents();
+    },
+    reloadComponents: function() {
+      this.baseComponentsKey = Math.floor(Math.random() * 10000);
     },
     chooseColor: function(step) {
       // turn green if the user has passed this step and this step is not one the user is currently on
