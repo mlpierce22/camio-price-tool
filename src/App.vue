@@ -59,6 +59,7 @@
                 @back-click="goToStep(progressionState.onStep - 1)"
                 :next="step['navButtons']['nextText']"
                 :back="step['navButtons']['backText']"
+                :canAdvance="step.canAdvance"
               />
             </v-stepper-content>
           </template>
@@ -108,6 +109,7 @@
               @back-click="goToStep(progressionState.onStep - 1)"
               :next="step['navButtons']['nextText']"
               :back="step['navButtons']['backText']"
+              :canAdvance="step.canAdvance"
             />
           </v-stepper-content>
         </template>
@@ -204,6 +206,7 @@ function initialState(componentInstance) {
         stepNumber: 1, // Note that this changes
         stepId: 1,
         stepName: "Introduction",
+        canAdvance: true,
         instance: TheQuoteIntroPage,
         navButtons: {
           nextText: "Choose Defaults"
@@ -237,6 +240,7 @@ function initialState(componentInstance) {
         stepNumber: 2,
         stepId: 2,
         stepName: "Account",
+        canAdvance: true,
         instance: TheAccountPage,
         navButtons: {
           nextText: "Create Plans",
@@ -267,6 +271,7 @@ function initialState(componentInstance) {
         stepNumber: 3,
         stepId: 3,
         stepName: "Plans",
+        canAdvance: false,
         instance: TheCreatePlansPage,
         navButtons: {
           nextText: "Assign Locations",
@@ -274,7 +279,8 @@ function initialState(componentInstance) {
         },
         events: {
           "add-plan": componentInstance.addPlan,
-          "edit-plan": componentInstance.openEditPlanModal
+          "edit-plan": componentInstance.openEditPlanModal,
+          "plan-advancement-change": componentInstance.setSlideAdvanceState
         },
         props: {
           get: [
@@ -302,6 +308,11 @@ function initialState(componentInstance) {
               field: "defaults",
               getterFunction: "",
               importedFunction: null
+            },
+            {
+              field: "progressionState",
+              getterFunction: "getProgressionState",
+              importedFunction: null
             }
           ]
         }
@@ -310,6 +321,7 @@ function initialState(componentInstance) {
         stepNumber: 4,
         stepId: 4,
         stepName: "Locations",
+        canAdvance: false,
         instance: TheAddLocationsPage,
         navButtons: {
           nextText: "See an Estimate",
@@ -320,7 +332,8 @@ function initialState(componentInstance) {
           "modify-location": componentInstance.modifyLocation,
           "delete-location": componentInstance.deleteLocation,
           "modify-plan": componentInstance.modifyPlan,
-          "edit-plan": componentInstance.openEditPlanModal
+          "edit-plan": componentInstance.openEditPlanModal,
+          "location-advancement-change": componentInstance.setSlideAdvanceState
         },
         props: {
           get: [
@@ -338,6 +351,11 @@ function initialState(componentInstance) {
               field: "locations",
               getterFunction: "getLocations",
               importedFunction: null
+            },
+            {
+              field: "progressionState",
+              getterFunction: "getProgressionState",
+              importedFunction: null
             }
           ]
         }
@@ -346,6 +364,7 @@ function initialState(componentInstance) {
         stepNumber: 5,
         stepId: 5,
         stepName: "Review",
+        canAdvance: true,
         instance: TheEstimatePage,
         navButtons: {
           nextText: "Email Quote",
@@ -380,6 +399,7 @@ function initialState(componentInstance) {
         stepNumber: 6,
         stepId: 6,
         stepName: "Done",
+        canAdvance: true,
         instance: TheDonePage,
         navButtons: {},
         events: {
@@ -894,6 +914,17 @@ export default Vue.extend({
         return "primary";
       }
     },
+    setSlideAdvanceState(canAdvanceObj: {
+      stepToChange: number;
+      canAdvance: boolean;
+    }): void {
+      this.steps.forEach((step, index) => {
+        if (step.stepId == canAdvanceObj.stepToChange) {
+          this.$set(this.steps[index], "canAdvance", canAdvanceObj.canAdvance);
+          this.steps[index].canAdvance;
+        }
+      });
+    },
     // hideAllExceptFirst: function(currentStep) {
     //   return this.progressionState.furthestStep != 1 || currentStep == 1;
     // },
@@ -935,6 +966,12 @@ export default Vue.extend({
         field: "planIds",
         payload: planIds
       });
+
+      // "Unlock" the ability to move on to the next step
+      this.setSlideAdvanceState({
+        stepToChange: this.progressionState.locationStepId,
+        canAdvance: true
+      });
     },
     handleDefaultPlanCase(nextStep) {
       const plan = (this.getDefaultsForm.filter(
@@ -974,6 +1011,12 @@ export default Vue.extend({
           }
         ],
         plan
+      });
+
+      // "Unlock" the ability to move on to the next step
+      this.setSlideAdvanceState({
+        stepToChange: this.progressionState.planStepId,
+        canAdvance: true
       });
 
       // check if we also need to add the plan to the location

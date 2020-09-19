@@ -298,6 +298,7 @@ export default class TheCreatePlansModal extends Vue {
             @back-click="dialogOpen = false"
             :next="isEditing ? 'Save Changes' : 'Create Plan'"
             back="Cancel"
+            :canAdvance="true"
           />
         </div>
       </v-card>

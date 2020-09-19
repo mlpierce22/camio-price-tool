@@ -1,7 +1,13 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { PlanTemplates, AccountForm, Plan, FullFilteredPlan } from "@/models";
+import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import {
+  PlanTemplates,
+  AccountForm,
+  Plan,
+  FullFilteredPlan,
+  ProgressionState
+} from "@/models";
 import VPlanList from "@/components/shared/VPlanList.vue";
 import VPageHeader from "@/components/shared/VPageHeader.vue";
 import VPlanCard from "@/components/shared/VPlanCard.vue";
@@ -27,6 +33,8 @@ export default class TheCreatePlansPage extends Vue {
   @Prop() createdPlans!: Plan;
 
   @Prop() isVertical!: boolean;
+
+  @Prop() progressionState!: ProgressionState;
   // ------- Local Vars --------
 
   dialogOpen = false;
@@ -41,6 +49,20 @@ export default class TheCreatePlansPage extends Vue {
 
   // --------- Watchers --------
 
+  @Watch("existsAPlan")
+  planCountChange(planExists) {
+    if (planExists) {
+      this.$emit("plan-advancement-change", {
+        stepToChange: this.progressionState.planStepId,
+        canAdvance: true
+      });
+    } else {
+      this.$emit("plan-advancement-change", {
+        stepToChange: this.progressionState.planStepId,
+        canAdvance: false
+      });
+    }
+  }
   // ------- Lifecycle ---------
   // TODO: Replace the constructor with created everywhere
   constructor() {
@@ -78,6 +100,10 @@ export default class TheCreatePlansPage extends Vue {
 
   get resolutionIsDefault() {
     return this.defaults["resolution"];
+  }
+
+  get existsAPlan() {
+    return Object.keys(this.createdPlans).length > 0;
   }
 
   openCreatePlanModal(planTitle) {

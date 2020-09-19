@@ -16,7 +16,14 @@ export default class VPlanList extends Vue {
 
   // --------- Watchers --------
 
-  // TODO: Add watcher to total plans function to determine if user can continue
+  @Watch("totalPlansLeftToAssign")
+  changeInPlans() {
+    if (this.totalPlansLeftToAssign == 0) {
+      this.$emit("can-advance", true);
+    } else {
+      this.$emit("can-advance", false);
+    }
+  }
 
   // ------- Lifecycle ---------
   constructor() {

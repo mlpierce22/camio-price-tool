@@ -10,6 +10,8 @@ export default class VBackNextButton extends Vue {
 
   @Prop() back!: string;
 
+  @Prop() canAdvance!: boolean;
+
   constructor() {
     super();
   }
@@ -30,11 +32,12 @@ export default class VBackNextButton extends Vue {
     </v-btn>
     <v-btn
       class="next-button"
-      dark
+      :dark="canAdvance"
       depressed
       color="secondary"
       v-if="next"
       @click="$emit('next-click')"
+      :disabled="!canAdvance"
     >
       {{ next }} <v-icon>mdi-arrow-right</v-icon>
     </v-btn>

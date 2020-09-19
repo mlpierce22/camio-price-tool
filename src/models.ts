@@ -30,6 +30,7 @@ export interface FormSteps {
   stepNumber: number;
   stepId: number;
   stepName: string;
+  canAdvance: boolean;
   instance: Component;
   navButtons: BackNextButtonConfig;
   events?: ComponentEvents;

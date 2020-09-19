@@ -1,7 +1,12 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { Plan, DeconstructedHashPlan, QuoteIntroForm } from "@/models";
+import {
+  Plan,
+  DeconstructedHashPlan,
+  QuoteIntroForm,
+  ProgressionState
+} from "@/models";
 import VPlanList from "@/components/shared/VPlanList.vue";
 import VLocationCameraDropdown from "@/components/shared/VLocationCameraDropdown.vue";
 import VPageHeader from "@/components/shared/VPageHeader.vue";
@@ -21,6 +26,8 @@ export default class TheAddLocationsPage extends Vue {
   @Prop() initialFormData!: QuoteIntroForm;
 
   @Prop() locations!: LocationHashes;
+
+  @Prop() progressionState!: ProgressionState;
   // ------- Local Vars --------
 
   // --------- Watchers --------
@@ -37,6 +44,15 @@ export default class TheAddLocationsPage extends Vue {
         planKey: key,
         planData: this.plans[key]
       };
+    });
+  }
+
+  get isEmptyLocation() {
+    // if for every location, every planId at that location exists in plans (dummy keys tell us that there is an empty slot present at one of the locations)
+    return !Object.keys(this.locations).every(locKey => {
+      return Object.keys(this.locations[locKey].planIds).every(planKey => {
+        return !!this.plans[planKey];
+      });
     });
   }
 
@@ -91,6 +107,22 @@ export default class TheAddLocationsPage extends Vue {
       payload: payload.payload
     });
   }
+
+  checkAdvanceStatus(allCamerasUsed) {
+    console.log("check advance status");
+    // only allow to unlock next button if all cameras are used and none of the locations are empty
+    if (allCamerasUsed && !this.isEmptyLocation) {
+      this.$emit("location-advancement-change", {
+        stepToChange: this.progressionState.locationStepId,
+        canAdvance: true
+      });
+    } else {
+      this.$emit("location-advancement-change", {
+        stepToChange: this.progressionState.locationStepId,
+        canAdvance: false
+      });
+    }
+  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -115,6 +147,7 @@ export default class TheAddLocationsPage extends Vue {
       :plans="dehashPlans"
       title="Plans Left To Assign"
       @edit-plan="$emit('edit-plan', $event)"
+      @can-advance="checkAdvanceStatus($event)"
     />
     <div class="locations">
       <VLocationCameraDropdown

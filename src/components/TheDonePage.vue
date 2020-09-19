@@ -73,6 +73,7 @@ export default class TheDonePage extends Vue {
   .text {
     font-size: 30px;
     max-width: 94%;
+    text-align: center;
   }
 
   .v-btn__content {
