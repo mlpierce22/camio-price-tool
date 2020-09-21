@@ -1086,6 +1086,11 @@ export default Vue.extend({
   border: 3px solid #f7931e;
   border-radius: 20px;
   margin: 30px 10.3%;
+  font-size: 16px !important;
+
+  ::v-deep .v-label {
+    font-weight: normal !important;
+  }
 
   @media only screen and (max-width: 502px) {
     margin: 10px;
