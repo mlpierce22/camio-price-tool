@@ -650,8 +650,12 @@ export default Vue.extend({
         },
         body: JSON.stringify(saveObject)
       })
-        .then(id => {
-          console.log("got the id!", id);
+        .then(response => {
+          const resultId = response.text();
+          const resultJson = response.json();
+
+          console.log("json", resultJson);
+          console.log("id", resultId);
         })
         .catch(err => {
           console.log("Couldn't fetch from api", err);
