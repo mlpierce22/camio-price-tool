@@ -1,24 +1,8 @@
 # camio-price-tool
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+# Making changes to the price tool
+## Dev
+- You can make changes locally and run locally with `npm run serve`, although server functions will not work
+- You can save changes to run in this application by building this repo with `npm run build`
+- Then, run camiolog-web locally with `mvn com.google.cloud.tools:appengine-maven-plugirun -Dmaven.test.skip=true -Dproject=camiologger`
+- Navigate to `localhost:8888/tools/plans/config`
