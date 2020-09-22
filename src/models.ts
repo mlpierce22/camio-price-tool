@@ -169,3 +169,9 @@ export interface ProgressionState {
   locationStepId: number;
   planStepId: number;
 }
+
+export interface User {
+  email: string;
+  quoteSent: boolean;
+  quoteSending: boolean;
+}

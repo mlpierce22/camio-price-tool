@@ -147,7 +147,7 @@ import {
   AddOn,
   AddOnOpts,
   PlanTemplates,
-  ProgressionState
+  ProgressionState, User
 } from "@/models";
 import {
   FinalYAMLObject,
@@ -205,7 +205,8 @@ function initialState(componentInstance) {
         }
       }
     } as FinalYAMLObject,
-    defaults: { // all are set as default initially
+    defaults: {
+      // all are set as default initially
       resolution: "2 MP",
       cloudRetention: "30 day",
       cameraMotion: "6 hrs",
@@ -213,6 +214,11 @@ function initialState(componentInstance) {
       indexing: { type: "Lazy", option: "7 days" },
       addOns: []
     }, // Include in Compression
+    user: {
+      email: "",
+      quoteSent: false,
+      quoteSending: false
+    } as User,
     steps: [
       {
         stepNumber: 1, // Note that this changes
@@ -424,6 +430,11 @@ function initialState(componentInstance) {
               field: "progressionState",
               getterFunction: "getProgressionState",
               importedFunction: null
+            },
+            {
+              field: "user",
+              getterFunction: "",
+              importedFunction: null
             }
           ]
         }
@@ -516,7 +527,7 @@ export default Vue.extend({
               if (this.defaults[form.fieldName]) {
                 form.selected = this.defaults[form.fieldName];
               } else {
-              form.selected = this.finalYAMLObject.overall[form.fieldName];
+                form.selected = this.finalYAMLObject.overall[form.fieldName];
               }
               return form;
             }
@@ -632,6 +643,55 @@ export default Vue.extend({
     this.retrieveStateFromUrl();
   },
   methods: {
+    async sendQuote() {
+      const quoteIdExists = this.findQuoteId();
+      let quoteId;
+      this.user.quoteSending = true;
+      if (quoteIdExists) {
+        quoteId = quoteIdExists;
+      } else {
+        await this.saveState();
+        quoteId = this.findQuoteId();
+      }
+      const payload = {};
+      payload["hash"] = encodeURIComponent("#" + "quote_id" + "=" + quoteId);
+      // TODO: what does description do??
+      payload["description"] = "Test Description";
+      fetch("/api/users/me/quotes", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      })
+        .then(response => {
+          response
+            .text()
+            .then(result => {
+              // TODO: figure out why CSRF error is happening on send....
+              if (result["user"]["email"]) {
+                this.user.email = result["user"]["email"];
+                this.user.quoteSent = true;
+                this.user.quoteSending = false;
+                this.goToStep(this.progressionState.onStep + 1);
+              } else {
+                console.log("result wasn't a success", result);
+                this.user.quoteSent = false;
+                this.user.quoteSending = false;
+              }
+            })
+            .catch(err => {
+              console.log("Couldn't read the return value", err);
+              this.user.quoteSent = false;
+              this.user.quoteSending = false;
+            });
+        })
+        .catch(err => {
+          console.log("Couldn't post to api", err);
+          this.user.quoteSent = false;
+          this.user.quoteSending = false;
+        });
+    },
     findQuoteId() {
       const currentUrl = window.location.href;
       if (currentUrl.includes("quote_id")) {
@@ -671,39 +731,44 @@ export default Vue.extend({
         finalYAMLObject: this.finalYAMLObject,
         defaults: this.defaults
       };
-      fetch("/api/blobs", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(saveObject)
-      })
-        .then(async response => {
-          response
-            .text()
-            .then(result => {
-              let currentURL = location.href;
-              const quoteId = this.findQuoteId();
-              const newId = result.replaceAll(/^"|"$/g, "");
-              if (quoteId) {
-                currentURL = currentURL.replace(quoteId, newId);
-              } else {
-                if (currentURL.includes("#")) {
-                  currentURL += "quote_id=" + newId + ";";
-                } else {
-                  currentURL += "#quote_id=" + newId + ";";
-                }
-              }
-
-              location.href = currentURL;
-            })
-            .catch(err => {
-              console.log("Couldn't read text", err);
-            });
+      return new Promise((resolve, reject) => {
+        fetch("/api/blobs", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(saveObject)
         })
-        .catch(err => {
-          console.log("Couldn't fetch from api", err);
-        });
+          .then(async response => {
+            response
+              .text()
+              .then(result => {
+                let currentURL = location.href;
+                const quoteId = this.findQuoteId();
+                const newId = result.replaceAll(/^"|"$/g, "");
+                if (quoteId) {
+                  currentURL = currentURL.replace(quoteId, newId);
+                } else {
+                  if (currentURL.includes("#")) {
+                    currentURL += "quote_id=" + newId + ";";
+                  } else {
+                    currentURL += "#quote_id=" + newId + ";";
+                  }
+                }
+
+                location.href = currentURL;
+                resolve(location.href);
+              })
+              .catch(err => {
+                console.log("Couldn't read text", err);
+                reject("Couldn't read text");
+              });
+          })
+          .catch(err => {
+            console.log("Couldn't fetch from api", err);
+            reject("Couldn't fetch from api");
+          });
+      });
     },
     // BEGIN FUNCTIONS TO MODIFY FINAL YAML OBJECT
     changeOverall(change: OverallChange) {
@@ -760,7 +825,7 @@ export default Vue.extend({
       // only add a default if it isn't already set.
       // if we wanted to change a value, we should call modify
       if (!this.defaults[payload.field]) {
-      this.$set(this.defaults, payload.field, payload.value);
+        this.$set(this.defaults, payload.field, payload.value);
       }
     },
     removeDefault(fieldToRemove: string) {
@@ -1094,6 +1159,11 @@ export default Vue.extend({
     goToStep(nextStep) {
       // make sure step is in range
       if (nextStep >= 1 && nextStep <= this.progressionState.maxStep) {
+        // if we are "sending quote", then don't run this logic, and send quote
+        if (nextStep == this.progressionState.maxStep && !this.user.quoteSent) {
+          this.sendQuote();
+          return;
+        }
         if (
           nextStep == this.progressionState.planStepId &&
           this.allDefaultsSet

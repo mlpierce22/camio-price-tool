@@ -1,6 +1,6 @@
 <!----------------- BEGIN JS/TS ------------------->
 <script lang="ts">
-import { ProgressionState } from "@/models";
+import { ProgressionState, User } from "@/models";
 import { Component, Prop, Vue } from "vue-property-decorator";
 @Component({
   components: {}
@@ -8,6 +8,8 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 export default class TheDonePage extends Vue {
   // ---------- Props ----------
   @Prop() progressionState!: ProgressionState;
+
+  @Prop() user!: User;
   // ------- Local Vars --------
 
   // --------- Watchers --------
@@ -29,7 +31,7 @@ export default class TheDonePage extends Vue {
     <div class="text">Thank you for your interest in Camio!</div>
     <div class="text">
       Your official quote was sent to
-      <span class="primary--text">mason@camio.com.</span>
+      <span class="primary--text">{{ user.email }}.</span>
     </div>
     <v-btn
       class="edit"
