@@ -19,6 +19,11 @@ export default class VYesNoSelect extends Vue {
   changeDefault() {
     this.$emit("changed-default", this.isDefault);
   }
+
+  @Watch("dataInDefault")
+  changeStatus() {
+    this.isDefault = this.dataInDefault;
+  }
   // ------- Lifecycle ---------
   constructor() {
     super();

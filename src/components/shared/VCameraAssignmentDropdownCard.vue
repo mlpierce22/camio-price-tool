@@ -81,7 +81,7 @@ export default class VCameraAssignmentDropdownCard extends Vue {
       :validate-on-blur="true"
       :rules="[rules.min]"
     ></v-text-field>
-    <div class="card" @click="showMore = !showMore">
+    <div class="camera-card" @click="showMore = !showMore">
       <div class="dropdown-icon">
         <v-icon class="list" color="white">mdi-format-list-bulleted</v-icon>
         <v-select
@@ -110,9 +110,9 @@ export default class VCameraAssignmentDropdownCard extends Vue {
         </v-btn>
       </div>
     </div>
-    <v-expand-transition>
+    <!-- <v-expand-transition>
       <div v-show="showMore" class="additional-details"></div>
-    </v-expand-transition>
+    </v-expand-transition> -->
   </div>
 </template>
 <!----------------- END HTML ---------------------->
@@ -142,7 +142,7 @@ export default class VCameraAssignmentDropdownCard extends Vue {
     }
   }
 
-  .card {
+  .camera-card {
     display: flex;
     background: #f7931e;
     border-radius: 10px;
@@ -179,7 +179,7 @@ export default class VCameraAssignmentDropdownCard extends Vue {
     ::v-deep .text-box {
       align-self: center;
     }
-    .card {
+    .camera-card {
       align-self: center;
       flex-direction: column;
       margin-left: 0px;

@@ -67,6 +67,12 @@ export default class TheCreatePlansPage extends Vue {
   // TODO: Replace the constructor with created everywhere
   constructor() {
     super();
+    if (this.existsAPlan) {
+      this.$emit("plan-advancement-change", {
+        stepToChange: this.progressionState.planStepId,
+        canAdvance: true
+      });
+    }
   }
   // --------- Methods ---------
 

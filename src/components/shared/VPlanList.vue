@@ -28,6 +28,12 @@ export default class VPlanList extends Vue {
   // ------- Lifecycle ---------
   constructor() {
     super();
+    // do this to make sure the state is correct when the component is built
+    if (this.totalPlansLeftToAssign == 0) {
+      this.$emit("can-advance", true);
+    } else {
+      this.$emit("can-advance", false);
+    }
   }
   // --------- Methods ---------
 

@@ -67,7 +67,7 @@ export default class VPlanCard extends Vue {
 <!----------------- BEGIN HTML -------------------->
 <template lang="html">
   <div class="v-plan-card">
-    <div class="card">
+    <div class="options-card">
       <div class="title">{{ title }}</div>
       <div class="subtitle" v-if="plansFlattened.length > 0">
         <i>Includes</i>
@@ -121,7 +121,7 @@ export default class VPlanCard extends Vue {
     margin: 20px;
   }
 
-  .card {
+  .options-card {
     display: flex;
     flex-direction: column;
     background: #ffffff;
@@ -164,6 +164,17 @@ export default class VPlanCard extends Vue {
         .label {
           margin-left: 5px;
           text-overflow: wrap;
+          color: inherit;
+          font-weight: inherit;
+          align-self: center;
+          font-size: inherit;
+          padding: 0;
+          display: flex;
+          text-align: initial;
+          vertical-align: inherit;
+          line-height: initial;
+          border-radius: initial;
+          white-space: initial;
         }
       }
 

@@ -205,7 +205,14 @@ function initialState(componentInstance) {
         }
       }
     } as FinalYAMLObject,
-    defaults: {}, // Include in Compression
+    defaults: { // all are set as default initially
+      resolution: "2 MP",
+      cloudRetention: "30 day",
+      cameraMotion: "6 hrs",
+      overageHandling: "Lazy",
+      indexing: { type: "Lazy", option: "7 days" },
+      addOns: []
+    }, // Include in Compression
     steps: [
       {
         stepNumber: 1, // Note that this changes
@@ -506,7 +513,11 @@ export default Vue.extend({
         if (formObject.fieldName == "advancedOptions") {
           (formObject as AccountSubForm).subForm = (formObject as AccountSubForm).subForm.map(
             form => {
+              if (this.defaults[form.fieldName]) {
+                form.selected = this.defaults[form.fieldName];
+              } else {
               form.selected = this.finalYAMLObject.overall[form.fieldName];
+              }
               return form;
             }
           );
@@ -616,21 +627,39 @@ export default Vue.extend({
     this.$vuetify.theme.themes.light.primary = "#f7931e";
     this.$vuetify.theme.themes.light.secondary = "#50B536";
     this.$vuetify.theme.themes.light.error = "#FF0000";
+  },
+  mounted() {
     this.retrieveStateFromUrl();
   },
   methods: {
-    retrieveStateFromUrl() {
+    findQuoteId() {
       const currentUrl = window.location.href;
       if (currentUrl.includes("quote_id")) {
         const varNameIndex = currentUrl.indexOf("quote_id");
         const end = currentUrl.indexOf(";", varNameIndex);
         const stateId = currentUrl.slice(varNameIndex, end).split("=")[1];
-        // TODO: finish this!
-        fetch("/api/blobs/" + stateId, {
+        return stateId;
+      } else {
+        return undefined;
+      }
+    },
+    retrieveStateFromUrl() {
+      const currentStateId = this.findQuoteId();
+      if (currentStateId) {
+        fetch("/api/blobs/" + currentStateId, {
           method: "GET"
         })
           .then(jsonObject => {
-            console.log("got the Json!", jsonObject);
+            jsonObject
+              .json()
+              .then((json: string) => {
+                Object.keys(json).forEach(key => {
+                  this.$set(this, key, json[key]);
+                });
+              })
+              .catch(err => {
+                console.log("Couldn't read the json", err);
+              });
           })
           .catch(err => {
             console.log("Couldn't fetch from api", err);
@@ -642,7 +671,6 @@ export default Vue.extend({
         finalYAMLObject: this.finalYAMLObject,
         defaults: this.defaults
       };
-      // TODO: finish this!
       fetch("/api/blobs", {
         method: "PUT",
         headers: {
@@ -650,12 +678,28 @@ export default Vue.extend({
         },
         body: JSON.stringify(saveObject)
       })
-        .then(response => {
-          const resultId = response.text();
-          const resultJson = response.json();
+        .then(async response => {
+          response
+            .text()
+            .then(result => {
+              let currentURL = location.href;
+              const quoteId = this.findQuoteId();
+              const newId = result.replaceAll(/^"|"$/g, "");
+              if (quoteId) {
+                currentURL = currentURL.replace(quoteId, newId);
+              } else {
+                if (currentURL.includes("#")) {
+                  currentURL += "quote_id=" + newId + ";";
+                } else {
+                  currentURL += "#quote_id=" + newId + ";";
+                }
+              }
 
-          console.log("json", resultJson);
-          console.log("id", resultId);
+              location.href = currentURL;
+            })
+            .catch(err => {
+              console.log("Couldn't read text", err);
+            });
         })
         .catch(err => {
           console.log("Couldn't fetch from api", err);
@@ -713,8 +757,11 @@ export default Vue.extend({
       );
     },
     addDefault(payload: DefaultChange) {
-      console.log("adding defaults");
+      // only add a default if it isn't already set.
+      // if we wanted to change a value, we should call modify
+      if (!this.defaults[payload.field]) {
       this.$set(this.defaults, payload.field, payload.value);
+      }
     },
     removeDefault(fieldToRemove: string) {
       this.$delete(this.defaults, fieldToRemove);

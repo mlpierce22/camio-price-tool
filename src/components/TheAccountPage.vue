@@ -23,15 +23,6 @@ export default class TheAccountPage extends Vue {
   // ------- Lifecycle ---------
   constructor() {
     super();
-    // Automatically set all defaults to true.
-    this.formData
-      .filter(formField => formField.fieldName !== "advancedOptions")
-      .forEach(field => {
-        this.$emit("add-default", {
-          field: field.fieldName,
-          value: (field as AccountForm).selected
-        });
-      });
   }
   // --------- Methods ---------
   changedForm(index, payload) {

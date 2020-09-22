@@ -58,10 +58,15 @@ export default class VPromptedNumberInput extends Vue {
     }
   }
 
+  @Watch("inputData", { deep: true })
+  updateLocalVar() {
+    this.fieldValue = this.inputData.value;
+  }
+
   constructor() {
     super();
-    this.fieldValue = this.inputData.value;
     this.units = this.inputData.units;
+    this.fieldValue = this.inputData.value;
     this.rules = {
       empty: value => !!value || "Required.",
       min: value =>
