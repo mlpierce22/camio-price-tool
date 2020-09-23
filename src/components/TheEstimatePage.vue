@@ -665,8 +665,12 @@ export default class TheEstimatePage extends Vue {
       <div class="responsive-pricing-container">
         <div class="table-row">
           <div class="three-col"></div>
-          <div class="one-col cost-header">One-Time</div>
-          <div class="one-col cost-header">Recurring</div>
+          <div class="two-col">
+            <div class="table-row hide-header">
+              <div class="half cost-header">One-Time</div>
+              <div class="half cost-header">Recurring</div>
+            </div>
+          </div>
         </div>
         <div class="table-row new-table">
           <div class="five-col section-title account">
@@ -674,27 +678,39 @@ export default class TheEstimatePage extends Vue {
           </div>
         </div>
         <div
-          class="table-row entry green-background"
+          class="table-row entry green-background can-stack"
           v-for="(overallField, index) in prices.overallPricing"
           :key="`${index}-overall-price`"
         >
-          <div class="one-col count">{{ overall.totalCameras }}x</div>
-          <div class="two-col item-title">
-            {{ titles[overallField.key] }}:
-            {{ finalYAMLObject.overall[overallField.key] }}
+          <div class="four-col fill-space">
+            <div class="two-col count">{{ overall.totalCameras }}x</div>
+            <div class="three-col item-title">
+              {{ titles[overallField.key] }}:
+              {{ finalYAMLObject.overall[overallField.key] }}
+            </div>
           </div>
           <div class="one-col"></div>
-          <div class="one-col">
+          <div class="one-col price-content fill-space">
             <div class="table-row main-price">
               {{ formatMoney(overallField.price) }}
             </div>
           </div>
         </div>
         <div class="table-row">
-          <div class="three-col"></div>
-          <div class="one-col location-total account"></div>
-          <div class="one-col location-total account">
-            {{ formatMoney(getOverallSaas(prices.overallPricing)) }}/mo
+          <div class="three-col">
+            <div class="table-row stack-header">
+              <div class="tiny-header green-header">
+                Recurring:
+              </div>
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="table-row">
+              <div class="half location-total account empty"></div>
+              <div class="half location-total account price-content">
+                {{ formatMoney(getOverallSaas(prices.overallPricing)) }}/mo
+              </div>
+            </div>
           </div>
         </div>
         <div
@@ -711,22 +727,26 @@ export default class TheEstimatePage extends Vue {
               v-for="(plan, index) in location.saasPrice"
               :key="`${index}-location-saas-price-field`"
             >
-              <div class="table-row" v-if="plan">
-                <div class="one-col count">{{ plan.numPlans }}x</div>
-                <div class="two-col">
-                  <div class="table-row with-sub-tables item-title-centered">
-                    <div class="table-row">{{ plan.planName }}</div>
-                    <div
-                      class="table-row sub-price add-on"
-                      v-for="(addon, key) in plan.flatAddons"
-                      :key="`${key}-location-addon-price-field`"
-                    >
-                      {{ key }} @ {{ formatMoney(addon) }} / stream
+              <div class="table-row can-stack" v-if="plan">
+                <div class="three-col fill-space">
+                  <div class="two-col count">{{ plan.numPlans }}x</div>
+                  <div class="three-col">
+                    <div class="table-row with-sub-tables item-title-centered">
+                      <div class="table-row item-title">
+                        {{ plan.planName }}
+                      </div>
+                      <div
+                        class="table-row sub-price add-on"
+                        v-for="(addon, key) in plan.flatAddons"
+                        :key="`${key}-location-addon-price-field`"
+                      >
+                        {{ key }} @ {{ formatMoney(addon) }} / stream
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div class="one-col"></div>
-                <div class="one-col">
+                <div class="one-col empty"></div>
+                <div class="one-col price-content">
                   <div class="table-row with-sub-tables">
                     <div class="table-row main-price">
                       {{ formatMoney(getTotalSaas(plan)) }}/mo
@@ -746,14 +766,16 @@ export default class TheEstimatePage extends Vue {
               v-for="(box, index) in location.boxesUsed"
               :key="`${index}-location-box-price-field`"
             >
-              <div class="table-row" v-if="box">
-                <div class="one-col count">
-                  {{ location.useVM ? 1 : box.count }}x
+              <div class="table-row can-stack" v-if="box">
+                <div class="three-col fill-space">
+                  <div class="two-col count">
+                    {{ location.useVM ? 1 : box.count }}x
+                  </div>
+                  <div class="three-col item-title">
+                    {{ getBoxText(location, box) }}
+                  </div>
                 </div>
-                <div class="two-col item-title">
-                  {{ getBoxText(location, box) }}
-                </div>
-                <div class="one-col">
+                <div class="one-col price-content fill-space">
                   <div class="table-row with-sub-tables">
                     <div class="table-row main-price">
                       {{
@@ -765,17 +787,30 @@ export default class TheEstimatePage extends Vue {
                     </div>
                   </div>
                 </div>
-                <div class="one-col"></div>
+                <div class="one-col empty"></div>
               </div>
             </div>
           </div>
           <div class="table-row" v-if="location">
-            <div class="three-col"></div>
-            <div class="one-col location-total">
-              {{ formatMoney(getLocationTotalHardware(location)) }}
+            <div class="three-col">
+              <div class="table-row stack-header">
+                <div class="tiny-header">
+                  Recurring:
+                </div>
+                <div class="tiny-header">
+                  One-Time:
+                </div>
+              </div>
             </div>
-            <div class="one-col location-total">
-              {{ formatMoney(getLocationTotalSaas(location)) }}/mo
+            <div class="two-col">
+              <div class="table-row stack-price">
+                <div class="half location-total no-border">
+                  {{ formatMoney(getLocationTotalHardware(location)) }}
+                </div>
+                <div class="half location-total">
+                  {{ formatMoney(getLocationTotalSaas(location)) }}/mo
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -785,7 +820,7 @@ export default class TheEstimatePage extends Vue {
           </div>
           <div class="three-col make-full">
             <div class="table-row with-sub-tables">
-              <div class="table-row">
+              <div class="table-row stack-mobile">
                 <div class="two-col sub-orange">
                   One-Time:
                 </div>
@@ -793,7 +828,7 @@ export default class TheEstimatePage extends Vue {
                   {{ formatMoney(grandTotalHardware) }}
                 </div>
               </div>
-              <div class="table-row">
+              <div class="table-row stack-mobile">
                 <div class="two-col sub-orange">
                   Recurring:
                 </div>
@@ -878,6 +913,11 @@ export default class TheEstimatePage extends Vue {
           margin-top: 20px;
         }
 
+        &.name-overflow {
+          overflow-x: scroll;
+          margin-right: 5px;
+        }
+
         &.grand-total {
           margin: 15px -13px -13px -13px;
           padding: 15px 0px;
@@ -930,6 +970,30 @@ export default class TheEstimatePage extends Vue {
             .make-full {
               width: 100%;
             }
+
+            @media only screen and (max-width: 645px) {
+              .big-orange {
+                font-size: 30px;
+                text-decoration: underline;
+              }
+
+              .stack-mobile {
+                flex-direction: column;
+                margin-bottom: 15px;
+
+                .sub-orange {
+                  font-size: 25px;
+                  width: 100%;
+                  justify-content: center;
+                }
+
+                .total-price {
+                  font-size: 25px;
+                  width: 100%;
+                  justify-content: center;
+                }
+              }
+            }
           }
         }
 
@@ -951,6 +1015,11 @@ export default class TheEstimatePage extends Vue {
         }
         .five-col {
           width: 100%;
+          display: flex;
+        }
+
+        .half {
+          width: 50%;
           display: flex;
         }
 
@@ -1037,6 +1106,158 @@ export default class TheEstimatePage extends Vue {
         .add-on {
           justify-content: flex-start;
         }
+
+        .tiny-header {
+          display: none;
+        }
+        @media only screen and (max-width: 1170px) {
+          .location-total {
+            font-size: 20px;
+          }
+
+          .cost-header {
+            font-size: 20px;
+          }
+
+          .sub-price {
+            font-size: 13px;
+          }
+
+          .item-title {
+            overflow-x: scroll;
+          }
+
+          @media only screen and (max-width: 925px) {
+            .price-content {
+              width: 40%;
+              align-items: flex-end;
+              width: 70%;
+              margin-left: auto;
+            }
+            .empty {
+              width: 0%;
+              border-top: none !important;
+              margin: 0px;
+              padding: 0px;
+            }
+
+            .stack-price {
+              flex-direction: column-reverse;
+              align-items: flex-end;
+
+              .location-total {
+                width: 70%;
+
+                &.no-border {
+                  border: 0;
+                }
+              }
+            }
+
+            .hide-header {
+              display: none;
+            }
+
+            .stack-header {
+              flex-direction: column;
+              align-items: flex-end;
+              justify-content: flex-start;
+            }
+
+            .tiny-header {
+              display: flex;
+              flex-direction: column;
+              white-space: nowrap;
+              justify-content: center;
+              padding-top: 14px;
+              font-size: 20px;
+              font-weight: bold;
+              color: #f7931e;
+
+              &.green-header {
+                color: #50b536;
+              }
+            }
+          }
+
+          @media only screen and (max-width: 600px) {
+            &.can-stack {
+              flex-direction: column;
+              padding-bottom: 20px;
+
+              .fill-space {
+                width: 100%;
+                justify-content: flex-end;
+                margin-bottom: 10px;
+
+                .count {
+                  width: fit-content;
+                  justify-content: flex-end;
+                  font-size: 17px;
+                  margin-right: auto;
+                  margin-left: 10px;
+                }
+
+                .item-title-centered {
+                  overflow: scroll;
+                  align-items: flex-end;
+                }
+
+                .item-title {
+                  width: fit-content;
+                  margin-right: 10px;
+                  font-size: 15px;
+                  text-align: right;
+                }
+              }
+
+              .main-price {
+                padding-right: 10px;
+                font-size: 15px;
+              }
+
+              .sub-price {
+                padding-right: 10px;
+                font-size: 12px;
+
+                &.add-on {
+                  text-align: right;
+                  white-space: nowrap;
+                  font-size: 10px;
+                  padding-right: 0px;
+                  justify-content: flex-end;
+                  margin-right: 10px;
+                }
+              }
+            }
+            .stack-header {
+              align-items: flex-start;
+              margin-left: 10px;
+            }
+
+            .stack-price {
+              justify-content: flex-end;
+            }
+
+            .tiny-header {
+              padding-top: 10px;
+            }
+            @media only screen and (max-width: 375px) {
+              .sub-price {
+                &.add-on {
+                  white-space: normal !important;
+                }
+              }
+              .location-total {
+                font-size: 15px;
+              }
+
+              .tiny-header {
+                font-size: 17px;
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -1049,7 +1270,7 @@ export default class TheEstimatePage extends Vue {
     color: #71592f;
     padding: 5px;
     margin-bottom: 5px;
-    font-size: 12px;
+    font-size: 15px;
     align-self: center;
     margin: 30px 0px;
   }
@@ -1063,6 +1284,26 @@ export default class TheEstimatePage extends Vue {
     .link-text {
       text-decoration: underline;
       margin-left: 7px;
+    }
+  }
+
+  @media only screen and (max-width: 600px) {
+    .warning-box {
+      font-size: 12px;
+    }
+    ::v-deep .v-btn__content {
+      max-width: 100%;
+      flex-wrap: wrap;
+
+      .link-text {
+        white-space: normal;
+      }
+    }
+
+    .link {
+      font-size: 13px;
+      height: auto;
+      margin-right: auto;
     }
   }
 }

@@ -30,8 +30,12 @@ export default class TheAddLocationsPage extends Vue {
   @Prop() progressionState!: ProgressionState;
   // ------- Local Vars --------
 
+  allCamerasUsed = false;
   // --------- Watchers --------
-
+  @Watch("allCamerasUsed")
+  camerasUsedChange() {
+    this.checkAdvanceStatus();
+  }
   // ------- Lifecycle ---------
   constructor() {
     super();
@@ -93,10 +97,12 @@ export default class TheAddLocationsPage extends Vue {
 
   createLocation() {
     this.$emit("add-location");
+    this.checkAdvanceStatus();
   }
 
   deleteLocation(index: number) {
     this.$emit("delete-location", index);
+    this.checkAdvanceStatus();
   }
 
   // TODO: is the plan cam count in the location updated??
@@ -106,12 +112,17 @@ export default class TheAddLocationsPage extends Vue {
       field: payload.field,
       payload: payload.payload
     });
+    this.checkAdvanceStatus();
   }
 
-  checkAdvanceStatus(allCamerasUsed) {
-    console.log("check advance status");
+  checkAdvanceStatus() {
+    console.log(
+      "check advance status, cameras all used and all locations filled: ",
+      this.allCamerasUsed,
+      !this.isEmptyLocation
+    );
     // only allow to unlock next button if all cameras are used and none of the locations are empty
-    if (allCamerasUsed && !this.isEmptyLocation) {
+    if (this.allCamerasUsed && !this.isEmptyLocation) {
       this.$emit("location-advancement-change", {
         stepToChange: this.progressionState.locationStepId,
         canAdvance: true
@@ -147,7 +158,7 @@ export default class TheAddLocationsPage extends Vue {
       :plans="dehashPlans"
       title="Plans Left To Assign"
       @edit-plan="$emit('edit-plan', $event)"
-      @can-advance="checkAdvanceStatus($event)"
+      @can-advance="allCamerasUsed = $event"
     />
     <div class="locations">
       <VLocationCameraDropdown

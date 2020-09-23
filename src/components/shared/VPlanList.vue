@@ -124,8 +124,8 @@ export default class VPlanList extends Vue {
       <div class="no-plans" v-else key="plans-done">
         <v-icon size="60" color="secondary">mdi-check-circle</v-icon>
         <div class="explanation finished">
-          You assigned all your plans! Click “Review Quote” at the bottom of the
-          page to continue.
+          You assigned all your plans! Click “See an Estimate” at the bottom of
+          the page to continue.
         </div>
       </div>
     </div>
@@ -227,6 +227,9 @@ export default class VPlanList extends Vue {
           .plan-sub-title {
             font-weight: normal;
             width: 60%;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
           }
 
           .pencil {

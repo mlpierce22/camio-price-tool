@@ -174,4 +174,5 @@ export interface User {
   email: string;
   quoteSent: boolean;
   quoteSending: boolean;
+  quoteError: boolean;
 }

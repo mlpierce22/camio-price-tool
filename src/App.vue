@@ -147,7 +147,8 @@ import {
   AddOn,
   AddOnOpts,
   PlanTemplates,
-  ProgressionState, User
+  ProgressionState,
+  User
 } from "@/models";
 import {
   FinalYAMLObject,
@@ -217,7 +218,8 @@ function initialState(componentInstance) {
     user: {
       email: "",
       quoteSent: false,
-      quoteSending: false
+      quoteSending: false,
+      quoteError: false
     } as User,
     steps: [
       {
@@ -601,8 +603,12 @@ export default Vue.extend({
       requestAnimationFrame(() => (this.progressionState.onStep = currStep));
     },
     allDefaultsSet: function(areSet) {
+      const onPlanStep =
+        this.progressionState.onStep == this.progressionState.planStepId;
+      const onLocationStep =
+        this.progressionState.onStep == this.progressionState.locationStepId;
       // as long as we are not on the plans step, update header
-      if (this.progressionState.onStep !== this.progressionState.planStepId) {
+      if (!onPlanStep && !onLocationStep) {
         console.log("this runs???", areSet);
         if (!areSet) {
           this.hiddenSlideIds = this.hiddenSlideIds.filter(
@@ -617,10 +623,12 @@ export default Vue.extend({
     },
     getLocations: function(locations) {
       const numLocations = Object.keys(locations).length;
-      // as long as we are not on the location step, update header
-      if (
-        this.progressionState.onStep !== this.progressionState.locationStepId
-      ) {
+      const onPlanStep =
+        this.progressionState.onStep == this.progressionState.planStepId;
+      const onLocationStep =
+        this.progressionState.onStep == this.progressionState.locationStepId;
+      // as long as we are not on the location step or plans step, update header
+      if (!onPlanStep && !onLocationStep) {
         if (numLocations > 1) {
           this.hiddenSlideIds = this.hiddenSlideIds.filter(
             val => val !== this.progressionState.locationStepId
@@ -638,6 +646,8 @@ export default Vue.extend({
     this.$vuetify.theme.themes.light.primary = "#f7931e";
     this.$vuetify.theme.themes.light.secondary = "#50B536";
     this.$vuetify.theme.themes.light.error = "#FF0000";
+    // TODO: remove this
+    Vue.config.devtools = true;
   },
   mounted() {
     this.retrieveStateFromUrl();
@@ -647,12 +657,18 @@ export default Vue.extend({
       const quoteIdExists = this.findQuoteId();
       let quoteId;
       this.user.quoteSending = true;
+      this.user.quoteError = false;
       if (quoteIdExists) {
         quoteId = quoteIdExists;
       } else {
-        await this.saveState();
+        const savedState = await this.saveState();
+        if (savedState == "Failed") {
+          this.user.quoteError = true;
+          return;
+        }
         quoteId = this.findQuoteId();
       }
+
       const payload = {};
       payload["hash"] = encodeURIComponent("#" + "quote_id" + "=" + quoteId);
       // TODO: what does description do??
@@ -669,7 +685,7 @@ export default Vue.extend({
             .text()
             .then(result => {
               // TODO: figure out why CSRF error is happening on send....
-              if (result["user"]["email"]) {
+              if (result["user"]) {
                 this.user.email = result["user"]["email"];
                 this.user.quoteSent = true;
                 this.user.quoteSending = false;
@@ -710,16 +726,20 @@ export default Vue.extend({
           method: "GET"
         })
           .then(jsonObject => {
-            jsonObject
-              .json()
-              .then((json: string) => {
-                Object.keys(json).forEach(key => {
-                  this.$set(this, key, json[key]);
+            if (jsonObject.ok) {
+              jsonObject
+                .json()
+                .then((json: string) => {
+                  Object.keys(json).forEach(key => {
+                    this.$set(this, key, json[key]);
+                  });
+                })
+                .catch(err => {
+                  console.log("Couldn't read the json", err);
                 });
-              })
-              .catch(err => {
-                console.log("Couldn't read the json", err);
-              });
+            } else {
+              console.log("Fetch Failed");
+            }
           })
           .catch(err => {
             console.log("Couldn't fetch from api", err);
@@ -731,7 +751,7 @@ export default Vue.extend({
         finalYAMLObject: this.finalYAMLObject,
         defaults: this.defaults
       };
-      return new Promise((resolve, reject) => {
+      return new Promise<string>((resolve, reject) => {
         fetch("/api/blobs", {
           method: "PUT",
           headers: {
@@ -740,33 +760,38 @@ export default Vue.extend({
           body: JSON.stringify(saveObject)
         })
           .then(async response => {
-            response
-              .text()
-              .then(result => {
-                let currentURL = location.href;
-                const quoteId = this.findQuoteId();
-                const newId = result.replaceAll(/^"|"$/g, "");
-                if (quoteId) {
-                  currentURL = currentURL.replace(quoteId, newId);
-                } else {
-                  if (currentURL.includes("#")) {
-                    currentURL += "quote_id=" + newId + ";";
+            if (response.ok) {
+              response
+                .text()
+                .then(result => {
+                  let currentURL = location.href;
+                  const quoteId = this.findQuoteId();
+                  const newId = result.replaceAll(/^"|"$/g, "");
+                  if (quoteId) {
+                    currentURL = currentURL.replace(quoteId, newId);
                   } else {
-                    currentURL += "#quote_id=" + newId + ";";
+                    if (currentURL.includes("#")) {
+                      currentURL += "quote_id=" + newId + ";";
+                    } else {
+                      currentURL += "#quote_id=" + newId + ";";
+                    }
                   }
-                }
 
-                location.href = currentURL;
-                resolve(location.href);
-              })
-              .catch(err => {
-                console.log("Couldn't read text", err);
-                reject("Couldn't read text");
-              });
+                  location.href = currentURL;
+                  resolve(location.href);
+                })
+                .catch(err => {
+                  console.log("Couldn't read text", err);
+                  reject("Failed");
+                });
+            } else {
+              console.log("Fetch Failed");
+              reject("Failed");
+            }
           })
           .catch(err => {
             console.log("Couldn't fetch from api", err);
-            reject("Couldn't fetch from api");
+            reject("Failed");
           });
       });
     },
@@ -806,6 +831,22 @@ export default Vue.extend({
     deleteLocation(locationId: number) {
       const totalLocations = Object.keys(this.finalYAMLObject.locations).length;
       if (totalLocations > 1) {
+        // first, reset all the planCounts at that location
+        const planIds = this.finalYAMLObject.locations[locationId].planIds;
+        Object.keys(planIds).forEach(planKey => {
+          if (this.finalYAMLObject.plans[planKey] && planIds[planKey]) {
+            const locPlanCount = planIds[planKey];
+            // add the cameras of this type back
+            const newCount =
+              this.finalYAMLObject.plans[planKey].camerasAssigned -
+              locPlanCount;
+            this.modifyPlan({
+              planId: Number(planKey),
+              field: "camerasAssigned",
+              payload: newCount
+            });
+          }
+        });
         this.$delete(this.finalYAMLObject.locations, locationId);
         this.$set(
           this.finalYAMLObject.overall,
