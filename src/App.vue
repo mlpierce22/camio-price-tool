@@ -1131,10 +1131,20 @@ export default Vue.extend({
         });
       });
 
+      const newPlanCount = Object.keys(planIds)
+        .map(key => planIds[key])
+        .reduce((p, c) => p + c);
+
       this.modifyLocation({
         index: locationKey,
         field: "planIds",
         payload: planIds
+      });
+
+      this.modifyLocation({
+        index: locationKey,
+        field: "numCameras",
+        payload: newPlanCount
       });
 
       // "Unlock" the ability to move on to the next step

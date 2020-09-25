@@ -29,10 +29,12 @@ export default class VCameraCard extends Vue {
 
   @Watch("camCount")
   moreCams() {
-    this.$emit("update", {
-      field: "numCameras",
-      payload: this.camCountAsNumber
-    });
+    if (!Number.isNaN(this.camCountAsNumber)) {
+      this.$emit("update", {
+        field: "numCameras",
+        payload: this.camCountAsNumber
+      });
+    }
   }
 
   @Watch("cameraTitle")

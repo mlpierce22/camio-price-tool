@@ -91,6 +91,7 @@ export interface UsedBox {
   readonly twoMpCount: number;
   readonly boxInfo: BoxType;
   readonly boxKey: string;
+  twoMPStreamsAssigned: number;
   streamsAdded: { [streamMprating: string]: MPCounts };
   remainingSpace(): number;
 }

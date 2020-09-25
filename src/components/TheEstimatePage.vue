@@ -248,8 +248,7 @@ export default class TheEstimatePage extends Vue {
           key
         ];
         const planPrices = this.estimatePlanPrices(thisLocation);
-        // note: this seperates them into each stream count.. maybe in the future we can have a more
-        // complicated algorithm
+        // note: this seperates them into each stream count... sorted from biggest to smallest
         const streamCounts = this.calculateStreamCounts(thisLocation);
         const boxTypes = Object.keys(this.pricing["location"]["hardware"])
           .filter(key => key !== "BoxVM")
@@ -290,7 +289,12 @@ export default class TheEstimatePage extends Vue {
                 count++;
                 spaceUsed = minimum2MpChunkSize * count;
               }
-
+              // it failed the last condition so our count must be one less.
+              count--;
+              // don't add it if we aren't adding any
+              if (minimum2MpChunkSize * count == 0) {
+                return true;
+              }
               const streamToAdd = {
                 xMPCount: this.deNormalizeStreams(
                   minimum2MpChunkSize * count,
@@ -301,9 +305,11 @@ export default class TheEstimatePage extends Vue {
               };
 
               box.streamsAdded[streamType.xMP] = { ...streamToAdd };
+              box.twoMPStreamsAssigned += minimum2MpChunkSize * count;
 
-              streamType.twoMPCount =
-                streamType.twoMPCount - minimum2MpChunkSize * count;
+              streamType.twoMPCount = Math.floor(
+                streamType.twoMPCount - minimum2MpChunkSize * count
+              );
               streamType.xMPCount = this.deNormalizeStreams(
                 streamType.twoMPCount,
                 this.toNumberWithUnits(streamType.xMP).number
@@ -319,12 +325,30 @@ export default class TheEstimatePage extends Vue {
                 ) {
                   // add it in before we update the iteration variable (so remaining works)
                   const helper = {};
-                  helper[streamType.xMP] = { ...streamType };
+                  // figure out the count of 2mp streams we can add without overflow
+                  const countOfThisStreamWeCanAdd = Math.floor(
+                    boxType.twoMpCount / minimum2MpChunkSize
+                  );
+                  // either we have a bigger box than the streams, so we should use streams, or we have more streams than the max box, so we need to handle that.
+                  const twoMPtoAddToBox =
+                    boxType.twoMpCount > streamType.twoMPCount
+                      ? streamType.twoMPCount
+                      : countOfThisStreamWeCanAdd * minimum2MpChunkSize;
+
+                  helper[streamType.xMP] = {
+                    xMPCount: this.deNormalizeStreams(
+                      twoMPtoAddToBox,
+                      this.toNumberWithUnits(streamType.xMP).number
+                    ),
+                    xMP: streamType.xMP,
+                    twoMPCount: twoMPtoAddToBox
+                  };
                   boxesUsed.push({
                     boxKey: boxType.boxKey,
                     twoMpCount: boxType.twoMpCount,
                     boxInfo: boxType,
                     streamsAdded: helper,
+                    twoMPStreamsAssigned: twoMPtoAddToBox,
                     remainingSpace: function() {
                       return (
                         this.twoMpCount -
@@ -343,7 +367,7 @@ export default class TheEstimatePage extends Vue {
                   return false; // i.e. break
                 }
                 const nextBox = allBoxTypesArr[index + 1];
-                // check if the count is between the next and current box, if it is use the current box
+                // check if the count is between the next and current box, if it is use the next box
                 if (
                   streamType.twoMPCount > boxType.twoMpCount &&
                   streamType.twoMPCount < nextBox.twoMpCount
@@ -355,6 +379,7 @@ export default class TheEstimatePage extends Vue {
                     twoMpCount: nextBox.twoMpCount,
                     boxInfo: nextBox,
                     streamsAdded: helper,
+                    twoMPStreamsAssigned: streamType.twoMPCount,
                     remainingSpace: function() {
                       return (
                         this.twoMpCount -
@@ -378,7 +403,7 @@ export default class TheEstimatePage extends Vue {
                   return false; // i.e. break
                 }
                 // if it is smaller than the smallest box, we should put it in that one
-                if (index == 0 || streamType.twoMPCount < boxType.twoMpCount) {
+                if (index == 0 && streamType.twoMPCount < boxType.twoMpCount) {
                   const helper = {};
                   helper[streamType.xMP] = { ...streamType };
                   boxesUsed.push({
@@ -386,6 +411,7 @@ export default class TheEstimatePage extends Vue {
                     twoMpCount: boxType.twoMpCount,
                     boxInfo: boxType,
                     streamsAdded: helper,
+                    twoMPStreamsAssigned: streamType.twoMPCount,
                     remainingSpace: function() {
                       return (
                         this.twoMpCount -
@@ -409,18 +435,22 @@ export default class TheEstimatePage extends Vue {
             return true; // i.e. continue, loop stops if you don't have this
           });
 
-          // TODO: do I need to handle upgrades? probably....
-          // merge all the like boxes into one and handle upgrades (currently just merge)
-          const helper = {};
+          // merge all the like boxes into like boxes
+          const helper: { [boxName: string]: UsedBox & { count: number } } = {};
           boxesUsed.map(box => {
             if (!helper[box.boxKey]) {
               helper[box.boxKey] = Object.assign(box, { count: 1 });
             } else {
-              helper[box.boxKey]["count"]++;
+              // if we have already added a box of this type...
+              helper[box.boxKey].count++;
+              helper[box.boxKey].twoMPStreamsAssigned +=
+                box.twoMPStreamsAssigned;
+
               Object.keys(box.streamsAdded).forEach(key => {
                 if (helper[box.boxKey].streamsAdded[key]) {
                   helper[box.boxKey].streamsAdded[key].twoMPCount +=
                     box.streamsAdded[key].twoMPCount;
+
                   helper[box.boxKey].streamsAdded[key].xMPCount +=
                     box.streamsAdded[key].xMPCount;
                 } else {
@@ -429,9 +459,171 @@ export default class TheEstimatePage extends Vue {
               });
             }
           });
+          //TODO: should we say minimize boxes? and only execute if that is true?
+          // Just try to optimize it now. there will be edge cases where this overprovisions, but this should be good for the vast majority
+          const boxUpgrades = { ...helper };
+          const convenienceCount = 1;
+          Object.keys(boxTypes).every((box, index, boxKeysArr) => {
+            // figure out the number of boxes to compare against the box
+            const boxCount = Object.keys(boxUpgrades)
+              .map(boxKey => boxUpgrades[boxKey].count)
+              .reduce((p, c) => p + c);
+
+            const boxKey = boxTypes[box].boxKey;
+            // if we are at the biggest box, this boxtype isnt available, or the number of boxes is below our threshold, don't bother with an upgrade
+            if (
+              index == boxKeysArr.length - 1 ||
+              boxCount <= convenienceCount
+            ) {
+              return false;
+            }
+
+            const nextBoxKey = boxTypes[boxKeysArr[index + 1]].boxKey;
+            const thisBox = boxUpgrades[boxKey];
+            let nextBox = boxUpgrades[nextBoxKey];
+            // if we do not have a box of this boxType, continue to next boxType
+            if (!thisBox) {
+              return true;
+            }
+
+            // check to see if there is multiple of the thisBox.count (meaning we may have to upgrade to a box that we don't have one of yet)
+            const desiredBox = boxTypes.find(type => type.boxKey == nextBoxKey);
+            if (!nextBox && thisBox.count > 1 && desiredBox) {
+              nextBox = Object.assign({}, desiredBox, {
+                boxInfo: desiredBox,
+                twoMpCount: desiredBox.twoMpCount,
+                count: 0,
+                twoMPStreamsAssigned: 0,
+                streamsAdded: {},
+                remainingSpace: function() {
+                  return (
+                    this.twoMpCount -
+                    Object.keys(this.streamsAdded)
+                      .map(key => {
+                        return this.streamsAdded[key].twoMPCount;
+                      })
+                      .reduce((p, c) => p + c)
+                  );
+                }
+              });
+              console.log("this is the next box", nextBox);
+            }
+
+            if (thisBox.count > 1) {
+              const twoMPstreamsTotal =
+                thisBox.twoMPStreamsAssigned * thisBox.count;
+              const nextBoxesCount = Math.ceil(
+                twoMPstreamsTotal / nextBox.twoMpCount
+              );
+
+              // TODO: in the future, maybe this could try to do a backwards search to try and figure out if upgrading to two bigger ones will get rid of the smaller one, and only do it in that case??? for now, just let it happen even though it is an unnecessary upgrade.
+
+              // update the number of the next type of box
+              nextBox.count += nextBoxesCount;
+
+              // upgrade the number assigned of the next box
+              nextBox.twoMPStreamsAssigned += thisBox.twoMPStreamsAssigned;
+
+              Object.keys(thisBox.streamsAdded).forEach(streamKey => {
+                if (nextBox.streamsAdded[streamKey]) {
+                  // if it already exists, update the stream counts of each type seperately
+                  nextBox.streamsAdded[streamKey].xMPCount +=
+                    thisBox.streamsAdded[streamKey].xMPCount;
+
+                  nextBox.streamsAdded[streamKey].twoMPCount +=
+                    thisBox.streamsAdded[streamKey].twoMPCount;
+                } else {
+                  // stream isn't here so we can just plug in the new object
+                  nextBox.streamsAdded[streamKey] = {
+                    ...thisBox.streamsAdded[streamKey]
+                  };
+                }
+              });
+
+              boxUpgrades[nextBoxKey] = nextBox;
+
+              // delete thisBox because we have successfully upgraded
+              delete boxUpgrades[boxKey];
+              return true;
+            }
+
+            // if we have exactly one box, check ahead to see if we can combine
+            if (thisBox.count == 1) {
+              for (let i = index; i < boxKeysArr.length; ++i) {
+                if (i == boxKeysArr.length - 1) {
+                  break;
+                }
+
+                const futureBoxKey = boxTypes[boxKeysArr[i + 1]].boxKey;
+                if (
+                  boxUpgrades[futureBoxKey] &&
+                  boxUpgrades[futureBoxKey].count > 0
+                ) {
+                  const canAdd =
+                    boxUpgrades[futureBoxKey].remainingSpace() -
+                      thisBox.twoMPStreamsAssigned >=
+                    0;
+                  if (canAdd) {
+                    // upgrade the number assigned of the future box
+                    boxUpgrades[futureBoxKey].twoMPStreamsAssigned +=
+                      thisBox.twoMPStreamsAssigned;
+                    // add thisBox's streams to the next box
+                    Object.keys(thisBox.streamsAdded).forEach(streamKey => {
+                      if (boxUpgrades[futureBoxKey].streamsAdded[streamKey]) {
+                        // if it already exists, update the stream counts of each type seperately
+                        boxUpgrades[futureBoxKey].streamsAdded[
+                          streamKey
+                        ].xMPCount += thisBox.streamsAdded[streamKey].xMPCount;
+
+                        boxUpgrades[futureBoxKey].streamsAdded[
+                          streamKey
+                        ].twoMPCount +=
+                          thisBox.streamsAdded[streamKey].twoMPCount;
+                      } else {
+                        // stream isn't here so we can just plug in the new object
+                        boxUpgrades[futureBoxKey].streamsAdded[streamKey] = {
+                          ...thisBox.streamsAdded[streamKey]
+                        };
+                      }
+                    });
+                    // delete thisBox because we have successfully upgraded
+                    delete boxUpgrades[boxKey];
+                    break;
+                  } else {
+                    // check for boxes further down
+                    continue;
+                  }
+                }
+              }
+              return true;
+            }
+            return true;
+          });
+
+          // convert to array
           const boxesWithCounts: (UsedBox & { count: number })[] = Object.keys(
-            helper
-          ).map(key => helper[key]);
+            boxUpgrades
+          ).map(key => boxUpgrades[key]);
+
+          // DEBUG
+          boxesWithCounts.forEach(boxWithCount => {
+            console.log(
+              `%c${boxWithCount.boxKey} box\nBox Count: ${boxWithCount.count}`,
+              "color: red"
+            );
+            console.log(
+              `This box has ${
+                boxWithCount.twoMPStreamsAssigned
+              } streams assigned and ${boxWithCount.twoMpCount *
+                boxWithCount.count -
+                boxWithCount.twoMPStreamsAssigned} 2MP streams worth of remaining space.`
+            );
+            let log = "";
+            Object.keys(boxWithCount.streamsAdded).forEach(key => {
+              log += `${boxWithCount.streamsAdded[key].xMPCount} ${boxWithCount.streamsAdded[key].xMP} streams = ${boxWithCount.streamsAdded[key].twoMPCount}\n`;
+            });
+            console.log(log);
+          });
 
           let VM: BoxCounts | null = null;
           if (thisLocation.useVM) {
