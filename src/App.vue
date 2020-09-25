@@ -13,6 +13,7 @@
         @add-plan="addPlan"
         @close-edit="showEditPlanModal = false"
       />
+      <div class="app-title">Get a Quote</div>
       <v-stepper
         :alt-labels="true"
         v-model="progressionState.onStep"
@@ -1248,6 +1249,18 @@ export default Vue.extend({
 </script>
 
 <style scoped lang="scss">
+::v-deep .v-main__wrap {
+  display: flex;
+  flex-direction: column;
+
+  .app-title {
+    padding-top: 30px;
+    font-size: 35px;
+    align-self: center;
+    justify-content: center;
+  }
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
