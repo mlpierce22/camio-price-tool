@@ -3,6 +3,7 @@
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { DeconstructedHashPlan, PlanCount, Plan } from "@/models";
 import VPromptedNumberInput from "@/components/shared/VPromptedNumberInput.vue";
+import { LocationAttributes } from "@/new-models";
 @Component({
   components: {
     VPromptedNumberInput
@@ -10,11 +11,13 @@ import VPromptedNumberInput from "@/components/shared/VPromptedNumberInput.vue";
 })
 export default class VCameraAssignmentDropdownCard extends Vue {
   // ---------- Props ----------
-  @Prop() planId!: number;
+  @Prop() planId!: string;
 
   @Prop() plansAsArray!: Array<DeconstructedHashPlan>;
 
   @Prop() plans!: Plan;
+
+  @Prop() location!: LocationAttributes;
 
   @Prop() numCameras!: number;
 
@@ -24,7 +27,7 @@ export default class VCameraAssignmentDropdownCard extends Vue {
 
   planCards = [];
 
-  selected = {};
+  selected = { text: "", value: "" };
 
   showMore = false;
 
@@ -54,12 +57,23 @@ export default class VCameraAssignmentDropdownCard extends Vue {
   }
   // --------- Methods ---------
   get planTitles() {
-    return this.plansAsArray.map(plan => {
-      return {
-        text: plan.planData.title,
-        value: plan.planKey
-      };
-    });
+    // for each of the possible plans, filter them such that the plan only displays as an option in the list if it is not a part of the location planids
+    const planTitles = this.plansAsArray
+      .map(plan => {
+        return {
+          text: plan.planData.title,
+          value: plan.planKey
+        };
+      })
+      .filter(plan => {
+        return !Object.keys(this.location.planIds).includes(plan.value);
+      });
+
+    if (this.selected.text != "") {
+      planTitles.push(this.selected);
+    }
+
+    return planTitles;
   }
 }
 </script>

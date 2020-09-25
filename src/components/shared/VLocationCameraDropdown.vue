@@ -118,6 +118,16 @@ export default class VLocationCameraDropdown extends Vue {
   get canDeletePlan() {
     return Object.keys(this.location.planIds).length - 1 > 0;
   }
+
+  get canAddNewPlan() {
+    return (
+      this.dehashPlans.filter(dehashedPlan => {
+        return !Object.keys(this.location.planIds).includes(
+          dehashedPlan.planKey
+        );
+      }).length > 0
+    );
+  }
 }
 </script>
 <!----------------- END JS/TS --------------------->
@@ -164,6 +174,7 @@ export default class VLocationCameraDropdown extends Vue {
                 :plansAsArray="dehashPlans"
                 :numCameras="content"
                 :plans="plans"
+                :location="location"
                 :canDelete="canDeletePlan"
                 @edit="edit(id)"
                 @delete="deletePlan(id)"
@@ -175,6 +186,7 @@ export default class VLocationCameraDropdown extends Vue {
               icon
               color="primary"
               x-large
+              :disabled="!canAddNewPlan"
               class="add-new"
               @click="addPlan()"
             >
